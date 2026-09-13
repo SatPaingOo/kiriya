@@ -57,7 +57,7 @@ after changing a setting.
 
 | Setting | Effect |
 |---|---|
-| `mcp.allowWrite` | `true` offers the commands that change files in ways that can be undone, such as `files.new`, `files.move`, `files.rename`, `files.replace` and `git.switch`. Their yes-or-no questions are answered yes, as `--yes` would answer them on the command line. |
+| `mcp.allowWrite` | `true` offers the commands that change files in ways that can be undone, such as `files.new`, `files.move`, `files.rename`, `files.replace` and `git.switch`. Their yes-or-no questions are answered yes, as `--yes` would answer them on the command line. It also offers the reads that can show secrets or send data away: `open`, which can put anything in a web address, `clip.paste`, and the `full` option of `proc.list`, which shows command lines. |
 | `mcp.allowDestroy` | `true` offers the commands whose work cannot be undone, such as `files.delete`, `files.sync`, `archive.unzip`, `port.kill` and `proc.kill`, to clients that support elicitation. Every question such a command asks goes to you through the client, a typed confirmation included, and nothing changes unless you accept. |
 
 ```bash
@@ -75,10 +75,13 @@ Some things stay out of an agent's reach whatever the settings say:
   itself more than you did, or list a plugin of its own.
 - `docker up` and `docker rebuild` are never tools: they start whatever programs a
   compose file names, and an agent that changes files could write one.
+- No tool that changes something may reach inside a `.git` folder, where git finds the
+  hooks and commands it runs, and `files.replace` and `files.delete` do not offer `all`,
+  which would walk into one.
 
 Write tools change files inside the roots, and programs that later run there act on
-what they find: git runs hooks from `.git/hooks`, and package managers run the scripts
-in `package.json`. Allow write tools for folders where that is acceptable.
+what they find: package managers run the scripts in `package.json`, and build tools read
+their own files. Allow write tools for folders where that is acceptable.
 
 ## Tools
 
