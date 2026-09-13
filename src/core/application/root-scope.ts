@@ -31,10 +31,20 @@ export class RootScope {
     readonly start: string,
     readonly roots: readonly string[],
     private readonly realRoots: readonly string[],
+    private readonly guarded: readonly string[],
   ) {}
 
-  /** Folders resolve against `cwd`, which is the only root when none is given. Each must be a folder that exists. */
-  static async open(fileSystem: FileSystem, folders: readonly string[], cwd: string): Promise<RootScope> {
+  /**
+   * Folders resolve against `cwd`, which is the only root when none is given. Each must be
+   * a folder that exists. `guarded` files, such as kiriya's configuration file, stay out of
+   * reach of work that changes something even when a root holds them.
+   */
+  static async open(
+    fileSystem: FileSystem,
+    folders: readonly string[],
+    cwd: string,
+    guarded: readonly string[] = [],
+  ): Promise<RootScope> {
     const roots = [...new Set((folders.length === 0 ? [cwd] : folders).map((folder) => path.resolve(cwd, folder)))];
     const realRoots: string[] = [];
     for (const root of roots) {
@@ -42,17 +52,37 @@ export class RootScope {
         throw new NotFoundError("core.mcp.root-missing", { path: root });
       realRoots.push((await fileSystem.realPath(root)) ?? root);
     }
-    return new RootScope(fileSystem, roots[0] ?? path.resolve(cwd), roots, realRoots);
+    const start = roots[0] ?? path.resolve(cwd);
+    return new RootScope(
+      fileSystem,
+      start,
+      roots,
+      realRoots,
+      guarded.map((file) => path.resolve(cwd, file)),
+    );
   }
 
-  /** RefusedError for the first value that leads outside every root. */
-  async refuseOutside(values: readonly string[]): Promise<void> {
+  /**
+   * RefusedError for the first value that leads outside every root. For work that
+   * `changes` something, a value that is a guarded file, or a folder holding one, is refused too.
+   */
+  async refuseOutside(values: readonly string[], changes = false): Promise<void> {
     for (const value of values) {
       for (const candidate of this.candidates(value)) {
         const real = await this.real(candidate);
         if (!this.within(candidate, this.roots) || real === null || !this.within(real, this.realRoots)) {
           throw new RefusedError("core.mcp.outside-roots", { path: value, roots: this.roots.join(", ") });
         }
+        if (changes) await this.refuseGuarded(value, candidate, real);
+      }
+    }
+  }
+
+  private async refuseGuarded(value: string, candidate: string, real: string): Promise<void> {
+    for (const file of this.guarded) {
+      const realFile = await this.real(file);
+      if (isInside(file, candidate) || (realFile !== null && isInside(realFile, real))) {
+        throw new RefusedError("core.mcp.guarded", { path: value, file });
       }
     }
   }
