@@ -101,9 +101,9 @@ Status values: **prototype** (working code exists, to be rebuilt in phase 1),
 |---|---|---|
 | `files` | `new` `list` `tree` `info` `read` `find` `grep` `hash` `dupes` `compare` `copy` `move` `rename` `replace` `delete` `clean` `sync` `size` | Async ports, `--json`, message keys. Behaviour unchanged. |
 | `archive` | `zip` `unzip` | Moved out of `files`, so one module owns every archive format |
-| `git` | `fetch` `pull` `switch` `status` across every repository under a folder | — |
-| `docker` | `up` `down` `logs` `ps` `rebuild` for the compose project in the current folder or `--file` | Adds `clean`, a previewed prune |
-| `config` | `list` `keys` `get` `set` `unset` `path` | Per-OS location, section 7.9 |
+| `git` | `fetch` `pull` `switch` `status` across every repository under a folder | `status` is the prototype's `repos`, without its checks of one person's folder conventions. A failed fetch or pull now fails the run. |
+| `docker` | `up` `down` `logs` `ps` `rebuild` for the compose project in the current folder or `--file` | Adds `clean`, a previewed prune. The prototype's folder of environments, `docker.root` with `envs`, is left out: it described one machine's layout. |
+| `config` | `list` `keys` `get` `set` `unset` `path` | Per-OS location, section 7.9. Only kiriya's own settings, starting with `plugins`; the prototype's keys belonged to one person's tools. |
 
 ### 5.2 v1 — new modules before the first public release
 
@@ -408,8 +408,11 @@ example: "no clipboard program found; install wl-clipboard or xclip".
 
 ### 6.7 Plugins
 
-A plugin is an npm package or a local folder that exports a `KiriyaModule`: the same
-contract as a built-in module. It loads only when the user's config lists it:
+A plugin is an npm package or a local folder whose default export is a `KiriyaModule`,
+the same contract as a built-in module, together with the English text of its own
+message keys, which start with its id. [docs/plugins.md](./docs/plugins.md) is the full
+contract. A plugin loads only when the user's config lists it; a path is relative to the
+config file:
 
 ```json
 { "plugins": ["kiriya-plugin-postgres", "./tools/our-company-plugin"] }
@@ -699,8 +702,8 @@ A phase is done when every acceptance criterion holds.
 | Phase | Work | Done when |
 |---|---|---|
 | **0 — Spike** | A throwaway `spike/phase-0` branch with only port lookup, process lookup, clipboard and trash, run in CI on Windows, Linux and macOS, plus manual runs on a Mac without Full Disk Access and on Windows under Constrained Language Mode. The repository is public only while the spike's CI runs, then private again. | The same tests pass on all three; latency per operation is measured on each OS; the Put Back, UTF-8 clipboard and policy cases each have a recorded result; the native-helper question in section 10 is answered. An operation that cannot be made reliable is recorded with its reason. **CI part done 2026-09-13**, all six jobs passing; the three manual checks remain. |
-| **1 — Core and files** | Repository, CI matrix, the core kernel, `files` and `archive` rebuilt on async ports with `--json` and message keys, contract and boundary tests, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `AGENTS.md` | Every prototype `files` and `archive` behaviour has a passing test on all three operating systems |
-| **2 — Remaining prototype modules** | `git`, `docker`, `config`, and the plugin loader with one example plugin | The prototype has no feature kiriya lacks, and the example plugin loads, runs and appears in `kiriya doctor` |
+| **1 — Core and files** | Repository, CI matrix, the core kernel, `files` and `archive` rebuilt on async ports with `--json` and message keys, contract and boundary tests, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `AGENTS.md` | Every prototype `files` and `archive` behaviour has a passing test on all three operating systems. **Done 2026-09-13:** CI green on Windows, Linux and macOS with Node 22, 24 and the current release. |
+| **2 — Remaining prototype modules** | `git`, `docker`, `config`, and the plugin loader with one example plugin | The prototype has no feature kiriya lacks, and the example plugin loads, runs and appears in `kiriya doctor`. **In progress 2026-09-13.** |
 | **3 — First release** | The v1 modules in section 5.2; `LICENSE` (MIT), `CHANGELOG.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`; then, once the maintainer judges it ready, the repository made public and the package published to npm from CI through trusted publishing with provenance | A clean machine on each OS installs kiriya from the README alone, `kiriya doctor` passes, and `npm audit signatures` verifies the package |
 | **4 — AI** | `mcp` per section 6.8: `read` tools, then `write` tools behind `mcp.allowWrite`, then `destroy` tools behind `mcp.allowDestroy` and elicitation | A client built with the official SDK lists every tool with correct annotations, runs a `read` tool, is refused a path outside the roots, and cannot run a `destroy` tool without accepting an elicitation |
 | **5 — Growth** | The v2 list and the research candidates; a kiriya Scoop bucket and Homebrew tap; winget and single-file binaries when section 8's condition holds | Users other than the maintainers report issues and depend on releases |
