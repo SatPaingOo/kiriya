@@ -1,9 +1,8 @@
-import type { CommandRegistry } from "../../application/command-registry.js";
+import type { CommandRegistry, RegisteredCommand, RegisteredModule } from "../../application/command-registry.js";
 import type { CommandResult } from "../../domain/command.js";
 import { InterruptedError, KiriyaError, UsageError, type ErrorKind } from "../../domain/errors.js";
 import { message } from "../../domain/message.js";
 import type { Environment } from "../../domain/ports/environment.js";
-import type { Catalog } from "../../../i18n/locales/en.js";
 import { Translator } from "../i18n/translator.js";
 import { parseCommandArguments, splitGlobalFlags, type GlobalFlags } from "./argv.js";
 import { CliViewFormat } from "./cli-view-format.js";
@@ -15,7 +14,8 @@ import { TerminalConfirmation } from "./terminal-confirmation.js";
 
 export interface CliDependencies {
   readonly registry: CommandRegistry;
-  readonly catalog: Catalog;
+  /** kiriya's English catalog, plus the messages of loaded plugins. */
+  readonly catalog: Readonly<Record<string, string>>;
   readonly version: string;
   readonly environment: Environment;
   readonly stdin: NodeJS.ReadStream;
@@ -32,6 +32,8 @@ const EXIT_CODES: Readonly<Record<ErrorKind, number>> = {
   failed: 1,
   interrupted: 130,
 };
+
+const verbsOf = (module: RegisteredModule): string[] => [...module.commands.keys()].filter((verb) => verb !== "");
 
 /** The command line: finds the command, runs it, prints its result, and maps errors to exit codes once. */
 export class CliApplication {
@@ -53,18 +55,13 @@ export class CliApplication {
 
     try {
       if (flags.version) return this.print(this.deps.stdout, [this.deps.version]);
-      const [first, second, ...args] = rest;
+      const [first, ...words] = rest;
       if (first === undefined) return this.print(this.deps.stdout, mainHelp(this.deps.registry.list(), help));
-      if (first === "help") return this.help(second, args[0], help);
+      if (first === "help") return this.help(words[0], words[1], help);
 
       const module = this.findModule(first);
-      if (second === undefined) return this.print(this.deps.stdout, moduleHelp(module, help));
-      const entry = module.commands.get(second);
-      if (entry === undefined) {
-        throw this.unknown("core.usage.unknown-command", { module: module.id, name: second }, second, [
-          ...module.commands.keys(),
-        ]);
-      }
+      const { entry, args } = this.resolveCommand(module, words);
+      if (entry === undefined) return this.print(this.deps.stdout, moduleHelp(module, help));
       if (flags.help) return this.print(this.deps.stdout, commandHelp(module, entry, help));
 
       const { spec } = entry.command;
@@ -84,6 +81,11 @@ export class CliApplication {
             translator: this.translator,
             style: err,
           }),
+          passthrough: {
+            write: (text, stream) => {
+              (flags.json || stream === "stderr" ? this.deps.stderr : this.deps.stdout).write(text);
+            },
+          },
         });
       } finally {
         process.removeListener("SIGINT", interrupt);
@@ -96,20 +98,39 @@ export class CliApplication {
     }
   }
 
+  /**
+   * A verb picks a command. A module that is one command takes every word after its
+   * name as arguments. Without either, the module's help is shown.
+   */
+  private resolveCommand(
+    module: RegisteredModule,
+    words: readonly string[],
+  ): { entry: RegisteredCommand | undefined; args: readonly string[] } {
+    const [verb, ...rest] = words;
+    const named = verb === undefined || verb === "" ? undefined : module.commands.get(verb);
+    if (named !== undefined) return { entry: named, args: rest };
+    const own = module.commands.get("");
+    if (own !== undefined) return { entry: own, args: words };
+    if (verb === undefined) return { entry: undefined, args: [] };
+    throw this.unknown("core.usage.unknown-command", { module: module.id, name: verb }, verb, verbsOf(module));
+  }
+
   private help(moduleName: string | undefined, verb: string | undefined, context: HelpContext): number {
     if (moduleName === undefined) return this.print(this.deps.stdout, mainHelp(this.deps.registry.list(), context));
     const module = this.findModule(moduleName);
-    if (verb === undefined) return this.print(this.deps.stdout, moduleHelp(module, context));
-    const entry = module.commands.get(verb);
+    if (verb === undefined) {
+      const own = module.commands.get("");
+      const lines = own === undefined ? moduleHelp(module, context) : commandHelp(module, own, context);
+      return this.print(this.deps.stdout, lines);
+    }
+    const entry = verb === "" ? undefined : module.commands.get(verb);
     if (entry === undefined) {
-      throw this.unknown("core.usage.unknown-command", { module: module.id, name: verb }, verb, [
-        ...module.commands.keys(),
-      ]);
+      throw this.unknown("core.usage.unknown-command", { module: module.id, name: verb }, verb, verbsOf(module));
     }
     return this.print(this.deps.stdout, commandHelp(module, entry, context));
   }
 
-  private findModule(name: string): NonNullable<ReturnType<CommandRegistry["module"]>> {
+  private findModule(name: string): RegisteredModule {
     const module = this.deps.registry.module(name);
     if (module !== undefined) return module;
     throw this.unknown(
@@ -171,15 +192,17 @@ export class CliApplication {
         if (hint !== undefined && typeof hint === "object") lines.push(this.translator.text(hint));
         this.print(this.deps.stderr, lines);
       }
-      if (flags.debug && error.cause !== undefined)
+      if (flags.debug && error.cause !== undefined) {
         this.print(this.deps.stderr, [String((error.cause as Error).stack ?? error.cause)]);
+      }
       return EXIT_CODES[error.kind];
     }
     if (!flags.json) {
       const detail = error instanceof Error ? error.message : String(error);
       this.print(this.deps.stderr, [err.red(this.translator.text(message("core.error.unexpected", { detail })))]);
-      if (flags.debug && error instanceof Error && error.stack !== undefined)
+      if (flags.debug && error instanceof Error && error.stack !== undefined) {
         this.print(this.deps.stderr, [error.stack]);
+      }
     }
     return 1;
   }

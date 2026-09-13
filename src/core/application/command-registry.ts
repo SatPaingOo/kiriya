@@ -6,7 +6,7 @@ import type { TextView } from "../domain/view.js";
 export interface RegisteredCommand {
   readonly command: Command<unknown, unknown>;
   readonly view: TextView<unknown>;
-  /** The verb, the part of the id after the module. */
+  /** The part of the id after the module; empty for a module that is one command. */
   readonly verb: string;
 }
 
@@ -16,6 +16,14 @@ export interface RegisteredModule {
   readonly commands: ReadonlyMap<string, RegisteredCommand>;
 }
 
+/** The verb of a command id in a module: `files.list` gives `list`, `doctor` in doctor gives "", anything else null. */
+function verbOf(commandId: string, moduleId: string): string | null {
+  if (commandId === moduleId) return "";
+  if (!commandId.startsWith(`${moduleId}.`)) return null;
+  const verb = commandId.slice(moduleId.length + 1);
+  return verb === "" || verb.includes(".") ? null : verb;
+}
+
 /** Built-in modules and plugins register here; presentation looks commands up by module and verb. */
 export class CommandRegistry {
   private readonly modules = new Map<
@@ -23,15 +31,14 @@ export class CommandRegistry {
     { id: string; summary: MessageKey; commands: Map<string, RegisteredCommand> }
   >();
 
+  /** Registers every command of a module, or none of them when one is rejected. */
   register(module: KiriyaModule, ports: CorePorts): void {
     if (this.modules.has(module.id)) throw new Error(`module ${module.id} is registered twice`);
     const entry = { id: module.id, summary: module.summary, commands: new Map<string, RegisteredCommand>() };
     const registrar: CommandRegistrar = {
       add<Input, Output>(command: Command<Input, Output>, view: TextView<Output>): void {
-        const [moduleId, verb] = command.spec.id.split(".");
-        if (moduleId !== module.id || verb === undefined || verb === "") {
-          throw new Error(`command ${command.spec.id} does not belong to module ${module.id}`);
-        }
+        const verb = verbOf(command.spec.id, module.id);
+        if (verb === null) throw new Error(`command ${command.spec.id} does not belong to module ${module.id}`);
         if (entry.commands.has(verb)) throw new Error(`command ${command.spec.id} is registered twice`);
         entry.commands.set(verb, {
           command: command as Command<unknown, unknown>,

@@ -14,8 +14,11 @@ export interface ProgramOptions {
   readonly input?: string;
   /** Added to the inherited environment; how data reaches a script without appearing in its arguments. */
   readonly env?: Readonly<Record<string, string>>;
+  /** 60 seconds by default; 0 means no limit, for a program that runs until it is stopped. */
   readonly timeoutMs?: number;
   readonly signal?: AbortSignal;
+  /** Receives output as it arrives, decoded as UTF-8; the result's stdout and stderr are then empty. */
+  readonly onOutput?: (text: string, stream: "stdout" | "stderr") => void;
 }
 
 /** Runs a program without a shell, so no argument is ever re-parsed. */
@@ -35,9 +38,19 @@ export function runProgram(
     });
     const out: Buffer[] = [];
     const err: Buffer[] = [];
-    const timer = setTimeout(() => child.kill(), options.timeoutMs ?? 60_000);
-    child.stdout.on("data", (chunk: Buffer) => out.push(chunk));
-    child.stderr.on("data", (chunk: Buffer) => err.push(chunk));
+    const timeoutMs = options.timeoutMs ?? 60_000;
+    const timer = timeoutMs > 0 ? setTimeout(() => child.kill(), timeoutMs) : undefined;
+    const onOutput = options.onOutput;
+    if (onOutput === undefined) {
+      child.stdout.on("data", (chunk: Buffer) => out.push(chunk));
+      child.stderr.on("data", (chunk: Buffer) => err.push(chunk));
+    } else {
+      // Decoding per stream keeps a character split across two chunks whole.
+      child.stdout.setEncoding("utf8");
+      child.stderr.setEncoding("utf8");
+      child.stdout.on("data", (text: string) => onOutput(text, "stdout"));
+      child.stderr.on("data", (text: string) => onOutput(text, "stderr"));
+    }
     child.on("error", (error) => {
       clearTimeout(timer);
       reject(error);

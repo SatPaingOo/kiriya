@@ -6,9 +6,12 @@ import type { TestContext } from "node:test";
 import type { CommandContext, CommandResult } from "../../src/core/domain/command.js";
 import { message, type Message } from "../../src/core/domain/message.js";
 import type { Clock } from "../../src/core/domain/ports/clock.js";
+import type { ConfigStore, ConfigValues } from "../../src/core/domain/ports/config-store.js";
 import type { Confirmation } from "../../src/core/domain/ports/confirmation.js";
 import type { Environment, OsFamily } from "../../src/core/domain/ports/environment.js";
 import type { FileSystem } from "../../src/core/domain/ports/file-system.js";
+import type { OutputStream, Passthrough } from "../../src/core/domain/ports/passthrough.js";
+import type { ProcessOptions, ProcessResult, ProcessRunner } from "../../src/core/domain/ports/process-runner.js";
 import type { Trash, TrashOutcome } from "../../src/core/domain/ports/trash.js";
 import type { MessageKey } from "../../src/i18n/locales/en.js";
 
@@ -74,11 +77,83 @@ export class FakeTrash implements Trash {
   }
 }
 
+export class RecordingPassthrough implements Passthrough {
+  readonly written: Array<{ readonly text: string; readonly stream: OutputStream }> = [];
+
+  write(text: string, stream: OutputStream): void {
+    this.written.push({ text, stream });
+  }
+}
+
+export interface ScriptedRun {
+  readonly code?: number;
+  readonly stdout?: string;
+  readonly stderr?: string;
+}
+
+export interface RecordedRun {
+  readonly program: string;
+  readonly args: readonly string[];
+  readonly options: ProcessOptions;
+}
+
+/** Knows only the programs it is given, records every run, and answers each from a script. */
+export class FakeProcessRunner implements ProcessRunner {
+  readonly runs: RecordedRun[] = [];
+
+  constructor(
+    private readonly programs: Readonly<Record<string, string>>,
+    private readonly answer: (args: readonly string[]) => ScriptedRun = () => ({}),
+  ) {}
+
+  find(program: string): Promise<string | null> {
+    return Promise.resolve(this.programs[program] ?? null);
+  }
+
+  run(program: string, args: readonly string[], options: ProcessOptions = {}): Promise<ProcessResult> {
+    this.runs.push({ program, args, options });
+    const scripted = this.answer(args);
+    const code = scripted.code ?? 0;
+    const stdout = scripted.stdout ?? "";
+    const stderr = scripted.stderr ?? "";
+    if (options.onOutput === undefined) return Promise.resolve({ code, stdout, stderr });
+    if (stdout !== "") options.onOutput(stdout, "stdout");
+    if (stderr !== "") options.onOutput(stderr, "stderr");
+    return Promise.resolve({ code, stdout: "", stderr: "" });
+  }
+}
+
+/** A configuration file held in memory; null values mean the file does not exist. */
+export class MemoryConfigStore implements ConfigStore {
+  constructor(
+    readonly path = "/home/dev/.config/kiriya/config.json",
+    private values: ConfigValues | null = null,
+  ) {}
+
+  exists(): Promise<boolean> {
+    return Promise.resolve(this.values !== null);
+  }
+
+  read(): Promise<ConfigValues> {
+    return Promise.resolve(this.values ?? {});
+  }
+
+  write(values: ConfigValues): Promise<void> {
+    this.values = values;
+    return Promise.resolve();
+  }
+
+  get current(): ConfigValues | null {
+    return this.values;
+  }
+}
+
 export function commandContext(
   cwd: string,
   confirmation: Confirmation = new ScriptedConfirmation(true),
+  passthrough: Passthrough = new RecordingPassthrough(),
 ): CommandContext {
-  return { cwd, confirmation, signal: new AbortController().signal };
+  return { cwd, confirmation, passthrough, signal: new AbortController().signal };
 }
 
 export function expectDone<Output>(result: CommandResult<Output>): Extract<CommandResult<Output>, { kind: "done" }> {
