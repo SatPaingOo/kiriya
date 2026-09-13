@@ -59,8 +59,8 @@ export const syncSpec: CommandSpec<SyncInput> = {
     options: {
       delete: { type: "boolean", description: "files.sync.option.delete" },
       apply: { type: "boolean", description: "files.sync.option.apply" },
-      yes: { type: "boolean", description: "files.sync.option.yes", short: "y" },
-      confirm: { type: "string", description: "files.sync.option.confirm", valueName: "<name>" },
+      yes: { type: "boolean", description: "files.sync.option.yes", short: "y", terminalOnly: true },
+      confirm: { type: "string", description: "files.sync.option.confirm", valueName: "<name>", terminalOnly: true },
     },
     parse(raw) {
       const reader = new RawReader(raw);

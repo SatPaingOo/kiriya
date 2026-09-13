@@ -62,7 +62,7 @@ export const switchSpec: CommandSpec<SwitchInput> = {
     options: {
       create: { type: "boolean", description: "git.switch.option.create" },
       depth: { type: "string", description: "git.option.depth", valueName: "<1-10>" },
-      yes: { type: "boolean", description: "git.switch.option.yes", short: "y" },
+      yes: { type: "boolean", description: "git.switch.option.yes", short: "y", terminalOnly: true },
     },
     parse(raw) {
       const reader = new RawReader(raw);

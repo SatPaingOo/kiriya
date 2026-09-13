@@ -59,7 +59,8 @@ class StartProject implements Command<StartInput, StartOutput> {
   }
 }
 
-const COMPOSE_START = { idempotent: true, usesNetwork: false, runsUserCommands: false } as const;
+/** Starting a compose project runs whatever programs its compose file names, so it is never an MCP tool. */
+const COMPOSE_START = { idempotent: true, usesNetwork: false, runsUserCommands: true } as const;
 
 export const upSpec: CommandSpec<StartInput> = {
   id: "docker.up",

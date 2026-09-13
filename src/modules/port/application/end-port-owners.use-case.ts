@@ -32,7 +32,7 @@ export const killSpec: CommandSpec<KillPortInput> = {
     positionals: [{ name: "port", description: "port.kill.arg.port", required: true, variadic: false }],
     options: {
       force: { type: "boolean", description: "port.kill.option.force" },
-      confirm: { type: "string", description: "port.kill.option.confirm", valueName: "<port>" },
+      confirm: { type: "string", description: "port.kill.option.confirm", valueName: "<port>", terminalOnly: true },
     },
     parse(raw) {
       const reader = new RawReader(raw);

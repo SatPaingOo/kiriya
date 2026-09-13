@@ -53,8 +53,8 @@ export const deleteSpec: CommandSpec<DeleteInput> = {
     options: {
       permanent: { type: "boolean", description: "files.delete.option.permanent" },
       "dry-run": { type: "boolean", description: "files.delete.option.dry-run" },
-      yes: { type: "boolean", description: "files.delete.option.yes", short: "y" },
-      confirm: { type: "string", description: "files.delete.option.confirm", valueName: "<count>" },
+      yes: { type: "boolean", description: "files.delete.option.yes", short: "y", terminalOnly: true },
+      confirm: { type: "string", description: "files.delete.option.confirm", valueName: "<count>", terminalOnly: true },
       all: { type: "boolean", description: "files.option.all" },
     },
     parse(raw) {

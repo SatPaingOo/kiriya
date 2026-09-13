@@ -43,7 +43,7 @@ export const transferInput: CommandSpec<TransferInput>["input"] = {
   options: {
     overwrite: { type: "boolean", description: "files.transfer.option.overwrite" },
     "dry-run": { type: "boolean", description: "files.transfer.option.dry-run" },
-    confirm: { type: "string", description: "files.transfer.option.confirm", valueName: "<count>" },
+    confirm: { type: "string", description: "files.transfer.option.confirm", valueName: "<count>", terminalOnly: true },
   },
   parse(raw) {
     const reader = new RawReader(raw);
