@@ -30,6 +30,11 @@ function optionLabel(name: string, spec: OptionSpec): string {
   return `${short}--${name}${value}`;
 }
 
+/** `kiriya files list`, or `kiriya doctor` for a module that is one command. */
+function commandName(module: RegisteredModule, entry: RegisteredCommand): string {
+  return ["kiriya", module.id, entry.verb].filter((part) => part !== "").join(" ");
+}
+
 export function mainHelp(modules: readonly RegisteredModule[], context: HelpContext): string[] {
   const { translator, style } = context;
   return [
@@ -51,7 +56,9 @@ export function mainHelp(modules: readonly RegisteredModule[], context: HelpCont
 
 export function moduleHelp(module: RegisteredModule, context: HelpContext): string[] {
   const { translator, style } = context;
-  const commands = [...module.commands.values()].sort((a, b) => (a.verb < b.verb ? -1 : a.verb > b.verb ? 1 : 0));
+  const commands = [...module.commands.values()]
+    .filter((entry) => entry.verb !== "")
+    .sort((a, b) => (a.verb < b.verb ? -1 : a.verb > b.verb ? 1 : 0));
   return [
     `${style.bold(`kiriya ${module.id}`)} — ${translator.text(message(module.summary))}`,
     "",
@@ -65,16 +72,17 @@ export function moduleHelp(module: RegisteredModule, context: HelpContext): stri
 export function commandHelp(module: RegisteredModule, entry: RegisteredCommand, context: HelpContext): string[] {
   const { translator, style } = context;
   const { spec } = entry.command;
+  const name = commandName(module, entry);
   const positionals = spec.input.positionals.map((positional) => {
-    const name = positional.variadic ? `${positional.name}...` : positional.name;
-    return positional.required ? `<${name}>` : `[${name}]`;
+    const label = positional.variadic ? `${positional.name}...` : positional.name;
+    return positional.required ? `<${label}>` : `[${label}]`;
   });
   const hasOptions = Object.keys(spec.input.options).length > 0;
   const lines = [
-    `${style.bold(`kiriya ${module.id} ${entry.verb}`)} — ${translator.text(message(spec.summary))}`,
+    `${style.bold(name)} — ${translator.text(message(spec.summary))}`,
     "",
     style.bold(translator.text(message("core.help.usage"))),
-    `  ${["kiriya", module.id, entry.verb, ...positionals, ...(hasOptions ? ["[options]"] : [])].join(" ")}`,
+    `  ${[name, ...positionals, ...(hasOptions ? ["[options]"] : [])].join(" ")}`,
   ];
   if (spec.input.positionals.length > 0) {
     lines.push("", style.bold(translator.text(message("core.help.arguments"))));
@@ -88,9 +96,9 @@ export function commandHelp(module: RegisteredModule, entry: RegisteredCommand, 
     lines.push("", style.bold(translator.text(message("core.help.options"))));
     lines.push(
       ...table(
-        Object.entries(spec.input.options).map(([name, option]) => [
-          optionLabel(name, option),
-          translator.text(message(option.description)),
+        Object.entries(spec.input.options).map(([option, value]) => [
+          optionLabel(option, value),
+          translator.text(message(value.description)),
         ]),
       ),
     );

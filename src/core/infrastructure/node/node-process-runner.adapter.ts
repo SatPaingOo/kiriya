@@ -1,7 +1,7 @@
 import { constants } from "node:fs";
 import { access, stat } from "node:fs/promises";
 import path from "node:path";
-import { CapabilityUnavailableError } from "../../domain/errors.js";
+import { CapabilityUnavailableError, InterruptedError } from "../../domain/errors.js";
 import type { ProcessOptions, ProcessResult, ProcessRunner } from "../../domain/ports/process-runner.js";
 import { runProgram } from "./run-program.js";
 
@@ -36,6 +36,10 @@ export class NodeProcessRunnerAdapter implements ProcessRunner {
       const result = await runProgram(program, args, options);
       return { code: result.code, stdout: result.stdout, stderr: result.stderr };
     } catch (error) {
+      // Aborting the signal kills the program, which Node.js reports as an error.
+      if (options.signal?.aborted === true) {
+        throw new InterruptedError("core.error.interrupted", {}, { cause: error });
+      }
       const detail = error instanceof Error ? error.message : String(error);
       throw new CapabilityUnavailableError("core.process.cannot-start", { program, detail }, { cause: error });
     }
