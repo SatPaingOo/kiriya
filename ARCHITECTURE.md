@@ -67,7 +67,7 @@ src/
 │       └── ended-processes.ts    one line per ended process, and aligned columns
 └── modules/
     ├── files/                    new list tree info read find grep hash dupes compare copy move rename replace delete clean sync size
-    ├── archive/                  zip unzip
+    ├── archive/                  zip unzip tar untar
     ├── git/                      status fetch pull switch, across every repository under a folder
     ├── docker/                   ps up down logs rebuild clean, for the compose project in the current folder
     ├── config/                   path keys list get set unset
@@ -186,10 +186,10 @@ Commands that change many things preview first: `rename`, `replace`, `clean`,
 
 | Port | What it does | Adapters |
 |---|---|---|
-| `FileSystem` | Paths, folders and metadata: stat, list, create, copy, move, remove | `NodeFileSystemAdapter` |
+| `FileSystem` | Paths, folders and metadata: stat, list, create, copy, move, remove, times and permission bits | `NodeFileSystemAdapter` |
 | `FileContent` | Bytes inside files: read, write, positioned reads, exclusive creation | `NodeFileContentAdapter` |
 | `Hasher` | File digests read in chunks | `NodeHasherAdapter` |
-| `Compression` | Raw deflate, as ZIP stores it | `NodeCompressionAdapter` |
+| `Compression` | Raw deflate, as ZIP stores it, and gzip streams, as .tar.gz stores them | `NodeCompressionAdapter` |
 | `ProcessRunner` | Find a program on PATH and run it without a shell, capturing or streaming its output | `NodeProcessRunnerAdapter` |
 | `Trash` | The operating system's trash | `WindowsTrashAdapter` (Recycle Bin through PowerShell), `FreedesktopTrashAdapter`, `MacosTrashAdapter` |
 | `ConfigStore` | The user's configuration file | `JsonConfigStore` |
