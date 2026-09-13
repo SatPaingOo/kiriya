@@ -51,6 +51,9 @@ export function runProgram(
         ms: performance.now() - started,
       });
     });
+    // A program may exit without reading its input, and writing to its closed pipe raises
+    // EPIPE. That is not a failure of the run: the exit code and output still tell the result.
+    child.stdin.on("error", () => undefined);
     child.stdin.end(options.input ?? "");
   });
 }
