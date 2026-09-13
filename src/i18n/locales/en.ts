@@ -632,6 +632,27 @@ export const en = {
   "env.check.too-large": "{path} is larger than {limit}",
   "env.check.not-text": "{path} is not UTF-8 text",
   "env.check.ok": "All {count} variable(s) from {example} are set in {file}",
+
+  "sys.summary": "This machine and the developer tools on it, described the same way on every OS",
+  "sys.info.summary": "Show the operating system, processor, memory, uptime, locale and runtime",
+  "sys.tools.summary": "Find node, python, dotnet, java, go, git and docker, and their versions",
+  "sys.report.summary": "Print machine facts and tool versions as Markdown for a bug report, without the host name",
+  "sys.label.os": "OS",
+  "sys.label.cpu": "CPU",
+  "sys.label.memory": "Memory",
+  "sys.label.uptime": "Uptime",
+  "sys.label.host": "Host",
+  "sys.label.locale": "Locale",
+  "sys.label.node": "Node.js",
+  "sys.label.kiriya": "kiriya",
+  "sys.label.tools": "Tools",
+  "sys.info.os": "{name} ({kernel}, {arch})",
+  "sys.info.cpu": "{model}, {count} logical processor(s)",
+  "sys.info.memory": "{total}, {free} free",
+  "sys.info.uptime": "{days} d {hours} h {minutes} min",
+  "sys.info.locale": "{locale}, time zone {timeZone}",
+  "sys.tools.not-found": "not found",
+  "sys.report.not-found": "not found: {names}",
 } as const;
 
 export type MessageKey = keyof typeof en;
