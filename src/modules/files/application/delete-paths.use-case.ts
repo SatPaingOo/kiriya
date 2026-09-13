@@ -55,7 +55,7 @@ export const deleteSpec: CommandSpec<DeleteInput> = {
       "dry-run": { type: "boolean", description: "files.delete.option.dry-run" },
       yes: { type: "boolean", description: "files.delete.option.yes", short: "y", terminalOnly: true },
       confirm: { type: "string", description: "files.delete.option.confirm", valueName: "<count>", terminalOnly: true },
-      all: { type: "boolean", description: "files.option.all" },
+      all: { type: "boolean", description: "files.option.all", reachesHidden: true },
     },
     parse(raw) {
       const reader = new RawReader(raw);
