@@ -40,5 +40,6 @@ Nothing is published yet. The first release, 0.1.0, will contain everything belo
   tools over stdio, for the 2026-07-28 protocol and for clients that still open with
   `initialize`. Paths must stay inside the `--root` folders, symlinks included. With
   `kiriya config set mcp.allowWrite true`, commands that change files in ways that can be
-  undone are offered too; `config set`, `config unset`, `docker up` and `docker rebuild`
-  never are.
+  undone are offered too, and with `mcp.allowDestroy true`, commands whose work cannot be
+  undone, to clients that support elicitation: each asks the user before it changes
+  anything. `config set`, `config unset`, `docker up` and `docker rebuild` are never offered.
