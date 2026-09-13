@@ -112,6 +112,7 @@ const environment = new NodeEnvironmentAdapter();
 const config = new JsonConfigStore(configFilePath(environment, process.cwd()));
 const plugins = new PluginLoader();
 const processRunner = new NodeProcessRunnerAdapter();
+const registry = new CommandRegistry();
 const ports: CorePorts = {
   fileSystem: new NodeFileSystemAdapter(),
   fileContent: new NodeFileContentAdapter(),
@@ -129,13 +130,13 @@ const ports: CorePorts = {
   portTable: portTableFor(environment, processRunner),
   clipboard: clipboardFor(environment, processRunner),
   opener: openerFor(environment, processRunner),
+  commands: registry,
   protectedPaths: new PathGuard(environment),
   config,
   plugins,
   runtime: { kiriyaVersion: version, nodeVersion: process.version },
 };
 
-const registry = new CommandRegistry();
 for (const module of BUILT_IN_MODULES) registry.register(module, ports);
 
 // A configuration file kiriya cannot read loads no plugins; `kiriya doctor` and `kiriya config` report why.

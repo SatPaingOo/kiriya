@@ -1,4 +1,5 @@
 import type { RegisteredCommand, RegisteredModule } from "../../application/command-registry.js";
+import { GLOBAL_OPTIONS, type GlobalOption } from "../../domain/global-options.js";
 import type { OptionSpec } from "../../domain/input-schema.js";
 import { message } from "../../domain/message.js";
 import type { Translator } from "../i18n/translator.js";
@@ -10,14 +11,9 @@ export interface HelpContext {
   readonly version: string;
 }
 
-const GLOBAL_OPTIONS = [
-  ["--json", "core.option.json"],
-  ["--no-color", "core.option.no-color"],
-  ["--no-input", "core.option.no-input"],
-  ["--debug", "core.option.debug"],
-  ["-h, --help", "core.option.help"],
-  ["-V, --version", "core.option.version"],
-] as const;
+function globalLabel(option: GlobalOption): string {
+  return option.short === null ? `--${option.name}` : `-${option.short}, --${option.name}`;
+}
 
 function table(rows: ReadonlyArray<readonly [string, string]>): string[] {
   const width = Math.max(0, ...rows.map(([left]) => left.length));
@@ -48,7 +44,9 @@ export function mainHelp(modules: readonly RegisteredModule[], context: HelpCont
     ...table(modules.map((module) => [module.id, translator.text(message(module.summary))])),
     "",
     style.bold(translator.text(message("core.help.global-options"))),
-    ...table(GLOBAL_OPTIONS.map(([flag, key]) => [flag, translator.text(message(key))])),
+    ...table(
+      GLOBAL_OPTIONS.map((option) => [globalLabel(option), translator.text(message(option.description))] as const),
+    ),
     "",
     translator.text(message("core.help.module-hint", { command: "kiriya help <module>" })),
   ];
