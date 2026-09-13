@@ -749,6 +749,9 @@ export const en = {
   "core.input.twice": "Give the text as an argument or with --file, not both",
   "core.input.not-text": "The input is not UTF-8 text; pass --file for binary data",
   "core.input.too-large": "The input is larger than {limit}",
+
+  "core.mcp.root-missing": "No folder at {path} to serve as a root",
+  "core.mcp.outside-roots": "Refused: {path} is outside the folders this server may reach: {roots}",
   "core.clipboard.windows.language-mode": "PowerShell runs in {mode} here, where the clipboard cmdlets cannot run",
   "core.clipboard.no-display":
     "This session has no display, so it has no clipboard: neither WAYLAND_DISPLAY nor DISPLAY is set",
