@@ -72,6 +72,7 @@ test("unset removes a setting, and changes nothing when it was not set", async (
 test("list shows every known setting, set or not, and marks settings kiriya does not read", async () => {
   const result = expectDone(await new ListSettings(new MemoryConfigStore(FILE, { old: "x" })).execute());
   assert.deepEqual(result.data.settings, [
+    { key: "mcp.allowDestroy", value: null, known: true },
     { key: "mcp.allowWrite", value: null, known: true },
     { key: "old", value: "x", known: false },
     { key: "plugins", value: null, known: true },

@@ -14,6 +14,13 @@ export interface ConfigKey {
 /** Every setting kiriya reads. Adding a setting means adding an entry here. */
 export const CONFIG_KEYS: readonly ConfigKey[] = [
   {
+    key: "mcp.allowDestroy",
+    type: "string",
+    description: "config.key.mcp-allow-destroy",
+    example: "true",
+    choices: ["true", "false"],
+  },
+  {
     key: "mcp.allowWrite",
     type: "string",
     description: "config.key.mcp-allow-write",
