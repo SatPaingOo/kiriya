@@ -59,12 +59,12 @@ test("a file is encoded byte for byte, and decoded bytes that are not text are r
   const base64 = new ConvertCodec("base64", sources());
   assert.equal((await run(base64, raw([], { file: "blob.bin" }), folder)).data.output, "/wAK");
   await assert.rejects(run(base64, raw(["/wAK"], { decode: true })), OperationFailedError);
-  await assert.rejects(run(base64, raw(["x"], { file: "blob.bin" }), folder), isKey("convert.input-twice"));
+  await assert.rejects(run(base64, raw(["x"], { file: "blob.bin" }), folder), isKey("core.input.twice"));
   await assert.rejects(run(base64, raw([], { file: "missing.bin" }), folder), NotFoundError);
 });
 
 test("with no argument and nothing piped, the command asks for input", async () => {
-  await assert.rejects(run(new ConvertCodec("hex", sources()), raw([])), isKey("convert.input-missing"));
+  await assert.rejects(run(new ConvertCodec("hex", sources()), raw([])), isKey("core.input.missing"));
 });
 
 test("hex and url encode and decode, and refuse what they cannot decode", async () => {
