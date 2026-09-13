@@ -23,8 +23,10 @@ Windows, Linux and macOS.**
 | Also serves | AI agents, through MCP, under the same safety rules a person gets |
 | Is not | A shell, a package manager, a cloud CLI, a GUI, or a security testing kit |
 
-**Closest existing tools** ([RESEARCH.md](./RESEARCH.md) section 6): Nushell has
-many of these built-ins but means switching shells; DevToys and IT-Tools are
+**Closest existing tools** ([RESEARCH.md](./RESEARCH.md) section 6): Bun Shell and
+Deno's task shell give the same commands on every OS, but only inside scripts for
+their own runtimes; PowerShell 7 runs everywhere but is a language of its own;
+Nushell has many of these built-ins but means switching shells; DevToys and IT-Tools are
 converters with a GUI; uutils and busybox-w32 port Unix commands without previews,
 trash or JSON; DesktopCommanderMCP gives agents terminal and file tools. kiriya is
 one dependency-free CLI for the shell a developer already uses, with the same
@@ -50,6 +52,12 @@ safety model for people and agents.
 The prototype proves this for the file system on Windows. Phase 0 answers it for
 the operations that need OS programs, on all three systems.
 
+Research already shows where it is weakest ([RESEARCH.md](./RESEARCH.md) section 7):
+an AppLocker or WDAC policy blocks the Windows trash path; PowerShell costs about a
+second per call; a plain move into the macOS trash loses Put Back; and CI cannot
+reproduce macOS permission failures or offer a Linux clipboard. Small signed native
+helpers would remove most of these, at the cost of shipping binaries (section 10).
+
 ---
 
 ## 4. Product rules
@@ -64,9 +72,11 @@ the operations that need OS programs, on all three systems.
 4. **One command, three surfaces.** The same use case runs from the CLI, from MCP
    and from a plugin, with the same safety level.
 5. **No shell, no hidden network, no telemetry.**
-6. **Translatable from the first release.** Every message is a key. English and
-   Myanmar ship first: a second locale in a complex script proves that text width,
-   wrapping and encoding work for every language that follows.
+6. **English first, translatable later.** Every user-facing message is a key in one
+   English locale file from the first release, so adding a language later needs no
+   code change. Other locales, Myanmar first, come after the first release;
+   terminals do not yet shape complex scripts such as Myanmar correctly
+   ([RESEARCH.md](./RESEARCH.md) section 2).
 7. **Explicit over inferred.** Plugins load only when configured, never by scanning
    `node_modules`. A capability a machine lacks is reported, never guessed.
 
@@ -212,7 +222,7 @@ kiriya/
 │   ├── main.ts                        # composition root
 │   ├── config/                        # data, not code: module list, clean rules, protected paths, limits
 │   ├── i18n/
-│   │   └── locales/                   # en.json, my.json
+│   │   └── locales/                   # en.json; more locales after the first release
 │   ├── core/                          # the kernel every module uses
 │   │   ├── domain/
 │   │   │   ├── command.ts             # CommandSpec, Command, CommandResult, SafetyLevel
@@ -345,14 +355,27 @@ an elicitation request to the user.
 Three operating systems mean three real implementations from the start, so these
 ports are not premature abstractions.
 
+Revised after the adapter research in [RESEARCH.md](./RESEARCH.md) sections 7 and 9.
+
 | Port | Windows | Linux | macOS |
 |---|---|---|---|
-| `Trash` | Shell `SHFileOperation` through PowerShell, fixed drives only | `gio trash`, otherwise the freedesktop.org trash layout | `~/.Trash` |
-| `Clipboard` | PowerShell `Get-Clipboard` and `Set-Clipboard` | `wl-copy`, otherwise `xclip`, otherwise `xsel` | `pbcopy` and `pbpaste` |
-| `ProcessTable` | PowerShell `Get-CimInstance Win32_Process` | `/proc` | `ps` |
-| `PortTable` | PowerShell `Get-NetTCPConnection` | `/proc/net/tcp`, otherwise `ss` | `lsof -iTCP -sTCP:LISTEN` |
+| `Trash` | PowerShell checks its language mode first. In full language mode, `SHFileOperation` with `FOF_ALLOWUNDO` through Add-Type, fixed drives only, with `fAnyOperationsAborted` checked. Under Constrained Language Mode: `CapabilityUnavailableError`, suggesting `--permanent`. | The freedesktop.org trash specification implemented with `node:fs`: the home trash, or `$topdir/.Trash-$uid` on other mounts. `gio` is not needed. | `/usr/bin/trash` on macOS 15 and later; otherwise a move into `~/.Trash`, warning that Finder's Put Back will not work |
+| `Clipboard` | `Set-Clipboard` and `Get-Clipboard` through PowerShell; never `clip.exe`, which garbles UTF-8 | `wl-copy`, then `xclip`, then `xsel`; on a machine without a display, `CapabilityUnavailableError` | `pbcopy` and `pbpaste` |
+| `ProcessTable` | `tasklist /fo csv` | `/proc` read with `node:fs`, no program started | `ps` |
+| `PortTable` | `netstat -ano` | `/proc/net/tcp` and `/proc/net/tcp6` read with `node:fs`, owners from `/proc/<pid>/fd` | `lsof -nP -iTCP -sTCP:LISTEN` |
 | `Opener` | `explorer.exe` | `xdg-open` | `open` |
 | `StandardPaths` | Windows known folders | XDG base directories | `~/Library` folders |
+
+Consequences the design accepts:
+
+- **Latency.** Starting PowerShell took 0.9–1.2 s on the measured machine, and
+  `tasklist` about 0.7 s. A command calls PowerShell at most once per run and shows
+  progress when it does.
+- **Other users' processes.** Without elevation, Linux and macOS do not reveal who
+  owns another user's port. kiriya reports "owned by another user" and never elevates.
+- **CI blind spots.** GitHub's macOS image pre-grants Full Disk Access, and Linux
+  runners have no clipboard without a virtual display. The macOS trash and every
+  clipboard path get a manual test on a real machine before each release.
 
 Every adapter passes the same contract suite for its port. An adapter that cannot
 work on a machine raises `CapabilityUnavailableError` naming what is missing, for
@@ -400,11 +423,12 @@ when phase 4 starts.
 | Tools | One tool per command. `name` is the command id (`files.delete`, a valid tool name); `inputSchema` and `outputSchema` come from the command's schemas; `structuredContent` carries the JSON output and a text block repeats it. Tools are listed in a stable order. |
 | Annotations | All four are always set, because the defaults assume the worst. `read`: `readOnlyHint: true`. `write`: `readOnlyHint: false`, `destructiveHint: false`. `destroy`: `readOnlyHint: false`, `destructiveHint: true`. `idempotentHint` comes from the spec, `openWorldHint` from `usesNetwork`. |
 | Exposure | `read` tools by default. `write` tools only when the user's config sets `mcp.allowWrite`. `destroy` tools only with `mcp.allowDestroy`, and each call still needs an elicitation the user accepts. Commands with `runsUserCommands` are never exposed. |
-| Confirmation | Elicitation in form mode with one string field for the typed value: the count or name, never a secret. Decline and cancel both end the call with nothing changed. A client without elicitation cannot run a `destroy` tool. |
+| Confirmation | Elicitation in form mode with one string field for the typed value: the count or name, never a secret. Decline and cancel both end the call with nothing changed. A client without elicitation cannot run a `destroy` tool, and such tools are left out of the list when the request's client capabilities show no elicitation. Several popular clients lacked elicitation on 2026-09-13 ([RESEARCH.md](./RESEARCH.md) section 3). |
 | Scope | The server starts with one or more `--root` folders, by default the folder it starts in. Every path argument is resolved and refused when outside a root. Client roots are not used, since the protocol deprecates them. |
 | Errors | A failed command returns `isError: true` with the typed error's message, so the model can correct its call. An unknown tool is a JSON-RPC error. |
 | Output limits | Large results are truncated with the number of omitted items. Secret values stay masked exactly as in the CLI. |
-| Trust | Annotations are hints, and hosts still ask users before tool calls. kiriya's own refusals never depend on the client behaving well. |
+| Trust | Annotations are untrusted hints to clients, and the specification only recommends that hosts keep a human in the loop. kiriya's own refusals never depend on the client behaving well. |
+| Publishing | When the repository is public: `mcpName` in `package.json`, a `server.json` in the MCP Registry, and an MCPB bundle for one-click install in Claude's desktop app |
 
 ### 6.9 Split triggers
 
@@ -427,7 +451,7 @@ These rules are complete in themselves. They become `CONTRIBUTING.md` and
 
 | Rule | Detail |
 |---|---|
-| Runtime | Node.js >= 22, pinned in `.nvmrc` and `engines`. On 2026-09-13 the Node.js releases page lists 26 as Current and 24 and 22 as LTS, so 20 is not supported ([RESEARCH.md](./RESEARCH.md) section 4). Release jobs use Node 22.14.0 or later, which trusted publishing needs. |
+| Runtime | Node.js >= 22.13, pinned in `.nvmrc` and `engines`. Node 20 reached end of life on 2026-04-30; 22 is supported until 2027-04-30 and 24 until 2028-04-30; 26 becomes LTS on 2026-10-28 ([RESEARCH.md](./RESEARCH.md) section 4). The minimum moves to 24 before 22 reaches end of life. 22.13 is where `util.styleText` became stable. Release jobs use Node 22.14.0 or later with npm 11.5.1 or later, which trusted publishing needs. |
 | Language | TypeScript with `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes` and `noImplicitOverride` |
 | Modules | ESM only (`"type": "module"`); built-ins through the `node:` prefix |
 | Package manager | npm; `package-lock.json` committed |
@@ -524,18 +548,21 @@ Based on the guidelines in [RESEARCH.md](./RESEARCH.md) section 2.
 | Version | `-V`, `--version` and `kiriya version` |
 | Flags over positions | Positional arguments only for the obvious subject (`kiriya port kill 3000`); everything else is a named flag. Standard names: `--dry-run`, `--force`, `--quiet`, `--json`, `--no-input`. Secrets are never accepted as flag values. |
 | Streams | Data on stdout; messages, progress and prompts on stderr. `-` means stdin or stdout where a file is expected. |
-| Formats | Text on a terminal; `--json` on every command; `--plain` for one item per line; JSON Lines for commands that stream (`watch`, `files tail`). Tables have no borders. |
-| Colour | Off when stdout is not a terminal, when `NO_COLOR` is non-empty, when `TERM=dumb`, or with `--no-color`; `FORCE_COLOR` turns it on |
+| Formats | Text on a terminal; `--json` on every command; `--plain` for plain tabular text suited to `grep` and `awk`; JSON Lines for commands that stream (`watch`, `files tail`). Tables have no borders. |
+| Colour | Through Node's `util.styleText`, which turns colour off for a stream that is not a terminal, for `NO_COLOR` and `NODE_DISABLE_COLORS`, and on for `FORCE_COLOR`; kiriya adds `KIRIYA_NO_COLOR`, `TERM=dumb` and `--no-color`, and decides for stdout and stderr separately |
 | Prompts | Only when stdin is a terminal. `--no-input` never prompts and fails naming the flag that was needed. Ctrl+C always stops the command. |
-| Responsiveness | Something is printed within 100 ms; work longer than a second shows progress on stderr |
+| Responsiveness | Each run loads only the invoked command's module: the prototype, loading all 80 modules, took about 230 ms against about 70–110 ms for Node alone. Work that may take longer than a second shows progress on stderr first. Start-up time of `kiriya --version` is measured in CI and may not grow by more than 20% between releases. |
 | Precedence | Flags, then environment variables, then the user config file, then defaults |
 | Stability | Each command's JSON shape is a public contract, covered by golden tests. Removing or renaming a field is a breaking change. |
 
 ### 7.9 i18n and configuration
 
-- Every user-facing message is a key present in every locale file; a test fails on
-  a missing key. JSON output is never translated.
-- Locale is chosen from `--lang`, then `KIRIYA_LANG`, then the OS locale, then `en`.
+- Every user-facing message is a key in `src/i18n/locales/en.json`; a test fails when
+  any locale file lacks a key. JSON output is never translated.
+- Only English ships at first. A later locale is chosen with `--lang` or
+  `KIRIYA_LANG`, never from the OS locale automatically, because terminals do not
+  yet shape complex scripts such as Myanmar correctly
+  ([RESEARCH.md](./RESEARCH.md) section 2).
 - Configuration is one JSON file per user. It never holds a secret, is validated on
   load with an error naming the file and field, and is written atomically.
 - File locations, following the XDG Base Directory specification on Linux and the
@@ -546,7 +573,7 @@ Based on the guidelines in [RESEARCH.md](./RESEARCH.md) section 2.
   | Config | `%APPDATA%\kiriya\config.json` | `$XDG_CONFIG_HOME/kiriya/config.json`, default `~/.config` | `~/Library/Application Support/kiriya/config.json` |
   | Cache | `%LOCALAPPDATA%\kiriya\Cache` | `$XDG_CACHE_HOME/kiriya`, default `~/.cache` | `~/Library/Caches/kiriya` |
 
-  A relative XDG value is ignored, as the specification requires. On macOS kiriya
+  A relative XDG value is ignored, as the specification recommends. On macOS kiriya
   uses Application Support rather than Preferences, which holds system-managed
   property lists. `KIRIYA_CONFIG` overrides the config file location.
 
@@ -594,6 +621,10 @@ Each invariant has a test that runs on every OS.
 - Deterministic: inject the clock and the random source; no dependence on test order.
 - A flaky test is fixed or deleted the day it is found.
 - **CI matrix:** Windows, Linux and macOS, each on Node 22, Node 24 and the Current release.
+  While the repository is private, free CI is 2,000 minutes a month and macOS
+  minutes cost about ten times Linux ones ([RESEARCH.md](./RESEARCH.md) section 4),
+  so pull requests run Linux and Windows on Node 22 only, and the full matrix runs
+  on `main` and before a release. Public repositories run the full matrix everywhere at no cost.
 
 ### 7.13 Comments and documentation
 
@@ -629,7 +660,7 @@ A change is done when all of these hold:
 
 | Decision | Chosen | Rejected, and why |
 |---|---|---|
-| Repository | `github.com/SatPaingOo/kiriya`, private during development; public with the first npm release | Designing in private keeps unfinished command contracts from being depended on. An organisation account can follow when contributors join. |
+| Repository | `github.com/SatPaingOo/kiriya`, private during development; made public just before the first npm release, because npm adds provenance only for public repositories | Designing in private keeps unfinished command contracts from being depended on. An organisation account can follow when contributors join. |
 | npm package | Not published until the maintainer judges phases 0–2 and the phase 3 work ready | A published name and version are a promise; publishing half-built commands would break that promise on the first real change |
 | Name | `kiriya` | `sayar` does not say "tool"; `bento` is buried under BentoPDF and BentoML in search; `commonkit` is long and generic. The npm name was free and no GitHub repository used it on 2026-09-13. |
 | Language | TypeScript on Node.js | Go and Rust give a single binary and faster start-up, but the prototype is TypeScript and Node.js is already installed on most developer machines. Single-file binaries remain possible, section 9 phase 5. |
@@ -641,7 +672,7 @@ A change is done when all of these hold:
 | Confirmation in scripts | `--confirm=<exact value>` | Follows clig.dev for severe actions. `--yes` stays insufficient because it does not show the caller knows what will be destroyed. |
 | Configuration scope | A user config file only | A project config file checked into a repository could make kiriya load code from a cloned repository. If one is ever added, it can never list plugins. |
 | Plugins | In-process modules listed in config | Executables named `kiriya-*` on PATH, as git does, are simple but cannot share the safety policy, JSON output or MCP exposure. |
-| Distribution | npm with trusted publishing and provenance first. Later, a kiriya Scoop bucket and Homebrew tap. winget and single-file binaries only once Single Executable Applications accept an ESM entry in an LTS Node release. | In Node 22 and 24 a single executable takes one CommonJS script and the feature is still in active development. homebrew/core and the Scoop main bucket require popularity a new tool does not have yet ([RESEARCH.md](./RESEARCH.md) section 4). |
+| Distribution | npm with trusted publishing and provenance first. Later, a kiriya Scoop bucket and a Homebrew tap that installs from npm with `depends_on "node"`, so neither needs a signed binary. Single-file binaries and winget only when Single Executable Applications accept an ESM entry in an LTS Node release (26, LTS from 2026-10-28) and signing costs nothing: SignPath Foundation for Windows if kiriya qualifies; no macOS binary while notarization needs the paid Apple Developer Program. | In Node 22 and 24 a single executable takes one CommonJS script and the feature is still in active development. Azure Artifact Signing accepts individual developers from the US and Canada only, and Apple charges US$99 a year, which breaks the free-to-build constraint. homebrew/core and the Scoop main bucket require popularity a new tool does not have yet ([RESEARCH.md](./RESEARCH.md) section 4). |
 
 ---
 
@@ -651,7 +682,7 @@ A phase is done when every acceptance criterion holds.
 
 | Phase | Work | Done when |
 |---|---|---|
-| **0 — Spike** | A throwaway repository with only `port who`, `proc find`, `clip copy` and trash, run in CI on Windows, Linux and macOS | The same tests pass on all three, or the README records which operation cannot be made reliable and why |
+| **0 — Spike** | A throwaway `spike/phase-0` branch with only port lookup, process lookup, clipboard and trash, run in CI on Windows, Linux and macOS, plus manual runs on a Mac without Full Disk Access and on Windows under Constrained Language Mode. The repository is public only while the spike's CI runs, then private again. | The same tests pass on all three; latency per operation is measured on each OS; the Put Back, UTF-8 clipboard and policy cases each have a recorded result; the native-helper question in section 10 is answered. An operation that cannot be made reliable is recorded with its reason. |
 | **1 — Core and files** | Repository, CI matrix, the core kernel, `files` and `archive` rebuilt on async ports with `--json` and message keys, contract and boundary tests, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `AGENTS.md` | Every prototype `files` and `archive` behaviour has a passing test on all three operating systems |
 | **2 — Remaining prototype modules** | `git`, `docker`, `config`, and the plugin loader with one example plugin | The prototype has no feature kiriya lacks, and the example plugin loads, runs and appears in `kiriya doctor` |
 | **3 — First release** | The v1 modules in section 5.2; `LICENSE` (MIT), `CHANGELOG.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`; then, once the maintainer judges it ready, the repository made public and the package published to npm from CI through trusted publishing with provenance | A clean machine on each OS installs kiriya from the README alone, `kiriya doctor` passes, and `npm audit signatures` verifies the package |
@@ -662,6 +693,7 @@ A phase is done when every acceptance criterion holds.
 
 | Question | Default if not answered |
 |---|---|
+| May kiriya ship small signed native helpers: a Windows executable for trash, clipboard and processes, and a macOS helper for trash with Put Back? | No. PowerShell and built-in programs, with their limits documented, until phase 0 shows those limits are unacceptable. |
 | A short alias command, such as `kiri`? | No alias until users ask for one |
 
 ---
