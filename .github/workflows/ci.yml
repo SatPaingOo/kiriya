@@ -1,0 +1,61 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      full:
+        description: Every OS on every Node.js version (macOS minutes cost about ten times Linux ones)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: lint · format · types
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run typecheck
+
+  test:
+    name: ${{ matrix.os }} · Node ${{ matrix.node }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Public, or "Run workflow" with full: every OS on every Node.js version.
+        # Private: Linux and Windows on Node 22, because private minutes are limited and macOS costs ten times more.
+        os: ${{ fromJSON((inputs.full || !github.event.repository.private) && '["ubuntu-latest","windows-latest","macos-latest"]' || '["ubuntu-latest","windows-latest"]') }}
+        node: ${{ fromJSON((inputs.full || !github.event.repository.private) && '["22","24","current"]' || '["22"]') }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    env:
+      KIRIYA_TEST_REAL_TRASH: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - run: npm ci
+      - run: npm test
