@@ -537,6 +537,20 @@ export const en = {
   "docker.clean.failed": "docker {target} prune failed: {detail}",
 
   "core.stdin.too-large": "What was piped in is larger than {limit}",
+
+  "gen.summary": "Random identifiers, passwords and tokens from the operating system's secure random source",
+  "gen.option.count": "How many to make; 1 by default",
+  "gen.count-too-large": "--count can be at most {max}",
+  "gen.out-of-range": "--{option} must be from {min} to {max}",
+  "gen.uuid.summary": "Make UUIDs: random version 4, or version 7 that sorts by creation time",
+  "gen.uuid.option.v7": "Make version 7 UUIDs, which sort by the time they were made",
+  "gen.ulid.summary": "Make ULIDs: 26 characters that sort by the time they were made",
+  "gen.password.summary": "Make passwords of letters, digits and symbols, every character equally likely",
+  "gen.password.option.length": "Characters in each password, from 8 to 256; 24 by default",
+  "gen.password.option.no-symbols": "Leave symbols out, for systems that refuse them",
+  "gen.token.summary": "Make random tokens for secrets and API keys",
+  "gen.token.option.bytes": "Random bytes in each token, from 8 to 1024; 32 by default",
+  "gen.token.option.format": "hex, base64 or base64url; base64url by default",
 } as const;
 
 export type MessageKey = keyof typeof en;
