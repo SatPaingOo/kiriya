@@ -26,6 +26,8 @@ export const openSpec: CommandSpec<OpenInput> = {
   idempotent: false,
   usesNetwork: false,
   runsUserCommands: false,
+  // A web address can carry whatever an agent puts in it to any site.
+  sensitive: true,
   input: {
     positionals: [{ name: "target", description: "open.arg.target", required: true, variadic: false, path: true }],
     options: {},

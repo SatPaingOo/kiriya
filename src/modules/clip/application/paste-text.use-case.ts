@@ -17,6 +17,8 @@ export const pasteSpec: CommandSpec<NoInput> = {
   idempotent: false,
   usesNetwork: false,
   runsUserCommands: false,
+  // The clipboard often holds a password on its way to a form.
+  sensitive: true,
   input: { positionals: [], options: {}, parse: () => ({}) },
 };
 

@@ -28,7 +28,7 @@ export const listSpec: CommandSpec<ListInput> = {
     positionals: [],
     options: {
       name: { type: "string", description: "proc.list.option.name", valueName: "<text>" },
-      full: { type: "boolean", description: "proc.list.option.full" },
+      full: { type: "boolean", description: "proc.list.option.full", sensitive: true },
     },
     parse(raw) {
       const reader = new RawReader(raw);
