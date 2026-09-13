@@ -26,6 +26,12 @@ argv ─► CliApplication ─► CommandRegistry ─► InputSchema.parse ─�
    failures on stderr, or a single JSON document on stdout with `--json`.
 6. Errors are typed. `CliApplication` maps them to exit codes in one place.
 
+`kiriya mcp` runs the same commands for AI agents. `serveMcp` reads one JSON-RPC message
+per line from stdin, and `McpServer` offers each `read` command as a tool. A call's JSON
+arguments become the raw input argv would give, `RootScope` refuses any path outside
+the server's roots, and the answer is the document `--json` prints. Typed errors become
+results with `isError: true`. [docs/mcp.md](./docs/mcp.md) describes it from a client's side.
+
 ## Layers
 
 | Layer | Holds | May import |
@@ -33,7 +39,7 @@ argv ─► CliApplication ─► CommandRegistry ─► InputSchema.parse ─�
 | `domain` | Types, pure rules, port interfaces, typed errors | `domain`, catalog types |
 | `application` | Use cases, one per command, and services built on ports | `domain`, `application`, `config` data, `node:path` |
 | `infrastructure` | Adapters, one per port | `domain`, `infrastructure`, `config` data, any `node:` module |
-| `presentation` | argv, help, text views, JSON, prompts, exit codes | `domain`, `application`, `presentation`, `node:` modules |
+| `presentation` | argv, help, text views, JSON, prompts, exit codes, the MCP server | `domain`, `application`, `presentation`, `node:` modules |
 
 The layers exist once in `src/core` and again inside each module. Three more rules:
 
@@ -54,14 +60,15 @@ src/
 ├── core/
 │   ├── domain/                   command, module, errors, message, input-schema, view, glob, names,
 │   │                             text-case, encodings, secrets, global-options, ports/, values/
-│   ├── application/              command-registry, plugin-loader, config-values, path-guard, walk, paths, safety, process-ending, text-input
+│   ├── application/              command-registry, plugin-loader, config-values, path-guard, walk, paths, safety, process-ending, text-input, root-scope
 │   ├── infrastructure/
 │   │   ├── node/                 file system and content, hasher, compression, process runner,
 │   │   │                         config file and location, plugin source, environment, clock,
-│   │   │                         random source, standard input, system info, network
+│   │   │                         random source, standard input and its closed stand-in for MCP, system info, network
 │   │   └── platform/             windows/, linux/, macos/: trash, process and port tables, clipboard, opener
 │   └── presentation/
 │       ├── cli/                  cli-application, argv, help, style, terminal-confirmation, json-output
+│       ├── mcp/                  mcp-application (stdio), mcp-server, tool-definitions, tool-results, protocol
 │       ├── i18n/                 translator
 │       ├── list-preview.ts       "… and N more" for long lists in views
 │       └── ended-processes.ts    one line per ended process, and aligned columns
@@ -84,12 +91,13 @@ src/
     └── completion/               kiriya completion <shell>, and suggest, which the scripts ask
 examples/plugins/hello/           a complete plugin in one file
 docs/plugins.md                   the plugin contract
+docs/mcp.md                       kiriya as an MCP server, from a client's side
 tests/
 ├── unit/                         pure logic and use cases with fakes: core/, files/, archive/, git/, docker/, config/, doctor/, gen/, convert/, env/, sys/, net/, port/, proc/, clip/, open/, completion/
 ├── integration/                  use cases with real adapters: a real file system, real git repositories
 ├── contract/                     one suite per port, run against its adapters
-├── e2e/                          the built CLI as a black box
-└── support/                      fakes, temporary folders, and a runner for the built CLI
+├── e2e/                          the built CLI and its MCP server as black boxes
+└── support/                      fakes, temporary folders, a runner for the built CLI, and a line client for its MCP server
 tools/                            import boundaries, package contents and release checks
 ```
 
@@ -108,16 +116,16 @@ A command is a class implementing `Command<Input, Output>` with a `CommandSpec<I
 |---|---|
 | `id` | `<module>.<verb>`, such as `files.delete`; or `<module>` alone for a module that is one command, such as `doctor` |
 | `summary` | Catalog key for help |
-| `input` | `InputSchema`: positionals, options, and `parse(raw)` into the typed input |
+| `input` | `InputSchema`: positionals, options, and `parse(raw)` into the typed input. An input that names a file or folder sets `path`, which the MCP server holds to its roots; an option only for a person at a terminal, such as `--reveal`, sets `terminalOnly` |
 | `examples` | Shown in help |
 | `safety` | `read`, `write` or `destroy`: the most the command can do with any flags |
-| `idempotent`, `usesNetwork`, `runsUserCommands` | Facts the future MCP server exposes and filters on |
+| `idempotent`, `usesNetwork`, `runsUserCommands` | Facts the MCP server turns into tool annotations; a command that runs user commands is never a tool |
 
 `execute(input, context)` receives a `CommandContext`:
 
 | Field | Meaning |
 |---|---|
-| `cwd` | The working folder; resolve every path against it |
+| `cwd` | The working folder, or the first root over MCP; resolve every path against it |
 | `confirmation` | Asks the person running the command, or refuses when nobody can be asked |
 | `passthrough` | Where the live output of a program the command runs goes, such as a docker build: the matching stream in a terminal, and stderr with `--json` so stdout stays one document |
 | `signal` | Aborts on Ctrl+C; a program started with it is stopped |
@@ -187,7 +195,7 @@ Commands that change many things preview first: `rename`, `replace`, `clean`,
 
 | Port | What it does | Adapters |
 |---|---|---|
-| `FileSystem` | Paths, folders and metadata: stat, list, create, copy, move, remove, times and permission bits | `NodeFileSystemAdapter` |
+| `FileSystem` | Paths, folders and metadata: stat, real paths, list, create, copy, move, remove, times and permission bits | `NodeFileSystemAdapter` |
 | `FileContent` | Bytes inside files: read, write, positioned reads, exclusive creation | `NodeFileContentAdapter` |
 | `Hasher` | File digests read in chunks | `NodeHasherAdapter` |
 | `Compression` | Raw deflate, as ZIP stores it, and gzip streams, as .tar.gz stores them | `NodeCompressionAdapter` |
@@ -196,10 +204,10 @@ Commands that change many things preview first: `rename`, `replace`, `clean`,
 | `ConfigStore` | The user's configuration file | `JsonConfigStore` |
 | `PluginSource` | Find a plugin named in the configuration and import it | `NodePluginSource` |
 | `PluginInventory` | The plugins this run loaded, and the ones it could not | `PluginLoader` in core application |
-| `Confirmation` | Questions to the person running the command | `TerminalConfirmation` in presentation |
+| `Confirmation` | Questions to the person running the command | `TerminalConfirmation` in presentation; `DecliningConfirmation` over MCP |
 | `Environment`, `Clock` | The OS, the home folder, variables; the time | `NodeEnvironmentAdapter`, `SystemClockAdapter` |
 | `RandomSource` | Cryptographically secure random bytes; tests inject predictable ones | `NodeRandomSource` |
-| `StandardInput` | What is piped in, read to the end with a size limit, and whether a person is typing instead | `NodeStandardInput` |
+| `StandardInput` | What is piped in, read to the end with a size limit, and whether a person is typing instead | `NodeStandardInput`; `ClosedStandardInput` over MCP, where stdin carries the protocol |
 | `SystemInfo` | The OS name and kernel, processor, memory, uptime, host name, locale and time zone | `NodeSystemInfoAdapter`: os-release on Linux, `sw_vers` on macOS |
 | `Network` | This machine's addresses, a TCP connection out, the system resolver and DNS queries | `NodeNetworkAdapter` |
 | `ProcessTable` | Every process, with parent ids and command lines when asked; ending processes; the ids never to end | `WindowsProcessTableAdapter` (`tasklist`, or `Get-CimInstance` for details), `LinuxProcessTableAdapter` (`/proc`), `MacosProcessTableAdapter` (`ps`) |

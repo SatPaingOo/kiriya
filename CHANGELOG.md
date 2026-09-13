@@ -36,3 +36,6 @@ Nothing is published yet. The first release, 0.1.0, will contain everything belo
 - `clip`: copy and paste, with Unicode intact.
 - `open`: a file, folder or web address, never running a program.
 - `completion`: tab completion for bash, zsh, fish and PowerShell.
+- `mcp`: `kiriya mcp` serves every command that changes nothing to AI agents as MCP
+  tools over stdio, for the 2026-07-28 protocol and for clients that still open with
+  `initialize`. Paths must stay inside the `--root` folders, symlinks included.

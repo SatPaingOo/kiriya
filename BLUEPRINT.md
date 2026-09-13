@@ -4,7 +4,8 @@ The design document for kiriya: what it is, which tools it holds, how the code i
 structured, the standards every contribution follows, and the order of work.
 
 **State on 2026-09-14:** phases 1 and 2 are done. Phase 3 (section 9) has every v1
-module and the release files; publishing to npm waits for the maintainer. The
+module and the release files; publishing to npm waits for the maintainer. Phase 4
+has begun: `kiriya mcp` serves the `read` commands as MCP tools. The
 repository stays private during development and becomes public together with the
 first npm release.
 
@@ -428,20 +429,24 @@ config file:
 ### 6.8 MCP
 
 `kiriya mcp` runs an MCP server over stdio. The protocol facts come from
-[RESEARCH.md](./RESEARCH.md) section 3 and are re-checked against the specification
-when phase 4 starts.
+[RESEARCH.md](./RESEARCH.md) section 3, and were re-checked against the 2026-07-28
+specification and its schema on 2026-09-14, when phase 4 started. The re-check found
+what section 3 had not recorded: every result carries `resultType`, tool lists carry
+`ttlMs` and `cacheScope`, an unsupported version is error -32022 naming the supported
+ones, an unknown tool is error -32602, and input that fails validation is a tool error
+rather than a protocol error. [docs/mcp.md](./docs/mcp.md) describes what is built.
 
 | Topic | Design |
 |---|---|
-| Protocol | The 2026-07-28 specification, including `server/discover`. The earlier `initialize` handshake is answered too, so clients that have not moved yet still work. |
-| Transport | stdio only. Newline-delimited JSON-RPC on stdout, logs on stderr, exit when stdin closes; `notifications/cancelled` aborts the command's `AbortSignal`. |
-| Tools | One tool per command. `name` is the command id (`files.delete`, a valid tool name); `inputSchema` and `outputSchema` come from the command's schemas; `structuredContent` carries the JSON output and a text block repeats it. Tools are listed in a stable order. |
+| Protocol | The 2026-07-28 specification, including `server/discover`. The earlier `initialize` handshake is answered too, for 2025-11-25 back to 2024-11-05, so clients that have not moved yet still work. |
+| Transport | stdio only. Newline-delimited JSON-RPC on stdout, logs on stderr, exit when stdin closes; `notifications/cancelled` aborts the command's `AbortSignal`, and the cancelled request gets no answer. stdin carries the protocol, so no command reads it. |
+| Tools | One tool per command. `name` is the command id (`files.delete`, a valid tool name). `inputSchema` has one property per argument and option of the command's input schema; `outputSchema` describes the JSON document every command prints, since commands declare no output schema of their own; `structuredContent` carries that document and a text block repeats it. Tools are listed in code-point order. Inputs that name paths are marked `path`, and options only for a terminal are marked `terminalOnly` and left out. |
 | Annotations | All four are always set, because the defaults assume the worst. `read`: `readOnlyHint: true`. `write`: `readOnlyHint: false`, `destructiveHint: false`. `destroy`: `readOnlyHint: false`, `destructiveHint: true`. `idempotentHint` comes from the spec, `openWorldHint` from `usesNetwork`. |
 | Exposure | `read` tools by default. `write` tools only when the user's config sets `mcp.allowWrite`. `destroy` tools only with `mcp.allowDestroy`, and each call still needs an elicitation the user accepts. Commands with `runsUserCommands` are never exposed. |
 | Confirmation | Elicitation in form mode with one string field for the typed value: the count or name, never a secret. Decline and cancel both end the call with nothing changed. A client without elicitation cannot run a `destroy` tool, and such tools are left out of the list when the request's client capabilities show no elicitation. Several popular clients lacked elicitation on 2026-09-13 ([RESEARCH.md](./RESEARCH.md) section 3). |
-| Scope | The server starts with one or more `--root` folders, by default the folder it starts in. Every path argument is resolved and refused when outside a root. Client roots are not used, since the protocol deprecates them. |
-| Errors | A failed command returns `isError: true` with the typed error's message, so the model can correct its call. An unknown tool is a JSON-RPC error. |
-| Output limits | Large results are truncated with the number of omitted items. Secret values stay masked exactly as in the CLI. |
+| Scope | The server starts with one or more `--root` folders, by default the folder it starts in; relative paths start at the first. Every `path` value, and the folder a glob starts in, must lie under a root both as written and with symlinks followed, and a link that leads nowhere is refused. Client roots are not used, since the protocol deprecates them. |
+| Errors | A failed command, a refused path and a bad argument return `isError: true` with the typed error, so the model can correct its call. An unknown tool, a request without a version and malformed JSON-RPC are protocol errors. |
+| Output limits | Lists keep their first 200 items and a result stays under about 40,000 characters; `truncated` names each cut and how much it left out. Secret values stay masked as in the CLI, and `env show --reveal` is not offered. |
 | Trust | Annotations are untrusted hints to clients, and the specification only recommends that hosts keep a human in the loop. kiriya's own refusals never depend on the client behaving well. |
 | Publishing | When the repository is public: `mcpName` in `package.json`, a `server.json` in the MCP Registry, and an MCPB bundle for one-click install in Claude's desktop app |
 
@@ -536,10 +541,10 @@ OS failure into one of them before it crosses inward. Presentation maps errors o
 |---|---|---|
 | Done, with or without warnings | 0 | Result |
 | Some operations failed | 1 | Result with `isError: true` |
-| `UsageError`: bad flag or value | 2 | Invalid parameters |
+| `UsageError`: bad flag or value | 2 | Result with `isError: true`, since the specification treats input that fails validation as a tool error |
 | `RefusedError`: protected path, or confirmation declined or impossible | 1 | Result with `isError: true` and the reason |
 | `CapabilityUnavailableError` | 1 | Result with `isError: true` naming what is missing |
-| Interrupted | 130 | Cancelled |
+| Interrupted | 130 | No answer: the client cancelled the request |
 
 No stack trace reaches a user unless `--debug` is set. A new exit code, if one is
 ever needed, uses the range 64–113: shells reserve 126, 127, 128 plus a signal
@@ -704,7 +709,7 @@ A phase is done when every acceptance criterion holds.
 | **1 — Core and files** | Repository, CI matrix, the core kernel, `files` and `archive` rebuilt on async ports with `--json` and message keys, contract and boundary tests, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `AGENTS.md` | Every prototype `files` and `archive` behaviour has a passing test on all three operating systems. **Done 2026-09-13:** CI green on Windows, Linux and macOS with Node 22, 24 and the current release. |
 | **2 — Remaining prototype modules** | `git`, `docker`, `config`, and the plugin loader with one example plugin | The prototype has no feature kiriya lacks, and the example plugin loads, runs and appears in `kiriya doctor`. **Done 2026-09-13:** CI green on Windows, Linux and macOS with Node 22, 24 and the current release. |
 | **3 — First release** | The v1 modules in section 5.2; `LICENSE` (MIT), `CHANGELOG.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`; then, once the maintainer judges it ready, the repository made public and the package published to npm from CI through trusted publishing with provenance | A clean machine on each OS installs kiriya from the README alone, `kiriya doctor` passes, and `npm audit signatures` verifies the package. **In progress 2026-09-14:** every v1 module, `LICENSE`, `CHANGELOG.md`, `SECURITY.md` and `CODE_OF_CONDUCT.md` are done, with CI green on all three operating systems; the npm name `kiriya` and the `@kiriya` scope were still free on 2026-09-13. The release workflow and its checks are ready ([docs/releasing.md](./docs/releasing.md)); publishing waits for the maintainer. |
-| **4 — AI** | `mcp` per section 6.8: `read` tools, then `write` tools behind `mcp.allowWrite`, then `destroy` tools behind `mcp.allowDestroy` and elicitation | A client built with the official SDK lists every tool with correct annotations, runs a `read` tool, is refused a path outside the roots, and cannot run a `destroy` tool without accepting an elicitation |
+| **4 — AI** | `mcp` per section 6.8: `read` tools, then `write` tools behind `mcp.allowWrite`, then `destroy` tools behind `mcp.allowDestroy` and elicitation | A client built with the official SDK lists every tool with correct annotations, runs a `read` tool, is refused a path outside the roots, and cannot run a `destroy` tool without accepting an elicitation. **In progress 2026-09-14:** `read` tools over both protocol versions, roots checked through symlinks, cancellation and output limits, tested end to end with a client written for the tests. `write` and `destroy` tools, and the test with the official SDK client, remain. |
 | **5 — Growth** | The v2 list and the research candidates; a kiriya Scoop bucket and Homebrew tap; winget and single-file binaries when section 8's condition holds | Users other than the maintainers report issues and depend on releases |
 
 ## 10. Open questions
