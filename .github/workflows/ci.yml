@@ -35,6 +35,11 @@ jobs:
       - run: npm run lint
       - run: npm run format:check
       - run: npm run typecheck
+      - run: npm run build
+      - name: Check what the npm package would contain
+        run: |
+          npm pack --dry-run --json > pack.json
+          node dist/tools/check-package.js pack.json
 
   test:
     name: ${{ matrix.os }} · Node ${{ matrix.node }}

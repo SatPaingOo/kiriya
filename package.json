@@ -27,7 +27,9 @@
     "kiriya": "dist/src/main.js"
   },
   "files": [
-    "dist/src"
+    "dist/src",
+    "!dist/src/**/*.map",
+    "CHANGELOG.md"
   ],
   "engines": {
     "node": ">=22.13"
