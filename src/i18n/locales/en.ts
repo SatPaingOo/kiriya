@@ -759,16 +759,21 @@ export const en = {
   "core.mcp.summary": "Serve kiriya's commands to AI agents over the Model Context Protocol, on stdin and stdout",
   "core.mcp.option.root": "A folder the agent may reach, repeated for more; the current folder when left out",
   "core.mcp.help-details":
-    "Commands that change nothing become tools, and with kiriya config set mcp.allowWrite true, so do commands that change files. Every path must stay inside a root, and relative paths start at the first root. docs/mcp.md shows how to add kiriya to an MCP client.",
+    "Commands that change nothing become tools. With kiriya config set mcp.allowWrite true, so do commands that change files, and with mcp.allowDestroy true, commands whose work cannot be undone, which ask you first. Every path must stay inside a root, and relative paths start at the first root. docs/mcp.md shows how to add kiriya to an MCP client.",
   "core.help.mcp-hint": "Run {command} to serve these commands to AI agents over MCP.",
   "core.mcp.instructions":
     "kiriya's developer tools, which behave the same on Windows, Linux and macOS. {tools} Relative paths start at {start}; paths outside {roots} are refused.",
   "core.mcp.instructions.read-only": "Every tool here only reads.",
   "core.mcp.instructions.write": "Tools may change files inside the roots; work that cannot be undone is refused.",
+  "core.mcp.instructions.destroy":
+    "Tools may change things inside the roots, and before any work that cannot be undone the user is asked through the client.",
+  "core.mcp.confirm.type": "Type {expected} to go ahead.",
+  "core.mcp.confirm.field": "Confirmation",
   "core.mcp.root-missing": "No folder at {path} to serve as a root",
   "core.mcp.outside-roots": "Refused: {path} is outside the folders this server may reach: {roots}",
   "core.mcp.guarded": "Refused: {path} would reach {file}, kiriya's configuration file, which only a person may change",
-  "core.mcp.cannot-confirm": "Refused: this cannot be undone, and nobody can confirm it over MCP yet; nothing changed",
+  "core.mcp.cannot-confirm":
+    "Refused: this cannot be undone, and nobody can be asked to confirm it here; that needs kiriya config set mcp.allowDestroy true and a client that supports elicitation. Nothing changed",
   "core.mcp.config-unreadable":
     "kiriya mcp: the configuration file cannot be read, so only tools that change nothing are offered: {detail}",
   "core.mcp.tool-left-out": "kiriya mcp: {tool} is left out: {detail}",
@@ -787,6 +792,9 @@ export const en = {
   "core.mcp.error.unknown-cursor": "Unknown cursor: the tool list has a single page",
   "core.mcp.error.no-tool-name": "params.name must name a tool",
   "core.mcp.error.unknown-tool": "Unknown tool: {name}",
+  "core.mcp.error.needs-elicitation":
+    "{name} can do work that cannot be undone, so it needs a client that supports elicitation in form mode",
+  "core.mcp.error.bad-request-state": "requestState is not one this server issued for this call, or it has expired",
   "core.clipboard.windows.language-mode": "PowerShell runs in {mode} here, where the clipboard cmdlets cannot run",
   "core.clipboard.no-display":
     "This session has no display, so it has no clipboard: neither WAYLAND_DISPLAY nor DISPLAY is set",
