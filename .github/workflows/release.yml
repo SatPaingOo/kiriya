@@ -1,0 +1,52 @@
+name: release
+
+# Publishes kiriya to npm when a GitHub release is published. It uses npm trusted
+# publishing (OIDC), so no npm token is stored anywhere, and npm adds provenance
+# because the repository and the package are public. docs/releasing.md has the steps.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: publish to npm
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # The trusted publisher on npmjs.com names this environment, which can also require an approval.
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # No dependency cache in a publishing job, so nothing cached by another workflow reaches the package.
+      - uses: actions/setup-node@v4
+        with:
+          # Trusted publishing needs Node.js 22.14.0 or later and npm 11.5.1 or later.
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - run: npm install --global npm@^11.5.1
+      - run: npm ci
+      - run: npm test
+
+      - name: Check the tag, the version, the changelog and the package contents
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          node dist/tools/check-release.js
+          npm pack --dry-run --json > pack.json
+          node dist/tools/check-package.js pack.json
+
+      - run: npm publish --provenance --access public
