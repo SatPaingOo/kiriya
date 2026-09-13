@@ -74,7 +74,12 @@ export const unzipSpec: CommandSpec<UnzipInput> = {
       to: { type: "string", description: "archive.unzip.option.to", valueName: "<folder>", path: true },
       list: { type: "boolean", description: "archive.unzip.option.list" },
       overwrite: { type: "boolean", description: "archive.unzip.option.overwrite" },
-      confirm: { type: "string", description: "archive.unzip.option.confirm", valueName: "<count>" },
+      confirm: {
+        type: "string",
+        description: "archive.unzip.option.confirm",
+        valueName: "<count>",
+        terminalOnly: true,
+      },
     },
     parse(raw) {
       const reader = new RawReader(raw);

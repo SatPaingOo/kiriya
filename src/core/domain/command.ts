@@ -23,6 +23,11 @@ export interface CommandSpec<Input> {
   readonly usesNetwork: boolean;
   /** Runs a program the user names; never exposed over MCP. */
   readonly runsUserCommands: boolean;
+  /**
+   * Only for a person at a terminal and never an MCP tool, such as `config set`, through
+   * which an agent could give itself more than the user did.
+   */
+  readonly terminalOnly?: boolean;
 }
 
 export interface CommandContext {

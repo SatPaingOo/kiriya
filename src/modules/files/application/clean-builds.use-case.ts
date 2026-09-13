@@ -59,7 +59,7 @@ export const cleanSpec: CommandSpec<CleanInput> = {
     options: {
       depth: { type: "string", description: "files.clean.option.depth", valueName: "<n>" },
       apply: { type: "boolean", description: "files.clean.option.apply" },
-      confirm: { type: "string", description: "files.clean.option.confirm", valueName: "<count>" },
+      confirm: { type: "string", description: "files.clean.option.confirm", valueName: "<count>", terminalOnly: true },
     },
     parse(raw) {
       const reader = new RawReader(raw);

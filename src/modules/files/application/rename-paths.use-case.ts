@@ -65,7 +65,7 @@ export const renameSpec: CommandSpec<RenameInput> = {
       recursive: { type: "boolean", description: "files.rename.option.recursive" },
       only: { type: "string", description: "files.rename.option.only", valueName: "<files|dirs>" },
       apply: { type: "boolean", description: "files.rename.option.apply" },
-      yes: { type: "boolean", description: "files.rename.option.yes", short: "y" },
+      yes: { type: "boolean", description: "files.rename.option.yes", short: "y", terminalOnly: true },
     },
     parse(raw): RenameInput {
       const reader = new RawReader(raw);

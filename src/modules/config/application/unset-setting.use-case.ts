@@ -15,6 +15,8 @@ export const unsetSpec: CommandSpec<KeyInput> = {
   examples: ["kiriya config unset plugins"],
   safety: "write",
   ...CONFIG_COMMAND,
+  // Over MCP an agent could take back a limit the user set.
+  terminalOnly: true,
   input: keyInput,
 };
 
