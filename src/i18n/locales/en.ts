@@ -338,7 +338,8 @@ export const en = {
   "files.size.more": "… and {count} more folders",
   "files.size.loose-files": "(files)",
 
-  "archive.summary": "ZIP archives that every OS opens, with no tar, 7-Zip or unzip needed",
+  "archive.summary":
+    "ZIP and tar.gz archives, made and opened the same way on every OS with no zip, tar or 7-Zip installed",
   "archive.read.not-a-zip": "Not a zip file: {path}",
   "archive.read.zip64": "{path} uses ZIP64, which is not supported",
   "archive.read.damaged": "The zip directory of {path} is damaged",
@@ -775,11 +776,30 @@ export const en = {
   "doctor.check.clipboard": "{backend}",
 
   "archive.same-name": "Two sources are both named {name}",
+  "archive.tar.summary": "Pack files and folders into a new .tar.gz or .tgz, or a .tar without compression",
+  "archive.tar.arg.paths": "Files, folders or globs; each folder keeps its own name inside the archive",
+  "archive.tar.option.to": "The archive to create, ending in .tar.gz, .tgz or .tar; it must not exist yet",
+  "archive.tar.option.lean": "Leave out .git, node_modules and other dependency or build folders",
+  "archive.tar.option.all": "Let globs match hidden entries and dependency folders",
+  "archive.tar.to-required": "--to must name the archive to create",
+  "archive.tar.extension": "{path} must end in .tar.gz, .tgz or .tar",
+  "archive.tar.done": "{path}: {entries} entries, {bytesIn} -> {bytesOut} ({ratio}%)",
+  "archive.tar.skipped-links": "{count} symlink(s) skipped",
   "archive.tar.not-tar": "it does not look like a tar archive",
   "archive.tar.bad-checksum": "a header's checksum does not match",
   "archive.tar.bad-header": "a header holds a value that is not a number",
   "archive.tar.meta-too-large": "an extended header is larger than 1 MB",
   "archive.tar.truncated": "it ends in the middle of an entry",
+  "archive.untar.summary":
+    "List or extract a .tar.gz, .tgz or .tar, refusing entries that would land outside the target folder",
+  "archive.untar.arg.archive": "The .tar.gz, .tgz or .tar file",
+  "archive.untar.option.to": "Where to extract; by default a folder named after the archive, next to it",
+  "archive.untar.option.list": "List the entries and extract nothing",
+  "archive.untar.option.overwrite": "Replace existing files, after a typed confirmation",
+  "archive.untar.option.confirm": "For --overwrite in scripts: the number of files replaced, as the prompt would ask",
+  "archive.untar.damaged": "{path} cannot be read: {reason}",
+  "archive.untar.changed": "{path} changed while it was being extracted",
+  "archive.untar.skipped-links": "{count} link(s) and special file(s) skipped",
 } as const;
 
 export type MessageKey = keyof typeof en;
