@@ -58,7 +58,7 @@ export const infoSpec: CommandSpec<InfoInput> = {
   usesNetwork: false,
   runsUserCommands: false,
   input: {
-    positionals: [{ name: "paths", description: "files.info.arg.paths", required: true, variadic: true }],
+    positionals: [{ name: "paths", description: "files.info.arg.paths", required: true, variadic: true, path: true }],
     options: {
       hash: { type: "string", description: "files.info.option.hash", valueName: `<${HASH_ALGORITHMS.join("|")}>` },
     },

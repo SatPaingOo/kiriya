@@ -22,7 +22,7 @@ export function readDepth(reader: RawReader): number {
 }
 
 export const folderInput: InputSchema<FolderInput> = {
-  positionals: [{ name: "folder", description: "git.arg.folder", required: false, variadic: false }],
+  positionals: [{ name: "folder", description: "git.arg.folder", required: false, variadic: false, path: true }],
   options: { depth: { type: "string", description: "git.option.depth", valueName: "<1-10>" } },
   parse(raw) {
     const reader = new RawReader(raw);

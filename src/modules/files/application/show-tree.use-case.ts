@@ -40,7 +40,7 @@ export const treeSpec: CommandSpec<TreeInput> = {
   usesNetwork: false,
   runsUserCommands: false,
   input: {
-    positionals: [{ name: "path", description: "files.tree.arg.path", required: false, variadic: false }],
+    positionals: [{ name: "path", description: "files.tree.arg.path", required: false, variadic: false, path: true }],
     options: {
       depth: { type: "string", description: "files.tree.option.depth", valueName: "<n>" },
       all: { type: "boolean", description: "files.tree.option.all" },

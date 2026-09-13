@@ -45,7 +45,7 @@ export const hashSpec: CommandSpec<HashInput> = {
   usesNetwork: false,
   runsUserCommands: false,
   input: {
-    positionals: [{ name: "paths", description: "files.hash.arg.paths", required: true, variadic: true }],
+    positionals: [{ name: "paths", description: "files.hash.arg.paths", required: true, variadic: true, path: true }],
     options: {
       algo: { type: "string", description: "files.hash.option.algo", valueName: `<${HASH_ALGORITHMS.join("|")}>` },
       check: { type: "string", description: "files.hash.option.check", valueName: "<hex>" },

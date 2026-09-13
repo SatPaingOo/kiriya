@@ -58,7 +58,9 @@ export const dupesSpec: CommandSpec<DupesInput> = {
   usesNetwork: false,
   runsUserCommands: false,
   input: {
-    positionals: [{ name: "folder", description: "files.dupes.arg.folder", required: false, variadic: false }],
+    positionals: [
+      { name: "folder", description: "files.dupes.arg.folder", required: false, variadic: false, path: true },
+    ],
     options: {
       "min-size": { type: "string", description: "files.dupes.option.min-size", valueName: "<size>" },
       all: { type: "boolean", description: "files.option.all" },

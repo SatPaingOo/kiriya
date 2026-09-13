@@ -28,7 +28,7 @@ export const copySpec: CommandSpec<CopyInput> = {
   runsUserCommands: false,
   input: {
     positionals: [{ name: "text", description: "clip.copy.arg.text", required: false, variadic: false }],
-    options: { file: { type: "string", description: "clip.copy.option.file", valueName: "<path>" } },
+    options: { file: { type: "string", description: "clip.copy.option.file", valueName: "<path>", path: true } },
     parse(raw) {
       const reader = new RawReader(raw);
       return { value: reader.positional(0), file: reader.string("file") };

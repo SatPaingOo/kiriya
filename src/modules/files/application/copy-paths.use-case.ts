@@ -37,8 +37,8 @@ export interface CopyOutput {
 /** The arguments and flags copy and move share. */
 export const transferInput: CommandSpec<TransferInput>["input"] = {
   positionals: [
-    { name: "sources", description: "files.transfer.arg.sources", required: true, variadic: true },
-    { name: "target", description: "files.transfer.arg.target", required: true, variadic: false },
+    { name: "sources", description: "files.transfer.arg.sources", required: true, variadic: true, path: true },
+    { name: "target", description: "files.transfer.arg.target", required: true, variadic: false, path: true },
   ],
   options: {
     overwrite: { type: "boolean", description: "files.transfer.option.overwrite" },

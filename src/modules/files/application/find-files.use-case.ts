@@ -54,7 +54,9 @@ export const findSpec: CommandSpec<FindInput> = {
   usesNetwork: false,
   runsUserCommands: false,
   input: {
-    positionals: [{ name: "folder", description: "files.find.arg.folder", required: false, variadic: false }],
+    positionals: [
+      { name: "folder", description: "files.find.arg.folder", required: false, variadic: false, path: true },
+    ],
     options: {
       name: { type: "string", description: "files.find.option.name", valueName: "<glob>" },
       ext: { type: "string", description: "files.find.option.ext", valueName: "<extensions>", multiple: true },

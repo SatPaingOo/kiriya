@@ -53,7 +53,9 @@ export const cleanSpec: CommandSpec<CleanInput> = {
   usesNetwork: false,
   runsUserCommands: false,
   input: {
-    positionals: [{ name: "folder", description: "files.clean.arg.folder", required: false, variadic: false }],
+    positionals: [
+      { name: "folder", description: "files.clean.arg.folder", required: false, variadic: false, path: true },
+    ],
     options: {
       depth: { type: "string", description: "files.clean.option.depth", valueName: "<n>" },
       apply: { type: "boolean", description: "files.clean.option.apply" },
