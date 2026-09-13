@@ -188,6 +188,24 @@ Also observed on the same machine:
 - `license-checker`'s npm metadata was last modified on 2022-06-19; its latest version, 25.0.1, and its last commit date from 2019-01-10 [133].
 - GitHub reports `kentcdodds/cross-env` as archived.
 
+## 10. Phase 0 spike
+
+Run in GitHub Actions on 2026-09-13 on Windows Server 2025, Ubuntu 24.04 and macOS 26
+(arm64), each with Node 22.23.2 and 24.20.0; all six jobs passed. Full tables:
+`spike/README.md` on the `spike/phase-0` branch.
+
+| Finding | Evidence |
+|---|---|
+| Windows trash through `SHFileOperation` works on the runner and the file appears in the Recycle Bin | Recycle Bin listing checked in both jobs |
+| With PowerShell forced into Constrained Language Mode, the trash adapter reports `CapabilityUnavailableError` | `__PSLockdownPolicy=4` probe in both Windows jobs |
+| `clip.exe` garbles UTF-8; `Set-Clipboard` and `Get-Clipboard` round-trip Myanmar text | Both Windows jobs |
+| `pbcopy` garbles UTF-8 under `LC_ALL=C` | Both macOS jobs |
+| `/usr/bin/trash` works on macOS 26 and leaves the file in `~/.Trash` | Both macOS jobs, with the image's pre-granted Full Disk Access |
+| The freedesktop.org layout, implemented with `node:fs`, handles a second mount; `gio trash` refuses it | tmpfs mount in both Ubuntu jobs |
+| On Linux, Node 24 renames its main thread, so `/proc/<pid>/stat` reports `MainThread` | The first Ubuntu Node 24 job failed on this; fixed by reading `/proc/<pid>/exe` |
+| Warm latency: Windows 0.35–0.66 s for processes, clipboard and trash, about 45 ms for ports; Linux and macOS under 100 ms for everything | Bench step in every job |
+| Cold first calls on Windows took up to 5.0 s | Test diagnostics in the Windows jobs |
+
 ## Sources
 
 - [G] https://api.github.com/search/repositories

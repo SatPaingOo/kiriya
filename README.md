@@ -2,7 +2,7 @@
 
 **One command-line toolbox for everyday developer work that behaves the same on Windows, Linux and macOS.**
 
-**Status:** design · private repository · no code yet · last reviewed 2026-09-13
+**Status:** design · phase 0 spike passed in CI · private repository · last reviewed 2026-09-13
 
 > kiriya (ကိရိယာ, Burmese for "tool") is at the design stage. A working prototype
 > of its first modules exists, tested on Windows only, and is the starting point
@@ -26,6 +26,10 @@ Windows, Linux and macOS, proven in CI rather than assumed.
 Process, port, clipboard and trash operations can be made to behave identically
 on all three operating systems through thin OS adapters, without runtime
 dependencies, and stay reliable in CI.
+
+**Answer, 2026-09-13:** yes, for every case CI can reach, on Windows, Ubuntu and
+macOS with Node 22 and 24. Windows is the slow platform, at about 0.6 s per
+operation. Details in [BLUEPRINT.md](./BLUEPRINT.md) section 3.
 
 ## Documents
 
