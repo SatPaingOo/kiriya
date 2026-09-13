@@ -22,6 +22,8 @@ import { NodeFileSystemAdapter } from "./core/infrastructure/node/node-file-syst
 import { NodeHasherAdapter } from "./core/infrastructure/node/node-hasher.adapter.js";
 import { NodePluginSource } from "./core/infrastructure/node/node-plugin-source.adapter.js";
 import { NodeProcessRunnerAdapter } from "./core/infrastructure/node/node-process-runner.adapter.js";
+import { NodeRandomSource } from "./core/infrastructure/node/node-random-source.adapter.js";
+import { NodeStandardInput } from "./core/infrastructure/node/node-standard-input.adapter.js";
 import { SystemClockAdapter } from "./core/infrastructure/node/system-clock.adapter.js";
 import { FreedesktopTrashAdapter } from "./core/infrastructure/platform/linux/freedesktop-trash.adapter.js";
 import { MacosTrashAdapter } from "./core/infrastructure/platform/macos/macos-trash.adapter.js";
@@ -55,6 +57,8 @@ const ports: CorePorts = {
   trash: trashFor(environment),
   environment,
   clock: new SystemClockAdapter(),
+  random: new NodeRandomSource(),
+  stdin: new NodeStandardInput(),
   protectedPaths: new PathGuard(environment),
   config,
   plugins,

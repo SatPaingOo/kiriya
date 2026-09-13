@@ -12,6 +12,8 @@ import type { Environment, OsFamily } from "../../src/core/domain/ports/environm
 import type { FileSystem } from "../../src/core/domain/ports/file-system.js";
 import type { OutputStream, Passthrough } from "../../src/core/domain/ports/passthrough.js";
 import type { ProcessOptions, ProcessResult, ProcessRunner } from "../../src/core/domain/ports/process-runner.js";
+import type { RandomSource } from "../../src/core/domain/ports/random-source.js";
+import type { StandardInput } from "../../src/core/domain/ports/standard-input.js";
 import type { Trash, TrashOutcome } from "../../src/core/domain/ports/trash.js";
 import type { MessageKey } from "../../src/i18n/locales/en.js";
 
@@ -32,6 +34,40 @@ export class FixedClock implements Clock {
 
   now(): number {
     return this.epochMs;
+  }
+}
+
+/** Counts up from a seed byte, wrapping at 256, so generated values are known in advance. */
+export class CountingRandomSource implements RandomSource {
+  private next: number;
+
+  constructor(seed = 0) {
+    this.next = seed;
+  }
+
+  bytes(count: number): Uint8Array {
+    const bytes = new Uint8Array(count);
+    for (let index = 0; index < count; index += 1) {
+      bytes[index] = this.next;
+      this.next = (this.next + 1) % 256;
+    }
+    return bytes;
+  }
+}
+
+/** Piped text, or a terminal when there is none. */
+export class FakeStandardInput implements StandardInput {
+  readonly isTerminal: boolean;
+  private readonly content: Uint8Array;
+
+  constructor(text: string | null) {
+    this.isTerminal = text === null;
+    this.content = new TextEncoder().encode(text ?? "");
+  }
+
+  read(maxBytes: number): Promise<Uint8Array> {
+    if (this.content.length > maxBytes) return Promise.reject(new Error("larger than maxBytes"));
+    return Promise.resolve(this.content);
   }
 }
 

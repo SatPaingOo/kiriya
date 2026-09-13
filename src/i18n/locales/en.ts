@@ -535,6 +535,8 @@ export const en = {
     "Permanently remove stopped containers, dangling images, unused networks, the build cache, and unused anonymous volumes with their data.",
   "docker.clean.reclaimed": "{target}: {space} reclaimed",
   "docker.clean.failed": "docker {target} prune failed: {detail}",
+
+  "core.stdin.too-large": "What was piped in is larger than {limit}",
 } as const;
 
 export type MessageKey = keyof typeof en;
