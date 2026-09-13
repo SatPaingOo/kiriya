@@ -81,6 +81,9 @@ const greet = {
 - An option only for a person at a terminal sets `terminalOnly: true`, as `--yes` and
   `--confirm` options always should, and a command that must never serve an AI agent
   sets `terminalOnly: true` in its spec. Neither is offered over MCP.
+- A command or option that can show secrets or send data away sets `sensitive: true`; over
+  MCP it needs the user's `mcp.allowWrite`. An option that walks into hidden folders sets
+  `reachesHidden: true`, and tools that change something do not offer it.
 - Over MCP, a `read` command is a tool by default, and a `write` or `destroy` command when
   the user allows it; `runsUserCommands: true` keeps a command out. There,
   `context.confirmation` asks the user through the MCP client.

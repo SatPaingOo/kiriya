@@ -119,11 +119,12 @@ A command is a class implementing `Command<Input, Output>` with a `CommandSpec<I
 |---|---|
 | `id` | `<module>.<verb>`, such as `files.delete`; or `<module>` alone for a module that is one command, such as `doctor` |
 | `summary` | Catalog key for help |
-| `input` | `InputSchema`: positionals, options, and `parse(raw)` into the typed input. An input that names a file or folder sets `path`, which the MCP server holds to its roots; an option only for a person at a terminal, such as `--reveal`, sets `terminalOnly` |
+| `input` | `InputSchema`: positionals, options, and `parse(raw)` into the typed input. An input that names a file or folder sets `path`, which the MCP server holds to its roots; an option only for a person at a terminal, such as `--reveal`, sets `terminalOnly`; an option that can show secrets sets `sensitive`, and one that walks into hidden folders sets `reachesHidden` |
 | `examples` | Shown in help |
 | `safety` | `read`, `write` or `destroy`: the most the command can do with any flags |
 | `idempotent`, `usesNetwork`, `runsUserCommands` | Facts the MCP server turns into tool annotations; a command that runs user commands is never a tool |
 | `terminalOnly` | Optional. Set on a command that must never be an MCP tool, such as `config set` |
+| `sensitive` | Optional. Set on a read that can show secrets or send data away, such as `clip paste`; over MCP it needs `mcp.allowWrite` |
 
 `execute(input, context)` receives a `CommandContext`:
 
