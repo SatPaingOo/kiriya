@@ -49,6 +49,7 @@ jobs:
     timeout-minutes: 20
     env:
       KIRIYA_TEST_REAL_TRASH: "1"
+      KIRIYA_TEST_REAL_CLIPBOARD: "1"
     steps:
       - uses: actions/checkout@v4
 
