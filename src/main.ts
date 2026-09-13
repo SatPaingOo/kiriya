@@ -11,7 +11,9 @@ import { pluginEntries } from "./core/application/config-values.js";
 import { PathGuard } from "./core/application/path-guard.js";
 import { PluginLoader } from "./core/application/plugin-loader.js";
 import type { CorePorts } from "./core/domain/module.js";
+import type { Clipboard } from "./core/domain/ports/clipboard.js";
 import type { Environment } from "./core/domain/ports/environment.js";
+import type { Opener } from "./core/domain/ports/opener.js";
 import type { PortTable } from "./core/domain/ports/port-table.js";
 import type { ProcessRunner } from "./core/domain/ports/process-runner.js";
 import type { ProcessTable } from "./core/domain/ports/process-table.js";
@@ -31,11 +33,17 @@ import { NodeStandardInput } from "./core/infrastructure/node/node-standard-inpu
 import { NodeSystemInfoAdapter } from "./core/infrastructure/node/node-system-info.adapter.js";
 import { SystemClockAdapter } from "./core/infrastructure/node/system-clock.adapter.js";
 import { FreedesktopTrashAdapter } from "./core/infrastructure/platform/linux/freedesktop-trash.adapter.js";
+import { LinuxClipboardAdapter } from "./core/infrastructure/platform/linux/linux-clipboard.adapter.js";
+import { LinuxOpenerAdapter } from "./core/infrastructure/platform/linux/linux-opener.adapter.js";
 import { LinuxPortTableAdapter } from "./core/infrastructure/platform/linux/linux-port-table.adapter.js";
 import { LinuxProcessTableAdapter } from "./core/infrastructure/platform/linux/linux-process-table.adapter.js";
+import { MacosClipboardAdapter } from "./core/infrastructure/platform/macos/macos-clipboard.adapter.js";
+import { MacosOpenerAdapter } from "./core/infrastructure/platform/macos/macos-opener.adapter.js";
 import { MacosPortTableAdapter } from "./core/infrastructure/platform/macos/macos-port-table.adapter.js";
 import { MacosProcessTableAdapter } from "./core/infrastructure/platform/macos/macos-process-table.adapter.js";
 import { MacosTrashAdapter } from "./core/infrastructure/platform/macos/macos-trash.adapter.js";
+import { WindowsClipboardAdapter } from "./core/infrastructure/platform/windows/windows-clipboard.adapter.js";
+import { WindowsOpenerAdapter } from "./core/infrastructure/platform/windows/windows-opener.adapter.js";
 import { WindowsPortTableAdapter } from "./core/infrastructure/platform/windows/windows-port-table.adapter.js";
 import { WindowsProcessTableAdapter } from "./core/infrastructure/platform/windows/windows-process-table.adapter.js";
 import { WindowsTrashAdapter } from "./core/infrastructure/platform/windows/windows-trash.adapter.js";
@@ -75,6 +83,28 @@ function portTableFor(environment: Environment, processRunner: ProcessRunner): P
   }
 }
 
+function clipboardFor(environment: Environment, processRunner: ProcessRunner): Clipboard {
+  switch (environment.os) {
+    case "windows":
+      return new WindowsClipboardAdapter();
+    case "macos":
+      return new MacosClipboardAdapter();
+    case "linux":
+      return new LinuxClipboardAdapter(environment, processRunner);
+  }
+}
+
+function openerFor(environment: Environment, processRunner: ProcessRunner): Opener {
+  switch (environment.os) {
+    case "windows":
+      return new WindowsOpenerAdapter();
+    case "macos":
+      return new MacosOpenerAdapter();
+    case "linux":
+      return new LinuxOpenerAdapter(environment, processRunner);
+  }
+}
+
 const { version } = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8")) as {
   version: string;
 };
@@ -97,6 +127,8 @@ const ports: CorePorts = {
   network: new NodeNetworkAdapter(),
   processTable: processTableFor(environment, processRunner),
   portTable: portTableFor(environment, processRunner),
+  clipboard: clipboardFor(environment, processRunner),
+  opener: openerFor(environment, processRunner),
   protectedPaths: new PathGuard(environment),
   config,
   plugins,

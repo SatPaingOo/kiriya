@@ -748,6 +748,14 @@ export const en = {
   "core.input.twice": "Give the text as an argument or with --file, not both",
   "core.input.not-text": "The input is not UTF-8 text; pass --file for binary data",
   "core.input.too-large": "The input is larger than {limit}",
+  "core.clipboard.windows.language-mode": "PowerShell runs in {mode} here, where the clipboard cmdlets cannot run",
+  "core.clipboard.no-display":
+    "This session has no display, so it has no clipboard: neither WAYLAND_DISPLAY nor DISPLAY is set",
+  "core.clipboard.no-program": "No clipboard program found; install wl-clipboard for Wayland, or xclip or xsel for X11",
+  "core.clipboard.failed": "{program} failed with exit code {code}: {detail}",
+  "core.open.no-display": "This session has no display to open {target} on",
+  "core.open.no-xdg-open": "xdg-open is not installed; install xdg-utils",
+  "core.open.failed": "{program} could not open {target} (exit code {code}): {detail}",
 } as const;
 
 export type MessageKey = keyof typeof en;
