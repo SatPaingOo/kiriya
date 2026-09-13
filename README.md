@@ -89,6 +89,7 @@ operation. Details in [BLUEPRINT.md](./BLUEPRINT.md) section 3.
 | [AGENTS.md](./AGENTS.md) | The same rules, gathered for AI coding agents |
 | [docs/plugins.md](./docs/plugins.md) | How to write, install and check a plugin |
 | [docs/completion.md](./docs/completion.md) | How to turn on tab completion in bash, zsh, fish and PowerShell |
+| [docs/releasing.md](./docs/releasing.md) | How a release is prepared, published from CI and checked |
 | [RESEARCH.md](./RESEARCH.md) | Prior art, CLI and MCP guidelines, distribution options, sources |
 | [CHANGELOG.md](./CHANGELOG.md) | What each release adds and changes |
 | [SECURITY.md](./SECURITY.md) | How to report a vulnerability privately |

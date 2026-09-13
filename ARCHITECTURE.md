@@ -90,7 +90,7 @@ tests/
 ├── contract/                     one suite per port, run against its adapters
 ├── e2e/                          the built CLI as a black box
 └── support/                      fakes, temporary folders, and a runner for the built CLI
-tools/                            boundaries.ts and check-boundaries.ts
+tools/                            import boundaries, package contents and release checks
 ```
 
 Each module has `<module>.module.ts`, which registers its commands with their views,
