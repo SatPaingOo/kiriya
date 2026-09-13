@@ -53,7 +53,7 @@ src/
 ├── i18n/locales/en.ts            the message catalog; MessageKey is derived from it
 ├── core/
 │   ├── domain/                   command, module, errors, message, input-schema, view, glob, names,
-│   │                             text-case, encodings, secrets, ports/, values/
+│   │                             text-case, encodings, secrets, global-options, ports/, values/
 │   ├── application/              command-registry, plugin-loader, config-values, path-guard, walk, paths, safety, process-ending, text-input
 │   ├── infrastructure/
 │   │   ├── node/                 file system and content, hasher, compression, process runner,
@@ -80,11 +80,12 @@ src/
     ├── port/                     who kill free
     ├── proc/                     list find kill tree
     ├── clip/                     copy paste
-    └── open/                     one command: kiriya open <file|folder|url>
+    ├── open/                     one command: kiriya open <file|folder|url>
+    └── completion/               kiriya completion <shell>, and suggest, which the scripts ask
 examples/plugins/hello/           a complete plugin in one file
 docs/plugins.md                   the plugin contract
 tests/
-├── unit/                         pure logic and use cases with fakes: core/, files/, archive/, git/, docker/, config/, doctor/, gen/, convert/, env/, sys/, net/, port/, proc/, clip/, open/
+├── unit/                         pure logic and use cases with fakes: core/, files/, archive/, git/, docker/, config/, doctor/, gen/, convert/, env/, sys/, net/, port/, proc/, clip/, open/, completion/
 ├── integration/                  use cases with real adapters: a real file system, real git repositories
 ├── contract/                     one suite per port, run against its adapters
 ├── e2e/                          the built CLI as a black box
@@ -205,6 +206,7 @@ Commands that change many things preview first: `rename`, `replace`, `clean`,
 | `PortTable` | Listening TCP sockets and their owners, and whether a port can be opened | `WindowsPortTableAdapter` (`netstat -ano`), `LinuxPortTableAdapter` (`/proc/net/tcp`), `MacosPortTableAdapter` (`netstat` and `lsof`) |
 | `Clipboard` | Text to and from the system clipboard, and what serves it here | `WindowsClipboardAdapter` (`Set-Clipboard` through PowerShell), `LinuxClipboardAdapter` (`wl-clipboard`, `xclip` or `xsel`), `MacosClipboardAdapter` (`pbcopy` with a UTF-8 locale) |
 | `Opener` | A file, folder or web address handed to the application the OS chooses | `WindowsOpenerAdapter` (`explorer.exe`), `LinuxOpenerAdapter` (`xdg-open`), `MacosOpenerAdapter` (`open`) |
+| `CommandCatalog` | Every registered module and command with its spec, plugins included | `CommandRegistry` in core application |
 | `ProtectedPaths` | Paths no command may delete, move or overwrite | `PathGuard` in core application |
 
 `src/main.ts` is the only place that chooses an adapter by operating system.
