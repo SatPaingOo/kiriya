@@ -1,5 +1,6 @@
 import type { MessageKey } from "../../i18n/locales/en.js";
 import type { Command } from "./command.js";
+import type { Clipboard } from "./ports/clipboard.js";
 import type { Clock } from "./ports/clock.js";
 import type { Compression } from "./ports/compression.js";
 import type { ConfigStore } from "./ports/config-store.js";
@@ -8,6 +9,7 @@ import type { FileContent } from "./ports/file-content.js";
 import type { FileSystem } from "./ports/file-system.js";
 import type { Hasher } from "./ports/hasher.js";
 import type { Network } from "./ports/network.js";
+import type { Opener } from "./ports/opener.js";
 import type { PluginInventory } from "./ports/plugin-inventory.js";
 import type { PortTable } from "./ports/port-table.js";
 import type { ProcessRunner } from "./ports/process-runner.js";
@@ -40,6 +42,8 @@ export interface CorePorts {
   readonly network: Network;
   readonly processTable: ProcessTable;
   readonly portTable: PortTable;
+  readonly clipboard: Clipboard;
+  readonly opener: Opener;
   readonly protectedPaths: ProtectedPaths;
   readonly config: ConfigStore;
   readonly plugins: PluginInventory;
