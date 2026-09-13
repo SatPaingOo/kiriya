@@ -16,6 +16,8 @@ export interface PositionalSpec {
   readonly description: MessageKey;
   readonly required: boolean;
   readonly variadic: boolean;
+  /** The only values it takes, which completion offers. */
+  readonly choices?: readonly string[];
 }
 
 /** Values as they arrive from argv or, later, an MCP call, before validation. */

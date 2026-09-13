@@ -1,6 +1,7 @@
 import type { MessageKey } from "../../i18n/locales/en.js";
 import type { Command } from "../domain/command.js";
 import type { CommandRegistrar, CorePorts, KiriyaModule } from "../domain/module.js";
+import type { CatalogModule, CommandCatalog } from "../domain/ports/command-catalog.js";
 import type { TextView } from "../domain/view.js";
 
 export interface RegisteredCommand {
@@ -25,7 +26,7 @@ function verbOf(commandId: string, moduleId: string): string | null {
 }
 
 /** Built-in modules and plugins register here; presentation looks commands up by module and verb. */
-export class CommandRegistry {
+export class CommandRegistry implements CommandCatalog {
   private readonly modules = new Map<
     string,
     { id: string; summary: MessageKey; commands: Map<string, RegisteredCommand> }
@@ -58,5 +59,13 @@ export class CommandRegistry {
   /** Modules in code-point order, which is the same on every OS. */
   list(): readonly RegisteredModule[] {
     return [...this.modules.values()].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  }
+
+  catalog(): readonly CatalogModule[] {
+    return this.list().map((module) => ({
+      id: module.id,
+      summary: module.summary,
+      commands: [...module.commands.values()].map((entry) => ({ verb: entry.verb, spec: entry.command.spec })),
+    }));
   }
 }
