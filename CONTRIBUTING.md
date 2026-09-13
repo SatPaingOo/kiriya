@@ -38,6 +38,13 @@ KIRIYA_TEST_REAL_TRASH=1 npm test
 
 In PowerShell, set `$env:KIRIYA_TEST_REAL_TRASH = "1"` first. CI always runs it.
 
+### Tests that need programs
+
+The `git` integration tests create real repositories and need git on PATH; without it
+they are skipped. The `docker` tests use a fake engine, so Docker is not needed to run
+them. No test reads your own kiriya configuration: the end-to-end runner points
+`KIRIYA_CONFIG` at a file that does not exist.
+
 ## Before you open a pull request
 
 - `npm run lint`, `npm run format:check`, `npm run typecheck` and `npm test` pass.
