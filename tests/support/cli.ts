@@ -1,4 +1,4 @@
-import { spawn, spawnSync } from "node:child_process";
+import { spawn, spawnSync, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -61,4 +61,13 @@ export function runKiriyaAsync(
     child.once("close", (code) => resolve({ code, stdout, stderr }));
     child.stdin.end();
   });
+}
+
+/** The built CLI with a pipe on each stream, for a test that talks to it while it runs, such as an MCP client. */
+export function startKiriya(
+  cwd: string,
+  args: readonly string[],
+  environment: Readonly<Record<string, string>> = PLAIN,
+): ChildProcessWithoutNullStreams {
+  return spawn(process.execPath, [MAIN, ...args], { cwd, env: cliEnvironment(environment) });
 }

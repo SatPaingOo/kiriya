@@ -84,8 +84,9 @@ const values = (words: readonly string[], current: string): string[] =>
   suggest(CATALOG, GLOBAL_OPTIONS, words, current).map((suggestion) => suggestion.value);
 const GLOBALS = ["--json", "--no-color", "--no-input", "--debug", "--help", "--version"];
 
-test("the first word is a module or help, and the next a module's command, past global options", () => {
-  assert.deepEqual(values([], ""), ["archive", "completion", "files", "open", "help"]);
+test("the first word is a module, help or mcp, and the next a module's command, past global options", () => {
+  assert.deepEqual(values([], ""), ["archive", "completion", "files", "open", "help", "mcp"]);
+  assert.deepEqual(values(["mcp"], ""), []);
   assert.deepEqual(values([], "f"), ["files"]);
   assert.deepEqual(values(["files"], ""), ["list", "find"]);
   assert.deepEqual(values(["--json", "files"], "l"), ["list"]);

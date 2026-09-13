@@ -18,6 +18,7 @@ import type { PortTable } from "./core/domain/ports/port-table.js";
 import type { ProcessRunner } from "./core/domain/ports/process-runner.js";
 import type { ProcessTable } from "./core/domain/ports/process-table.js";
 import type { Trash } from "./core/domain/ports/trash.js";
+import { ClosedStandardInput } from "./core/infrastructure/node/closed-standard-input.adapter.js";
 import { configFilePath } from "./core/infrastructure/node/config-location.js";
 import { JsonConfigStore } from "./core/infrastructure/node/json-config-store.adapter.js";
 import { NodeCompressionAdapter } from "./core/infrastructure/node/node-compression.adapter.js";
@@ -47,7 +48,9 @@ import { WindowsOpenerAdapter } from "./core/infrastructure/platform/windows/win
 import { WindowsPortTableAdapter } from "./core/infrastructure/platform/windows/windows-port-table.adapter.js";
 import { WindowsProcessTableAdapter } from "./core/infrastructure/platform/windows/windows-process-table.adapter.js";
 import { WindowsTrashAdapter } from "./core/infrastructure/platform/windows/windows-trash.adapter.js";
+import { splitGlobalFlags } from "./core/presentation/cli/argv.js";
 import { CliApplication } from "./core/presentation/cli/cli-application.js";
+import { serveMcp } from "./core/presentation/mcp/mcp-application.js";
 import { en } from "./i18n/locales/en.js";
 
 function trashFor(environment: Environment): Trash {
@@ -108,6 +111,9 @@ function openerFor(environment: Environment, processRunner: ProcessRunner): Open
 const { version } = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8")) as {
   version: string;
 };
+const argv = process.argv.slice(2);
+// Over MCP, stdin carries the protocol, so no command may read it.
+const servingMcp = splitGlobalFlags(argv).rest[0] === "mcp";
 const environment = new NodeEnvironmentAdapter();
 const config = new JsonConfigStore(configFilePath(environment, process.cwd()));
 const plugins = new PluginLoader();
@@ -123,7 +129,7 @@ const ports: CorePorts = {
   environment,
   clock: new SystemClockAdapter(),
   random: new NodeRandomSource(),
-  stdin: new NodeStandardInput(),
+  stdin: servingMcp ? new ClosedStandardInput() : new NodeStandardInput(),
   system: new NodeSystemInfoAdapter(environment, processRunner),
   network: new NodeNetworkAdapter(),
   processTable: processTableFor(environment, processRunner),
@@ -143,13 +149,15 @@ for (const module of BUILT_IN_MODULES) registry.register(module, ports);
 const entries = await config.read().then(pluginEntries, () => []);
 await plugins.load(entries, dirname(config.path), new NodePluginSource(), registry, ports);
 
+const catalog = { ...en, ...plugins.messages };
+const streams = { stdin: process.stdin, stdout: process.stdout, stderr: process.stderr };
 const cli = new CliApplication({
   registry,
-  catalog: { ...en, ...plugins.messages },
+  catalog,
   version,
   environment,
-  stdin: process.stdin,
-  stdout: process.stdout,
-  stderr: process.stderr,
+  ...streams,
+  serveMcp: (input, cwd) =>
+    serveMcp({ registry, catalog, version, fileSystem: ports.fileSystem, ...streams }, input, cwd),
 });
-process.exitCode = await cli.run(process.argv.slice(2), process.cwd());
+process.exitCode = await cli.run(argv, process.cwd());

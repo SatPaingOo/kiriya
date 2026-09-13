@@ -49,6 +49,28 @@ export function mainHelp(modules: readonly RegisteredModule[], context: HelpCont
     ),
     "",
     translator.text(message("core.help.module-hint", { command: "kiriya help <module>" })),
+    translator.text(message("core.help.mcp-hint", { command: "kiriya mcp --help" })),
+  ];
+}
+
+/** `kiriya mcp`, which serves the commands to AI agents instead of being one of them. */
+export function mcpHelp(options: Readonly<Record<string, OptionSpec>>, context: HelpContext): string[] {
+  const { translator, style } = context;
+  return [
+    `${style.bold("kiriya mcp")} — ${translator.text(message("core.mcp.summary"))}`,
+    "",
+    style.bold(translator.text(message("core.help.usage"))),
+    "  kiriya mcp [--root <folder>]...",
+    "",
+    style.bold(translator.text(message("core.help.options"))),
+    ...table(
+      Object.entries(options).map(([name, spec]) => [
+        optionLabel(name, spec),
+        translator.text(message(spec.description)),
+      ]),
+    ),
+    "",
+    translator.text(message("core.mcp.help-details")),
   ];
 }
 
