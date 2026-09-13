@@ -415,7 +415,8 @@ export const en = {
   "config.unset.done": "Removed {key}",
   "config.unset.not-set": "{key} was not set",
 
-  "doctor.summary": "Check what this machine gives kiriya: runtime, configuration, trash, git, docker and plugins",
+  "doctor.summary":
+    "Check what this machine gives kiriya: runtime, configuration, trash, clipboard, git, docker and plugins",
   "doctor.status.ok": "ok",
   "doctor.status.warn": "warn",
   "doctor.status.fail": "fail",
@@ -756,6 +757,17 @@ export const en = {
   "core.open.no-display": "This session has no display to open {target} on",
   "core.open.no-xdg-open": "xdg-open is not installed; install xdg-utils",
   "core.open.failed": "{program} could not open {target} (exit code {code}): {detail}",
+
+  "clip.summary": "Copy text to the clipboard and paste it back, with Unicode intact on every OS",
+  "clip.copy.summary": "Copy text from an argument, what is piped in, or a file to the clipboard",
+  "clip.copy.arg.text": "The text to copy; - or nothing reads what is piped in",
+  "clip.copy.option.file": "Copy a text file's content instead",
+  "clip.copy.empty": "There is no text to copy",
+  "clip.copy.secret": "The text looks like a secret; clipboard history and other programs can read it",
+  "clip.copy.done": "Copied {count} character(s)",
+  "clip.paste.summary": "Print the text on the clipboard",
+
+  "doctor.check.clipboard": "{backend}",
 } as const;
 
 export type MessageKey = keyof typeof en;
