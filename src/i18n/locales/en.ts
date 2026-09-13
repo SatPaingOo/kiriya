@@ -688,6 +688,32 @@ export const en = {
   "core.end.denied":
     "Not allowed to end {name} ({pid}): it belongs to another user or to the system, and kiriya never elevates",
   "core.end.failed": "Could not end {name} ({pid}): {code}",
+
+  "port.summary": "See which process listens on a TCP port, end it, or find a free port, the same on every OS",
+  "port.invalid": "Not a TCP port: {port}; use a number from 1 to 65535",
+  "port.column.port": "PORT",
+  "port.column.address": "ADDRESS",
+  "port.column.pid": "PID",
+  "port.column.process": "PROCESS",
+  "port.who.summary": "Show the processes listening on a TCP port, or on every port",
+  "port.who.arg.port": "The port; every listening port when left out",
+  "port.who.none": "Nothing listens on port {port}",
+  "port.who.none-at-all": "No TCP port is listening",
+  "port.who.hidden": "another user's process",
+  "port.kill.summary": "End the processes listening on a TCP port, after a typed confirmation",
+  "port.kill.arg.port": "The port whose listeners to end",
+  "port.kill.option.force": "End them at once instead of asking them to exit",
+  "port.kill.option.confirm": "For scripts: the port number, as the prompt would ask",
+  "port.kill.nothing": "Nothing listens on port {port}",
+  "port.kill.hidden":
+    "The process listening on port {port} belongs to another user, and kiriya never elevates; run the command as that user or as an administrator",
+  "port.kill.some-hidden": "Some listeners on port {port} belong to another user and were left alone",
+  "port.kill.protected":
+    "Refused: {name} ({pid}) is kiriya itself, the program that started it, or part of the operating system",
+  "port.kill.warn": "End {processes}, listening on port {port}.",
+  "port.free.summary": "Print the first TCP port, from 3000 or --from, that nothing listens on and that can be opened",
+  "port.free.option.from": "The first port to try; 3000 by default",
+  "port.free.none": "No free TCP port from {from} to 65535",
 } as const;
 
 export type MessageKey = keyof typeof en;
