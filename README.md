@@ -2,11 +2,12 @@
 
 **One command-line toolbox for everyday developer work that behaves the same on Windows, Linux and macOS.**
 
-**Status:** phase 2 in progress · core, `files`, `archive`, `git`, `docker`, `config`, `doctor` and plugins built · private repository · last reviewed 2026-09-13
+**Status:** phase 3 in progress · core, `files`, `archive`, `git`, `docker`, `config`, `doctor`, plugins, `gen` and `convert` built · private repository · last reviewed 2026-09-13
 
 > kiriya (ကိရိယာ, Burmese for "tool") is being built. The `files` module (18
 > commands) and the `archive` module pass CI on Windows, Linux and macOS. The `git`,
-> `docker` and `config` modules, `kiriya doctor`, and plugins are new in phase 2.
+> `docker` and `config` modules, `kiriya doctor` and plugins arrived in phase 2;
+> phase 3 adds the remaining v1 modules, starting with `gen` and `convert`.
 > Every command answers `--json`. Nothing here is ready to install yet.
 
 ## The problem
