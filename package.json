@@ -1,0 +1,35 @@
+{
+  "name": "kiriya",
+  "version": "0.0.0",
+  "private": true,
+  "description": "One command-line toolbox for everyday developer work that behaves the same on Windows, Linux and macOS.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "bin": {
+    "kiriya": "dist/src/main.js"
+  },
+  "files": [
+    "dist/src"
+  ],
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "test": "npm run build && node dist/tools/check-boundaries.js && node --test \"dist/tests/**/*.test.js\"",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.20.2",
+    "eslint": "^10.10.0",
+    "prettier": "^3.9.6",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.70.0"
+  }
+}
