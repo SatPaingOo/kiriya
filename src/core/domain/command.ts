@@ -28,6 +28,12 @@ export interface CommandSpec<Input> {
    * which an agent could give itself more than the user did.
    */
   readonly terminalOnly?: boolean;
+  /**
+   * Reads what may be secret, or acts beyond this machine as it reads, such as the clipboard
+   * or opening a web address. Over MCP it is a tool only when the user's `mcp.allowWrite`
+   * setting allows it.
+   */
+  readonly sensitive?: boolean;
 }
 
 export interface CommandContext {

@@ -74,7 +74,7 @@ export const replaceSpec: CommandSpec<ReplaceInput> = {
       "ignore-case": { type: "boolean", description: "files.replace.option.ignore-case", short: "i" },
       ext: { type: "string", description: "files.option.ext", valueName: "<extensions>", multiple: true },
       name: { type: "string", description: "files.option.name", valueName: "<glob>" },
-      all: { type: "boolean", description: "files.option.all" },
+      all: { type: "boolean", description: "files.option.all", reachesHidden: true },
       apply: { type: "boolean", description: "files.replace.option.apply" },
       yes: { type: "boolean", description: "files.replace.option.yes", short: "y", terminalOnly: true },
     },

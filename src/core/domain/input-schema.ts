@@ -13,6 +13,16 @@ export interface OptionSpec {
   readonly path?: boolean;
   /** Only for a person at a terminal and never offered over MCP, such as `--reveal`, which shows secret values. */
   readonly terminalOnly?: boolean;
+  /**
+   * Shows what may be secret, such as the full command lines of processes. Over MCP it is
+   * offered only when the user's `mcp.allowWrite` setting allows it.
+   */
+  readonly sensitive?: boolean;
+  /**
+   * Lets the command enter hidden folders, `.git` among them, which hold what programs such
+   * as git run. Over MCP a tool that changes something does not offer it.
+   */
+  readonly reachesHidden?: boolean;
 }
 
 export interface PositionalSpec {
