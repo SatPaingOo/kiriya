@@ -714,6 +714,39 @@ export const en = {
   "port.free.summary": "Print the first TCP port, from 3000 or --from, that nothing listens on and that can be opened",
   "port.free.option.from": "The first port to try; 3000 by default",
   "port.free.none": "No free TCP port from {from} to 65535",
+
+  "proc.summary": "List, find and end processes, and show them as a tree, the same on every OS",
+  "proc.column.pid": "PID",
+  "proc.column.parent": "PARENT",
+  "proc.column.memory": "MEMORY",
+  "proc.column.name": "NAME",
+  "proc.column.command": "COMMAND",
+  "proc.list.summary": "List processes with their memory, sorted by name",
+  "proc.list.option.name": "Only processes whose name contains this text, in any case",
+  "proc.list.option.full": "Add parent ids and command lines; slower on Windows",
+  "proc.list.none": "No process name contains {name}",
+  "proc.find.summary": "Find processes whose name or command line contains some text",
+  "proc.find.arg.text": "The text to look for, in any case",
+  "proc.find.text-missing": "Give the text to look for",
+  "proc.find.none": "No process name or command line contains {text}",
+  "proc.kill.summary": "End a process by id, or every process with a name, after a typed confirmation",
+  "proc.kill.arg.target": "A process id, or a program name such as node; .exe is optional",
+  "proc.kill.target-missing": "Give a process id or a program name",
+  "proc.kill.option.force": "End them at once instead of asking them to exit",
+  "proc.kill.option.confirm": "For scripts: the id or name exactly as given, as the prompt would ask",
+  "proc.kill.no-pid": "No process has the id {pid}",
+  "proc.kill.no-name": "No process is named {name}",
+  "proc.kill.protected":
+    "Refused: {name} ({pid}) is kiriya itself, the program that started it, or part of the operating system",
+  "proc.kill.only-protected":
+    "Refused: every process named {name} is kiriya itself, the program that started it, or part of the operating system",
+  "proc.kill.skipped":
+    "{count} matching process(es) were left alone: kiriya itself, the program that started it, or the operating system",
+  "proc.kill.warn": "End {processes}.",
+  "proc.tree.summary": "Show processes as a tree of parents and children, or the tree under one process",
+  "proc.tree.arg.pid": "The process whose tree to show; every process when left out",
+  "proc.tree.pid-invalid": "Not a process id: {pid}",
+  "proc.tree.no-pid": "No process has the id {pid}",
 } as const;
 
 export type MessageKey = keyof typeof en;
