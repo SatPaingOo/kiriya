@@ -17,6 +17,9 @@ const MAIN = fileURLToPath(new URL("../../src/main.js", import.meta.url));
 
 type Mode = "auto" | "legacy";
 
+/** What the test's user answers when the server asks, given the question's text. */
+type Answer = { action: "accept" | "decline" | "cancel"; content?: Record<string, string> };
+
 /** The test's environment, with kiriya's configuration file pointed at `config`. */
 function environment(config: string): Record<string, string> {
   const variables: Record<string, string> = {};
@@ -33,7 +36,14 @@ function environment(config: string): Record<string, string> {
 async function servedFolder(
   t: TestContext,
   entries: Readonly<Record<string, string>>,
-): Promise<{ base: string; connect: (mode: Mode, settings?: Readonly<Record<string, string>>) => Promise<Client> }> {
+): Promise<{
+  base: string;
+  connect: (
+    mode: Mode,
+    settings?: Readonly<Record<string, string>>,
+    answer?: (text: string) => Answer,
+  ) => Promise<Client>;
+}> {
   const base = await mkdtemp(path.join(tmpdir(), "kiriya-test-"));
   const clients: Client[] = [];
   t.after(async () => {
@@ -44,12 +54,18 @@ async function servedFolder(
   const config = path.join(base, "kiriya-config.json");
   return {
     base,
-    connect: async (mode, settings) => {
+    connect: async (mode, settings, answer) => {
       if (settings !== undefined) await writeFile(config, JSON.stringify(settings));
       const client = new Client(
         { name: "kiriya-test", version: "1.0.0" },
-        mode === "auto" ? { versionNegotiation: { mode: "auto" } } : {},
+        {
+          ...(mode === "auto" ? { versionNegotiation: { mode: "auto" as const } } : {}),
+          ...(answer === undefined ? {} : { capabilities: { elicitation: { form: {} } } }),
+        },
       );
+      if (answer !== undefined) {
+        client.setRequestHandler("elicitation/create", (request) => Promise.resolve(answer(request.params.message)));
+      }
       clients.push(client);
       const transport = new StdioClientTransport({
         command: process.execPath,
@@ -126,4 +142,39 @@ test("with mcp.allowWrite an SDK client runs a write tool, is never offered conf
   assert.match(document(settings), /core\.mcp\.guarded/);
   const read = await client.callTool({ name: "files.read", arguments: { file: "kiriya-config.json" } });
   assert.equal(read.isError, false, document(read));
+});
+
+for (const mode of ["auto", "legacy"] as const) {
+  test(`with mcp.allowDestroy an SDK client in ${mode} mode must accept the elicitation before a destroy tool runs`, async (t) => {
+    const served = await servedFolder(t, { "old.txt": "x" });
+    const asked: string[] = [];
+    let reply: Answer = { action: "decline" };
+    const client = await served.connect(mode, { "mcp.allowDestroy": "true" }, (text) => {
+      asked.push(text);
+      return reply;
+    });
+    assert.ok((await client.listTools()).tools.some((tool) => tool.name === "files.delete"));
+
+    const target = path.join(served.base, "old.txt");
+    const call = { name: "files.delete", arguments: { paths: ["old.txt"], permanent: true } };
+    const declined = await client.callTool(call);
+    assert.equal(declined.isError, true);
+    assert.match(document(declined), /core\.confirm\.declined/);
+    assert.equal(await readFile(target, "utf8"), "x");
+
+    reply = { action: "accept", content: { value: "1" } };
+    const deleted = await client.callTool(call);
+    assert.equal(deleted.isError, false, document(deleted));
+    await assert.rejects(readFile(target, "utf8"));
+    assert.equal(asked.length, 2);
+    assert.match(asked[0] ?? "", /Type 1 to go ahead\./);
+  });
+}
+
+test("with mcp.allowDestroy a client that cannot ask its user is never offered a destroy tool", async (t) => {
+  const served = await servedFolder(t, {});
+  const client = await served.connect("auto", { "mcp.allowDestroy": "true" });
+  const names = (await client.listTools()).tools.map((tool) => tool.name);
+  assert.ok(names.includes("files.list"));
+  assert.ok(!names.includes("files.delete"));
 });
