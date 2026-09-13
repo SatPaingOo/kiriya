@@ -396,6 +396,8 @@ export const en = {
   "config.summary": "kiriya's own settings, such as the plugins to load, in one file per user",
   "config.arg.key": "The setting's name",
   "config.key.plugins": "Plugins to load: npm package names, or paths relative to this file",
+  "config.key.mcp-allow-destroy":
+    "true lets kiriya mcp offer AI agents the commands whose work cannot be undone, each of which asks the user through the client first; start the server again after changing it",
   "config.key.mcp-allow-write":
     "true lets kiriya mcp offer AI agents the commands that change files, which can be undone; start the server again after changing it",
   "config.path.summary": "Print where the configuration file is, whether or not it exists yet",
