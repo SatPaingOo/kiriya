@@ -1,7 +1,4 @@
 import path from "node:path";
-import { DEPENDENCY_DIRECTORIES } from "../../../config/dependency-directories.js";
-import { expandPaths, outermost } from "../../../core/application/paths.js";
-import { walk, type WalkOptions } from "../../../core/application/walk.js";
 import type { Command, CommandContext, CommandResult, CommandSpec } from "../../../core/domain/command.js";
 import { done } from "../../../core/domain/command.js";
 import { ConflictError, InterruptedError, OperationFailedError, UsageError } from "../../../core/domain/errors.js";
@@ -20,6 +17,7 @@ import {
   ZIP32_LIMIT,
   type EntryHeader,
 } from "../domain/zip-format.js";
+import { collectSources } from "./archive-sources.js";
 
 export interface ZipInput {
   readonly paths: readonly string[];
@@ -34,15 +32,6 @@ export interface ZipOutput {
   readonly bytesIn: number;
   readonly bytesOut: number;
   readonly skippedLinks: number;
-}
-
-interface PendingEntry {
-  /** With `/`, and a trailing `/` for a folder. */
-  readonly name: string;
-  /** null for a folder. */
-  readonly path: string | null;
-  readonly size: number;
-  readonly modifiedMs: number;
 }
 
 export const zipSpec: CommandSpec<ZipInput> = {
@@ -85,7 +74,7 @@ export class CreateZip implements Command<ZipInput, ZipOutput> {
   async execute(input: ZipInput, context: CommandContext): Promise<CommandResult<ZipOutput>> {
     const archive = path.resolve(context.cwd, input.to);
     if ((await this.fileSystem.lstat(archive)) !== null) throw new ConflictError("core.fs.exists", { path: archive });
-    const { entries, skippedLinks } = await this.collect(input, context.cwd);
+    const { entries, skippedLinks } = await collectSources(this.fileSystem, input.paths, context.cwd, input);
     if (entries.length >= MAX_ENTRIES) {
       throw new OperationFailedError("archive.zip.too-many-entries", { count: entries.length });
     }
@@ -135,48 +124,5 @@ export class CreateZip implements Command<ZipInput, ZipOutput> {
       throw error;
     }
     return done({ archive, entries: entries.length, bytesIn, bytesOut: offset, skippedLinks });
-  }
-
-  /** Every entry to store, before writing starts, so the new archive never ends up inside itself. */
-  private async collect(input: ZipInput, cwd: string): Promise<{ entries: PendingEntry[]; skippedLinks: number }> {
-    const sources = outermost(await expandPaths(this.fileSystem, input.paths, cwd, input.all));
-    const entries: PendingEntry[] = [];
-    const topNames = new Set<string>();
-    let skippedLinks = 0;
-    for (const source of sources) {
-      const name = path.basename(source);
-      if (topNames.has(name.toLowerCase())) throw new UsageError("archive.zip.same-name", { name });
-      topNames.add(name.toLowerCase());
-      const stat = await this.fileSystem.lstat(source);
-      if (stat === null) continue;
-      if (stat.kind === "symlink") {
-        skippedLinks += 1;
-        continue;
-      }
-      if (stat.kind !== "directory") {
-        entries.push({ name, path: source, size: stat.size, modifiedMs: stat.modifiedMs });
-        continue;
-      }
-      // A folder keeps its own name and everything inside it, hidden files included.
-      entries.push({ name: `${name}/`, path: null, size: 0, modifiedMs: stat.modifiedMs });
-      const options: WalkOptions = input.lean ? { all: true, skipDirectories: DEPENDENCY_DIRECTORIES } : { all: true };
-      for await (const entry of walk(this.fileSystem, source, options)) {
-        if (entry.kind === "symlink") {
-          skippedLinks += 1;
-          continue;
-        }
-        if (entry.kind !== "directory" && entry.kind !== "file") continue;
-        const entryStat = await this.fileSystem.lstat(entry.path);
-        if (entryStat === null) continue;
-        const isFolder = entry.kind === "directory";
-        entries.push({
-          name: `${name}/${entry.rel}${isFolder ? "/" : ""}`,
-          path: isFolder ? null : entry.path,
-          size: isFolder ? 0 : entryStat.size,
-          modifiedMs: entryStat.modifiedMs,
-        });
-      }
-    }
-    return { entries, skippedLinks };
   }
 }
