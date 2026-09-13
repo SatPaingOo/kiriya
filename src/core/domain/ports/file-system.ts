@@ -38,6 +38,8 @@ export interface FileSystem {
   /** A rename, or across drives a copy and then removal. ConflictError when the destination exists. */
   move(source: string, destination: string): Promise<void>;
   setTimes(path: string, accessedMs: number, modifiedMs: number): Promise<void>;
+  /** Permission bits; on Windows only whether the file is read-only follows them. */
+  setMode(path: string, mode: number): Promise<void>;
   /** Both paths reach one entry, such as `readme.md` and `README.md` on a case-insensitive drive. */
   sameEntry(first: string, second: string): Promise<boolean>;
   /** Removes a folder only when it is empty; false when something is inside. */

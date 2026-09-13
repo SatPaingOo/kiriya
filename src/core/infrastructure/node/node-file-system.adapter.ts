@@ -1,5 +1,18 @@
 import type { Dirent, Stats } from "node:fs";
-import { cp, lstat, mkdir, readdir, readlink, rename, rm, rmdir, stat, utimes, writeFile } from "node:fs/promises";
+import {
+  chmod,
+  cp,
+  lstat,
+  mkdir,
+  readdir,
+  readlink,
+  rename,
+  rm,
+  rmdir,
+  stat,
+  utimes,
+  writeFile,
+} from "node:fs/promises";
 import { ConflictError } from "../../domain/errors.js";
 import type { DirectoryEntry, EntryKind, FileStat, FileSystem } from "../../domain/ports/file-system.js";
 import { errorCode, isMissing, translateFsError } from "./fs-errors.js";
@@ -117,6 +130,14 @@ export class NodeFileSystemAdapter implements FileSystem {
   async setTimes(path: string, accessedMs: number, modifiedMs: number): Promise<void> {
     try {
       await utimes(path, new Date(accessedMs), new Date(modifiedMs));
+    } catch (error) {
+      translateFsError(error, path);
+    }
+  }
+
+  async setMode(path: string, mode: number): Promise<void> {
+    try {
+      await chmod(path, mode);
     } catch (error) {
       translateFsError(error, path);
     }
