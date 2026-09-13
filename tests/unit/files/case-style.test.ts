@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { renameByCase, splitWords } from "../../../src/modules/files/domain/case-style.js";
+import { splitWords } from "../../../src/core/domain/text-case.js";
+import { renameByCase } from "../../../src/modules/files/domain/case-style.js";
 
 test("words come apart at case changes, digits and separators", () => {
   assert.deepEqual(splitWords("userProfile_v2 Final"), ["user", "Profile", "v2", "Final"]);
