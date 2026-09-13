@@ -4,6 +4,7 @@ import { done } from "../../../core/domain/command.js";
 import { KiriyaError } from "../../../core/domain/errors.js";
 import { message, type Message } from "../../../core/domain/message.js";
 import type { RuntimeInfo } from "../../../core/domain/module.js";
+import type { Clipboard } from "../../../core/domain/ports/clipboard.js";
 import type { ConfigStore } from "../../../core/domain/ports/config-store.js";
 import type { Environment } from "../../../core/domain/ports/environment.js";
 import type { LoadedPlugin, PluginInventory, PluginProblem } from "../../../core/domain/ports/plugin-inventory.js";
@@ -50,6 +51,7 @@ export class RunChecks implements Command<NoInput, DoctorOutput> {
     private readonly environment: Environment,
     private readonly config: ConfigStore,
     private readonly trash: Trash,
+    private readonly clipboard: Clipboard,
     private readonly plugins: PluginInventory,
     private readonly runtime: RuntimeInfo,
   ) {}
@@ -74,6 +76,7 @@ export class RunChecks implements Command<NoInput, DoctorOutput> {
         status: "ok",
         detail: message("doctor.check.trash", { location: message(this.trash.location) }),
       },
+      await this.clipboardCheck(),
       await this.gitCheck(context.signal),
       await this.dockerCheck(context.signal),
       {
@@ -100,6 +103,16 @@ export class RunChecks implements Command<NoInput, DoctorOutput> {
     } catch (error) {
       if (!(error instanceof KiriyaError)) throw error;
       return { name: "config", status: "fail", detail: error.detail };
+    }
+  }
+
+  private async clipboardCheck(): Promise<DoctorCheck> {
+    try {
+      const backend = await this.clipboard.backend();
+      return { name: "clipboard", status: "ok", detail: message("doctor.check.clipboard", { backend }) };
+    } catch (error) {
+      if (!(error instanceof KiriyaError) || error.kind === "interrupted") throw error;
+      return { name: "clipboard", status: "warn", detail: error.detail };
     }
   }
 
