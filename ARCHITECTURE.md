@@ -52,11 +52,13 @@ src/
 ├── config/                       data: modules, config keys, protected paths, dependency folders, clean rules
 ├── i18n/locales/en.ts            the message catalog; MessageKey is derived from it
 ├── core/
-│   ├── domain/                   command, module, errors, message, input-schema, view, glob, names, ports/, values/
+│   ├── domain/                   command, module, errors, message, input-schema, view, glob, names,
+│   │                             text-case, encodings, ports/, values/
 │   ├── application/              command-registry, plugin-loader, config-values, path-guard, walk, paths, safety
 │   ├── infrastructure/
 │   │   ├── node/                 file system and content, hasher, compression, process runner,
-│   │   │                         config file and location, plugin source, environment, clock
+│   │   │                         config file and location, plugin source, environment, clock,
+│   │   │                         random source, standard input
 │   │   └── platform/             windows/, linux/, macos/: one trash adapter each
 │   └── presentation/
 │       ├── cli/                  cli-application, argv, help, style, terminal-confirmation, json-output
@@ -68,11 +70,13 @@ src/
     ├── git/                      status fetch pull switch, across every repository under a folder
     ├── docker/                   ps up down logs rebuild clean, for the compose project in the current folder
     ├── config/                   path keys list get set unset
-    └── doctor/                   one command: kiriya doctor
+    ├── doctor/                   one command: kiriya doctor
+    ├── gen/                      uuid ulid password token
+    └── convert/                  base64 hex url json jwt time case, from an argument, stdin or a file
 examples/plugins/hello/           a complete plugin in one file
 docs/plugins.md                   the plugin contract
 tests/
-├── unit/                         pure logic and use cases with fakes: core/, files/, archive/, git/, docker/, config/, doctor/
+├── unit/                         pure logic and use cases with fakes: core/, files/, archive/, git/, docker/, config/, doctor/, gen/, convert/
 ├── integration/                  use cases with real adapters: a real file system, real git repositories
 ├── contract/                     one suite per port, run against its adapters
 ├── e2e/                          the built CLI as a black box
@@ -185,6 +189,8 @@ Commands that change many things preview first: `rename`, `replace`, `clean`,
 | `PluginInventory` | The plugins this run loaded, and the ones it could not | `PluginLoader` in core application |
 | `Confirmation` | Questions to the person running the command | `TerminalConfirmation` in presentation |
 | `Environment`, `Clock` | The OS, the home folder, variables; the time | `NodeEnvironmentAdapter`, `SystemClockAdapter` |
+| `RandomSource` | Cryptographically secure random bytes; tests inject predictable ones | `NodeRandomSource` |
+| `StandardInput` | What is piped in, read to the end with a size limit, and whether a person is typing instead | `NodeStandardInput` |
 | `ProtectedPaths` | Paths no command may delete, move or overwrite | `PathGuard` in core application |
 
 `src/main.ts` is the only place that chooses an adapter by operating system.
