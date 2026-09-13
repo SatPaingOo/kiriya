@@ -58,6 +58,14 @@ second per call; a plain move into the macOS trash loses Put Back; and CI cannot
 reproduce macOS permission failures or offer a Linux clipboard. Small signed native
 helpers would remove most of these, at the cost of shipping binaries (section 10).
 
+**Phase 0 answer, 2026-09-13: yes, for every case CI can reach.** Port lookup,
+process lookup, clipboard and trash passed on Windows Server 2025, Ubuntu 24.04 and
+macOS 26, each on Node 22 and 24, with Myanmar text in every file name and clipboard
+sample. Windows is the slow platform: its PowerShell-based operations took about
+0.6 s warm and up to 5 s on the first call, against under 100 ms on Linux and macOS.
+Still unverified: trash on a Mac without Full Disk Access, Finder's Put Back, and a
+real AppLocker or WDAC policy. Full results: `spike/README.md` on the `spike/phase-0` branch.
+
 ---
 
 ## 4. Product rules
@@ -360,17 +368,19 @@ Revised after the adapter research in [RESEARCH.md](./RESEARCH.md) sections 7 an
 | Port | Windows | Linux | macOS |
 |---|---|---|---|
 | `Trash` | PowerShell checks its language mode first. In full language mode, `SHFileOperation` with `FOF_ALLOWUNDO` through Add-Type, fixed drives only, with `fAnyOperationsAborted` checked. Under Constrained Language Mode: `CapabilityUnavailableError`, suggesting `--permanent`. | The freedesktop.org trash specification implemented with `node:fs`: the home trash, or `$topdir/.Trash-$uid` on other mounts. `gio` is not needed. | `/usr/bin/trash` on macOS 15 and later; otherwise a move into `~/.Trash`, warning that Finder's Put Back will not work |
-| `Clipboard` | `Set-Clipboard` and `Get-Clipboard` through PowerShell; never `clip.exe`, which garbles UTF-8 | `wl-copy`, then `xclip`, then `xsel`; on a machine without a display, `CapabilityUnavailableError` | `pbcopy` and `pbpaste` |
-| `ProcessTable` | `tasklist /fo csv` | `/proc` read with `node:fs`, no program started | `ps` |
+| `Clipboard` | `Set-Clipboard` and `Get-Clipboard` through PowerShell; never `clip.exe`, which garbles UTF-8 | `wl-copy`, then `xclip`, then `xsel`; on a machine without a display, `CapabilityUnavailableError` | `pbcopy` and `pbpaste` with a UTF-8 locale set: under `LC_ALL=C` `pbcopy` garbles Myanmar text |
+| `ProcessTable` | `tasklist /fo csv` for names; `Get-CimInstance` only when a command line or parent id is needed | `/proc` read with `node:fs`, naming each process from `/proc/<pid>/exe`, because programs rename their main thread (Node 24 shows `MainThread`) | `ps -axww` |
 | `PortTable` | `netstat -ano` | `/proc/net/tcp` and `/proc/net/tcp6` read with `node:fs`, owners from `/proc/<pid>/fd` | `lsof -nP -iTCP -sTCP:LISTEN` |
 | `Opener` | `explorer.exe` | `xdg-open` | `open` |
 | `StandardPaths` | Windows known folders | XDG base directories | `~/Library` folders |
 
 Consequences the design accepts:
 
-- **Latency.** Starting PowerShell took 0.9–1.2 s on the measured machine, and
-  `tasklist` about 0.7 s. A command calls PowerShell at most once per run and shows
-  progress when it does.
+- **Latency.** In CI, Windows trash and clipboard took about 0.6 s warm and up to
+  5 s on the first call, and `tasklist` about 0.35 s; on a developer machine,
+  starting PowerShell alone took 0.9–1.2 s. Every Linux and macOS operation stayed
+  under 100 ms. A command calls PowerShell at most once per run and shows progress
+  when it does.
 - **Other users' processes.** Without elevation, Linux and macOS do not reveal who
   owns another user's port. kiriya reports "owned by another user" and never elevates.
 - **CI blind spots.** GitHub's macOS image pre-grants Full Disk Access, and Linux
@@ -682,7 +692,7 @@ A phase is done when every acceptance criterion holds.
 
 | Phase | Work | Done when |
 |---|---|---|
-| **0 — Spike** | A throwaway `spike/phase-0` branch with only port lookup, process lookup, clipboard and trash, run in CI on Windows, Linux and macOS, plus manual runs on a Mac without Full Disk Access and on Windows under Constrained Language Mode. The repository is public only while the spike's CI runs, then private again. | The same tests pass on all three; latency per operation is measured on each OS; the Put Back, UTF-8 clipboard and policy cases each have a recorded result; the native-helper question in section 10 is answered. An operation that cannot be made reliable is recorded with its reason. |
+| **0 — Spike** | A throwaway `spike/phase-0` branch with only port lookup, process lookup, clipboard and trash, run in CI on Windows, Linux and macOS, plus manual runs on a Mac without Full Disk Access and on Windows under Constrained Language Mode. The repository is public only while the spike's CI runs, then private again. | The same tests pass on all three; latency per operation is measured on each OS; the Put Back, UTF-8 clipboard and policy cases each have a recorded result; the native-helper question in section 10 is answered. An operation that cannot be made reliable is recorded with its reason. **CI part done 2026-09-13**, all six jobs passing; the three manual checks remain. |
 | **1 — Core and files** | Repository, CI matrix, the core kernel, `files` and `archive` rebuilt on async ports with `--json` and message keys, contract and boundary tests, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `AGENTS.md` | Every prototype `files` and `archive` behaviour has a passing test on all three operating systems |
 | **2 — Remaining prototype modules** | `git`, `docker`, `config`, and the plugin loader with one example plugin | The prototype has no feature kiriya lacks, and the example plugin loads, runs and appears in `kiriya doctor` |
 | **3 — First release** | The v1 modules in section 5.2; `LICENSE` (MIT), `CHANGELOG.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`; then, once the maintainer judges it ready, the repository made public and the package published to npm from CI through trusted publishing with provenance | A clean machine on each OS installs kiriya from the README alone, `kiriya doctor` passes, and `npm audit signatures` verifies the package |
@@ -693,7 +703,7 @@ A phase is done when every acceptance criterion holds.
 
 | Question | Default if not answered |
 |---|---|
-| May kiriya ship small signed native helpers: a Windows executable for trash, clipboard and processes, and a macOS helper for trash with Put Back? | No. PowerShell and built-in programs, with their limits documented, until phase 0 shows those limits are unacceptable. |
+| May kiriya ship small signed native helpers: a Windows executable for trash, clipboard and processes, and a macOS helper for trash with Put Back? | No, recommended after phase 0: every operation worked without helpers. A helper would only buy Windows speed and trash under application-control policies. Awaiting the maintainer's decision. |
 | A short alias command, such as `kiri`? | No alias until users ask for one |
 
 ---
