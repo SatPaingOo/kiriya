@@ -125,6 +125,18 @@ test("with mcp.allowWrite an SDK client runs a write tool, is never offered conf
     assert.ok(!names.includes(name), `${name} is kept back`);
   }
 
+  const tools = (await client.listTools()).tools;
+  const propertiesOf = (name: string): object => tools.find((tool) => tool.name === name)?.inputSchema.properties ?? {};
+  assert.ok(names.includes("open") && names.includes("clip.paste"), "sensitive reads are offered");
+  assert.ok(Object.hasOwn(propertiesOf("proc.list"), "full"));
+  assert.ok(!Object.hasOwn(propertiesOf("files.replace"), "all"));
+  const hook = await client.callTool({
+    name: "files.new",
+    arguments: { paths: [".git/hooks/post-checkout"], content: "#!/bin/sh" },
+  });
+  assert.equal(hook.isError, true);
+  assert.match(document(hook), /core.mcp.git-folder/);
+
   const created = await client.callTool({ name: "files.new", arguments: { paths: ["made.txt"], content: "hi" } });
   assert.equal(created.isError, false, document(created));
   assert.equal(await readFile(path.join(served.base, "made.txt"), "utf8"), "hi");

@@ -772,6 +772,8 @@ export const en = {
   "core.mcp.root-missing": "No folder at {path} to serve as a root",
   "core.mcp.outside-roots": "Refused: {path} is outside the folders this server may reach: {roots}",
   "core.mcp.guarded": "Refused: {path} would reach {file}, kiriya's configuration file, which only a person may change",
+  "core.mcp.git-folder":
+    "Refused: {path} is inside a .git folder, which holds what git runs; tools that change something may not reach it",
   "core.mcp.cannot-confirm":
     "Refused: this cannot be undone, and nobody can be asked to confirm it here; that needs kiriya config set mcp.allowDestroy true and a client that supports elicitation. Nothing changed",
   "core.mcp.config-unreadable":
