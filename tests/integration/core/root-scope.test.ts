@@ -87,3 +87,16 @@ test("a root must be a folder that exists", async (t) => {
   await assert.rejects(RootScope.open(fileSystem, ["missing"], base), NotFoundError);
   await assert.rejects(RootScope.open(fileSystem, ["project/notes.md"], base), NotFoundError);
 });
+
+test("work that changes something may not reach inside a .git folder, in any letter case, while reading may", async (t) => {
+  const { root } = await project(t);
+  await layout(root, { ".git/hooks/pre-commit.sample": "#!/bin/sh", "sub/.GIT/config": "" });
+  const scope = await RootScope.open(fileSystem, [], root);
+  const inGit = (error: unknown): boolean =>
+    error instanceof RefusedError && error.detail.key === "core.mcp.git-folder";
+  for (const value of [".git", ".git/hooks/post-checkout", ".git/hooks/*", "sub/.GIT/config"]) {
+    await assert.rejects(scope.refuseOutside([value], true), inGit, value);
+    await scope.refuseOutside([value]);
+  }
+  await scope.refuseOutside([".", "src/app.ts", ".github/workflows/ci.yml"], true);
+});

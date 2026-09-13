@@ -5,6 +5,11 @@ import type { InputSchema, RawInput } from "../domain/input-schema.js";
 import type { FileSystem } from "../domain/ports/file-system.js";
 import { isInside } from "./paths.js";
 
+/** True when a path is a `.git` folder or lies inside one, in any letter case. */
+function insideGitFolder(target: string): boolean {
+  return target.split(/[\\/]/).some((segment) => segment.toLowerCase() === ".git");
+}
+
 /** Every value given for an input the command marks as a path. */
 export function pathValues(schema: InputSchema<unknown>, raw: RawInput): string[] {
   const values: string[] = [];
@@ -73,7 +78,13 @@ export class RootScope {
         if (!this.within(candidate, this.roots) || real === null || !this.within(real, this.realRoots)) {
           throw new RefusedError("core.mcp.outside-roots", { path: value, roots: this.roots.join(", ") });
         }
-        if (changes) await this.refuseGuarded(value, candidate, real);
+        if (changes) {
+          // git runs hooks and commands that its folder names, so a change there could run anything.
+          if (insideGitFolder(candidate) || insideGitFolder(real)) {
+            throw new RefusedError("core.mcp.git-folder", { path: value });
+          }
+          await this.refuseGuarded(value, candidate, real);
+        }
       }
     }
   }

@@ -34,7 +34,7 @@ import {
   type RequestId,
 } from "./protocol.js";
 import { callDigest, RequestStates } from "./request-state.js";
-import { rawInputOf, toolDefinition, type ToolDefinition } from "./tool-definitions.js";
+import { rawInputOf, toolAccess, toolDefinition, type ToolDefinition } from "./tool-definitions.js";
 import { commandToolResult, errorToolResult, type ToolResult } from "./tool-results.js";
 
 /** How long a client may keep the tool list, which changes only when the server starts again. */
@@ -74,12 +74,13 @@ interface Tool {
 }
 
 /**
- * Read commands become tools, and write and destroy commands when the user allows them.
- * A command that runs a program the user names, or one only for a terminal, never does.
+ * Read commands become tools, and sensitive read, write and destroy commands when the user
+ * allows them. A command that runs a program the user names, or one only for a terminal, never does.
  */
 function exposed(entry: RegisteredCommand, options: McpServerOptions): boolean {
   const { spec } = entry.command;
   if (spec.runsUserCommands || spec.terminalOnly === true) return false;
+  if (spec.sensitive === true && !options.allowWrite) return false;
   if (spec.safety === "write") return options.allowWrite;
   if (spec.safety === "destroy") return options.allowDestroy;
   return true;
@@ -111,7 +112,7 @@ export class McpServer {
     for (const entry of entries) {
       const { spec } = entry.command;
       try {
-        this.tools.set(spec.id, { entry, definition: toolDefinition(spec, options.translator) });
+        this.tools.set(spec.id, { entry, definition: toolDefinition(spec, options.translator, options.allowWrite) });
       } catch (error) {
         options.log(message("core.mcp.tool-left-out", { tool: spec.id, detail: String(error) }));
       }
@@ -295,7 +296,7 @@ export class McpServer {
     let output = "";
     let result: ToolResult;
     try {
-      const raw = rawInputOf(spec.input, params["arguments"]);
+      const raw = rawInputOf(spec.input, params["arguments"], toolAccess(spec, this.options.allowWrite));
       await scope.refuseOutside(pathValues(spec.input, raw), spec.safety !== "read");
       const input = spec.input.parse(raw);
       const outcome = await command.execute(input, {
