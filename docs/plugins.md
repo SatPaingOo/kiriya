@@ -31,7 +31,7 @@ its `package.json`, then `"main"`, then `index.js`. Its default export is an obj
 
 | Field | What it must be |
 |---|---|
-| `id` | Lower-case letters, digits and hyphens, starting with a letter. It is the module name on the command line, so it must not be taken by a built-in module, another plugin, or `core`, `help` or `version`. |
+| `id` | Lower-case letters, digits and hyphens, starting with a letter. It is the module name on the command line, so it must not be taken by a built-in module, another plugin, or `core`, `help`, `mcp` or `version`. |
 | `summary` | A message key for one line of help about the module |
 | `messages` | The English text of every message key the plugin uses. Each key starts with `<id>.`. Text may hold `{name}` placeholders. |
 | `register(registrar, ports)` | Calls `registrar.add(command, view)` once per command |
@@ -76,6 +76,13 @@ const greet = {
   expected, provided)` asks for a typed value, and `--yes` must never stand in for it.
 - `context.passthrough.write(text, stream)` passes on the live output of a program the
   command runs.
+- An argument or option that names a file or folder sets `path: true`. Over MCP, kiriya
+  holds every such value to the server's roots; a value without it is not checked.
+- An option only for a person at a terminal sets `terminalOnly: true`, as `--yes` and
+  `--confirm` options always should, and a command that must never serve an AI agent
+  sets `terminalOnly: true` in its spec. Neither is offered over MCP.
+- Over MCP, a `read` command is a tool by default and a `write` command when the user
+  allows it; `runsUserCommands: true` keeps a command out.
 
 `data` is the command's JSON output, so treat its shape as a public contract.
 

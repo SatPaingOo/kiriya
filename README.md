@@ -2,7 +2,7 @@
 
 **One command-line toolbox for everyday developer work that behaves the same on Windows, Linux and macOS.**
 
-**Status:** phase 3 in progress · every v1 module built · release files in place · MCP server started, read-only tools · not on npm yet · private repository · last reviewed 2026-09-14
+**Status:** phase 3 in progress · every v1 module built · release files in place · MCP server started, read tools and write tools when allowed · not on npm yet · private repository · last reviewed 2026-09-14
 
 > kiriya (ကိရိယာ, Burmese for "tool") has every module planned for its first release
 > built and tested in CI on Windows, Linux and macOS, with Node.js 22, 24 and the current
@@ -54,8 +54,8 @@ on tab completion, see [docs/completion.md](./docs/completion.md).
 | `completion` | `kiriya completion bash` | Tab completion for bash, zsh, fish and PowerShell |
 
 `kiriya help <module>` lists a module's commands, and `kiriya help <module> <command>`
-explains one. `kiriya mcp` serves the commands that change nothing to AI agents over
-MCP; see [docs/mcp.md](./docs/mcp.md).
+explains one. `kiriya mcp` serves kiriya's commands to AI agents over MCP, only
+the ones that change nothing unless you allow more; see [docs/mcp.md](./docs/mcp.md).
 
 ## The problem
 
