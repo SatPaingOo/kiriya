@@ -1,0 +1,38 @@
+# Changelog
+
+Notable changes to kiriya, newest first. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
+[semantic versioning](https://semver.org/). Command ids, flags, exit codes and JSON
+output shapes are kiriya's public API.
+
+## [Unreleased]
+
+Nothing is published yet. The first release, 0.1.0, will contain everything below.
+
+### Added
+
+- Core: `--json` on every command, message keys for every string, typed errors
+  mapped to exit codes (2 for usage, 130 for an interruption, 1 otherwise), a typed
+  confirmation for work that cannot be undone, protected paths, and plugins named in
+  the configuration file.
+- `files`: new, list, tree, info, read, find, grep, hash, dupes, compare, copy, move,
+  rename, replace, delete (to the trash unless `--permanent`), clean, sync and size.
+- `archive`: zip and unzip; tar and untar for `.tar.gz`, `.tgz` and `.tar`. Extraction
+  refuses any archive with an entry that would land outside the target folder.
+- `git`: status, fetch, pull and switch across every repository under a folder.
+- `docker`: ps, up, down, logs, rebuild and clean for the compose project in a folder.
+- `config`: path, keys, list, get, set and unset. The file never holds a secret.
+- `doctor`: what the machine gives kiriya: runtime, configuration, trash, clipboard,
+  git, docker and plugins.
+- `gen`: uuid (version 4 or 7), ulid, password and token.
+- `convert`: base64, hex, url, json, jwt (decoded only, never verified or sent),
+  time and case.
+- `env`: show, with secret-looking values hidden; path; and check of `.env` against
+  `.env.example`.
+- `sys`: info, tools and report.
+- `net`: ip, check and dns.
+- `port`: who, kill and free.
+- `proc`: list, find, kill and tree.
+- `clip`: copy and paste, with Unicode intact.
+- `open`: a file, folder or web address, never running a program.
+- `completion`: tab completion for bash, zsh, fish and PowerShell.
