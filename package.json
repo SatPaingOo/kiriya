@@ -3,7 +3,25 @@
   "version": "0.0.0",
   "private": true,
   "description": "One command-line toolbox for everyday developer work that behaves the same on Windows, Linux and macOS.",
-  "license": "UNLICENSED",
+  "license": "MIT",
+  "author": "Sat Paing Oo",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SatPaingOo/kiriya.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SatPaingOo/kiriya/issues"
+  },
+  "homepage": "https://github.com/SatPaingOo/kiriya#readme",
+  "keywords": [
+    "cli",
+    "developer-tools",
+    "cross-platform",
+    "toolbox",
+    "windows",
+    "linux",
+    "macos"
+  ],
   "type": "module",
   "bin": {
     "kiriya": "dist/src/main.js"
