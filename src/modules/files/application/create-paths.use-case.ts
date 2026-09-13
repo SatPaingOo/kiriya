@@ -38,7 +38,7 @@ export const createSpec: CommandSpec<CreateInput> = {
   usesNetwork: false,
   runsUserCommands: false,
   input: {
-    positionals: [{ name: "paths", description: "files.new.arg.paths", required: true, variadic: true }],
+    positionals: [{ name: "paths", description: "files.new.arg.paths", required: true, variadic: true, path: true }],
     options: {
       dir: { type: "boolean", description: "files.new.option.dir" },
       content: { type: "string", description: "files.new.option.content", valueName: "<text>" },

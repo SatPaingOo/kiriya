@@ -46,7 +46,9 @@ export const sizeSpec: CommandSpec<SizeInput> = {
   usesNetwork: false,
   runsUserCommands: false,
   input: {
-    positionals: [{ name: "folder", description: "files.size.arg.folder", required: false, variadic: false }],
+    positionals: [
+      { name: "folder", description: "files.size.arg.folder", required: false, variadic: false, path: true },
+    ],
     options: { top: { type: "string", description: "files.size.option.top", valueName: "<n>" } },
     parse(raw) {
       const reader = new RawReader(raw);

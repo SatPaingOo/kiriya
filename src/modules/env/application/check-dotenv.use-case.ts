@@ -46,8 +46,8 @@ export const checkSpec: CommandSpec<CheckInput> = {
   input: {
     positionals: [],
     options: {
-      file: { type: "string", description: "env.check.option.file", valueName: "<path>" },
-      example: { type: "string", description: "env.check.option.example", valueName: "<path>" },
+      file: { type: "string", description: "env.check.option.file", valueName: "<path>", path: true },
+      example: { type: "string", description: "env.check.option.example", valueName: "<path>", path: true },
     },
     parse(raw) {
       const reader = new RawReader(raw);

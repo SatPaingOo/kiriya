@@ -67,7 +67,7 @@ export const replaceSpec: CommandSpec<ReplaceInput> = {
     positionals: [
       { name: "find", description: "files.replace.arg.find", required: true, variadic: false },
       { name: "with", description: "files.replace.arg.with", required: true, variadic: false },
-      { name: "paths", description: "files.replace.arg.paths", required: false, variadic: true },
+      { name: "paths", description: "files.replace.arg.paths", required: false, variadic: true, path: true },
     ],
     options: {
       regex: { type: "boolean", description: "files.replace.option.regex" },

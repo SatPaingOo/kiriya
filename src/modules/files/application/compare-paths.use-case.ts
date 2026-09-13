@@ -82,8 +82,8 @@ export const compareSpec: CommandSpec<CompareInput> = {
   runsUserCommands: false,
   input: {
     positionals: [
-      { name: "a", description: "files.compare.arg.a", required: true, variadic: false },
-      { name: "b", description: "files.compare.arg.b", required: true, variadic: false },
+      { name: "a", description: "files.compare.arg.a", required: true, variadic: false, path: true },
+      { name: "b", description: "files.compare.arg.b", required: true, variadic: false, path: true },
     ],
     options: { all: { type: "boolean", description: "files.compare.option.all" } },
     parse(raw) {

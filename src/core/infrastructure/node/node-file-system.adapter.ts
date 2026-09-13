@@ -6,6 +6,7 @@ import {
   mkdir,
   readdir,
   readlink,
+  realpath,
   rename,
   rm,
   rmdir,
@@ -68,6 +69,15 @@ export class NodeFileSystemAdapter implements FileSystem {
     try {
       return await readlink(path);
     } catch (error) {
+      return translateFsError(error, path);
+    }
+  }
+
+  async realPath(path: string): Promise<string | null> {
+    try {
+      return await realpath(path);
+    } catch (error) {
+      if (isMissing(error)) return null;
       return translateFsError(error, path);
     }
   }

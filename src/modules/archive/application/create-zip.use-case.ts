@@ -47,9 +47,9 @@ export const zipSpec: CommandSpec<ZipInput> = {
   usesNetwork: false,
   runsUserCommands: false,
   input: {
-    positionals: [{ name: "paths", description: "archive.zip.arg.paths", required: true, variadic: true }],
+    positionals: [{ name: "paths", description: "archive.zip.arg.paths", required: true, variadic: true, path: true }],
     options: {
-      to: { type: "string", description: "archive.zip.option.to", valueName: "<file.zip>" },
+      to: { type: "string", description: "archive.zip.option.to", valueName: "<file.zip>", path: true },
       lean: { type: "boolean", description: "archive.zip.option.lean" },
       all: { type: "boolean", description: "archive.zip.option.all" },
     },

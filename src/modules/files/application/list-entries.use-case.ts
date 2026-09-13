@@ -41,7 +41,7 @@ export const listSpec: CommandSpec<ListInput> = {
   usesNetwork: false,
   runsUserCommands: false,
   input: {
-    positionals: [{ name: "path", description: "files.list.arg.path", required: false, variadic: false }],
+    positionals: [{ name: "path", description: "files.list.arg.path", required: false, variadic: false, path: true }],
     options: {
       all: { type: "boolean", description: "files.option.all" },
       sort: { type: "string", description: "files.list.option.sort", valueName: "<name|size|time>" },

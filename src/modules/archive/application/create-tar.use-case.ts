@@ -41,9 +41,9 @@ export const tarSpec: CommandSpec<TarInput> = {
   usesNetwork: false,
   runsUserCommands: false,
   input: {
-    positionals: [{ name: "paths", description: "archive.tar.arg.paths", required: true, variadic: true }],
+    positionals: [{ name: "paths", description: "archive.tar.arg.paths", required: true, variadic: true, path: true }],
     options: {
-      to: { type: "string", description: "archive.tar.option.to", valueName: "<file.tar.gz>" },
+      to: { type: "string", description: "archive.tar.option.to", valueName: "<file.tar.gz>", path: true },
       lean: { type: "boolean", description: "archive.tar.option.lean" },
       all: { type: "boolean", description: "archive.tar.option.all" },
     },

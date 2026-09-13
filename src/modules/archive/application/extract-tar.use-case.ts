@@ -69,9 +69,11 @@ export const untarSpec: CommandSpec<UntarInput> = {
   usesNetwork: false,
   runsUserCommands: false,
   input: {
-    positionals: [{ name: "archive", description: "archive.untar.arg.archive", required: true, variadic: false }],
+    positionals: [
+      { name: "archive", description: "archive.untar.arg.archive", required: true, variadic: false, path: true },
+    ],
     options: {
-      to: { type: "string", description: "archive.untar.option.to", valueName: "<folder>" },
+      to: { type: "string", description: "archive.untar.option.to", valueName: "<folder>", path: true },
       list: { type: "boolean", description: "archive.untar.option.list" },
       overwrite: { type: "boolean", description: "archive.untar.option.overwrite" },
       confirm: { type: "string", description: "archive.untar.option.confirm", valueName: "<count>" },

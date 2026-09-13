@@ -53,8 +53,8 @@ export const syncSpec: CommandSpec<SyncInput> = {
   runsUserCommands: false,
   input: {
     positionals: [
-      { name: "source", description: "files.sync.arg.source", required: true, variadic: false },
-      { name: "target", description: "files.sync.arg.target", required: true, variadic: false },
+      { name: "source", description: "files.sync.arg.source", required: true, variadic: false, path: true },
+      { name: "target", description: "files.sync.arg.target", required: true, variadic: false, path: true },
     ],
     options: {
       delete: { type: "boolean", description: "files.sync.option.delete" },

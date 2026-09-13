@@ -27,7 +27,7 @@ export const openSpec: CommandSpec<OpenInput> = {
   usesNetwork: false,
   runsUserCommands: false,
   input: {
-    positionals: [{ name: "target", description: "open.arg.target", required: true, variadic: false }],
+    positionals: [{ name: "target", description: "open.arg.target", required: true, variadic: false, path: true }],
     options: {},
     parse: (raw) => ({ target: new RawReader(raw).positional(0) ?? "" }),
   },

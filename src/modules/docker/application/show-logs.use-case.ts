@@ -34,7 +34,7 @@ export const logsSpec: CommandSpec<LogsInput> = {
     positionals: [servicesPositional],
     options: {
       file: fileOption,
-      follow: { type: "boolean", description: "docker.logs.option.follow", short: "f" },
+      follow: { type: "boolean", description: "docker.logs.option.follow", short: "f", terminalOnly: true },
       tail: { type: "string", description: "docker.logs.option.tail", valueName: "<n|all>" },
     },
     parse(raw) {
