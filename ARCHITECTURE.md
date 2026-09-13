@@ -28,7 +28,9 @@ argv ─► CliApplication ─► CommandRegistry ─► InputSchema.parse ─�
 
 `kiriya mcp` runs the same commands for AI agents. `serveMcp` reads one JSON-RPC message
 per line from stdin, and `McpServer` offers each `read` command as a tool, and each `write` command when
-the `mcp.allowWrite` setting allows it. A call's JSON
+the `mcp.allowWrite` setting allows it. A `destroy` command needs `mcp.allowDestroy` and a
+client that supports elicitation: `McpConfirmation` then asks the user, across rounds with a
+signed `requestState` in the 2026-07-28 version, and with a request of the server's own before it. A call's JSON
 arguments become the raw input argv would give, `RootScope` refuses any path outside
 the server's roots, and the answer is the document `--json` prints. Typed errors become
 results with `isError: true`. [docs/mcp.md](./docs/mcp.md) describes it from a client's side.
@@ -69,7 +71,7 @@ src/
 │   │   └── platform/             windows/, linux/, macos/: trash, process and port tables, clipboard, opener
 │   └── presentation/
 │       ├── cli/                  cli-application, argv, help, style, terminal-confirmation, json-output
-│       ├── mcp/                  mcp-application (stdio), mcp-server, mcp-confirmation, tool-definitions, tool-results, protocol
+│       ├── mcp/                  mcp-application (stdio), mcp-server, mcp-confirmation, elicitation, request-state, tool-definitions, tool-results, protocol
 │       ├── i18n/                 translator
 │       ├── list-preview.ts       "… and N more" for long lists in views
 │       └── ended-processes.ts    one line per ended process, and aligned columns
@@ -206,7 +208,7 @@ Commands that change many things preview first: `rename`, `replace`, `clean`,
 | `ConfigStore` | The user's configuration file | `JsonConfigStore` |
 | `PluginSource` | Find a plugin named in the configuration and import it | `NodePluginSource` |
 | `PluginInventory` | The plugins this run loaded, and the ones it could not | `PluginLoader` in core application |
-| `Confirmation` | Questions to the person running the command | `TerminalConfirmation` in presentation; `McpConfirmation` over MCP, which answers from the `mcp.allowWrite` setting |
+| `Confirmation` | Questions to the person running the command | `TerminalConfirmation` in presentation; `McpConfirmation` over MCP, which answers from the settings or asks through elicitation |
 | `Environment`, `Clock` | The OS, the home folder, variables; the time | `NodeEnvironmentAdapter`, `SystemClockAdapter` |
 | `RandomSource` | Cryptographically secure random bytes; tests inject predictable ones | `NodeRandomSource` |
 | `StandardInput` | What is piped in, read to the end with a size limit, and whether a person is typing instead | `NodeStandardInput`; `ClosedStandardInput` over MCP, where stdin carries the protocol |

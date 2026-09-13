@@ -2,7 +2,7 @@
 
 **One command-line toolbox for everyday developer work that behaves the same on Windows, Linux and macOS.**
 
-**Status:** phase 3 in progress · every v1 module built · release files in place · MCP server started, read tools and write tools when allowed · not on npm yet · private repository · last reviewed 2026-09-14
+**Status:** phase 3 in progress · every v1 module built · release files in place · MCP server with read, write and destroy tools · not on npm yet · private repository · last reviewed 2026-09-14
 
 > kiriya (ကိရိယာ, Burmese for "tool") has every module planned for its first release
 > built and tested in CI on Windows, Linux and macOS, with Node.js 22, 24 and the current

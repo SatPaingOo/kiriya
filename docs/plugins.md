@@ -81,8 +81,9 @@ const greet = {
 - An option only for a person at a terminal sets `terminalOnly: true`, as `--yes` and
   `--confirm` options always should, and a command that must never serve an AI agent
   sets `terminalOnly: true` in its spec. Neither is offered over MCP.
-- Over MCP, a `read` command is a tool by default and a `write` command when the user
-  allows it; `runsUserCommands: true` keeps a command out.
+- Over MCP, a `read` command is a tool by default, and a `write` or `destroy` command when
+  the user allows it; `runsUserCommands: true` keeps a command out. There,
+  `context.confirmation` asks the user through the MCP client.
 
 `data` is the command's JSON output, so treat its shape as a public contract.
 
