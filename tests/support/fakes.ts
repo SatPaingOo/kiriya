@@ -11,7 +11,15 @@ import type { Confirmation } from "../../src/core/domain/ports/confirmation.js";
 import type { Environment, OsFamily } from "../../src/core/domain/ports/environment.js";
 import type { FileSystem } from "../../src/core/domain/ports/file-system.js";
 import type { OutputStream, Passthrough } from "../../src/core/domain/ports/passthrough.js";
+import type { Listener, PortTable } from "../../src/core/domain/ports/port-table.js";
 import type { ProcessOptions, ProcessResult, ProcessRunner } from "../../src/core/domain/ports/process-runner.js";
+import type {
+  EndOutcome,
+  EndResult,
+  ProcessInfo,
+  ProcessListing,
+  ProcessTable,
+} from "../../src/core/domain/ports/process-table.js";
 import type { RandomSource } from "../../src/core/domain/ports/random-source.js";
 import type { StandardInput } from "../../src/core/domain/ports/standard-input.js";
 import type { Trash, TrashOutcome } from "../../src/core/domain/ports/trash.js";
@@ -224,4 +232,67 @@ export async function layout(root: string, entries: Readonly<Record<string, stri
 /** Paths relative to root with `/`, for OS-independent assertions. */
 export function relativeTo(root: string, paths: readonly string[]): string[] {
   return paths.map((item) => path.relative(root, item).split(path.sep).join("/"));
+}
+
+export function processInfo(
+  pid: number,
+  name: string,
+  details: Partial<Omit<ProcessInfo, "pid" | "name">> = {},
+): ProcessInfo {
+  return { pid, name, ppid: null, command: null, memoryBytes: null, ...details };
+}
+
+/** A fixed process list that records what it was asked to list and end, and answers every end with one outcome. */
+export class FakeProcessTable implements ProcessTable {
+  readonly selfPid: number;
+  readonly listed: boolean[] = [];
+  readonly ended: Array<{ readonly pids: readonly number[]; readonly force: boolean }> = [];
+  private readonly guarded: ReadonlySet<number>;
+  private readonly outcome: EndOutcome;
+
+  constructor(
+    private readonly processes: readonly ProcessInfo[],
+    options: {
+      readonly selfPid?: number;
+      readonly protectedPids?: readonly number[];
+      readonly outcome?: EndOutcome;
+    } = {},
+  ) {
+    this.selfPid = options.selfPid ?? 999_999;
+    this.guarded = new Set(options.protectedPids ?? []);
+    this.outcome = options.outcome ?? "ended";
+  }
+
+  list(detailed: boolean): Promise<ProcessListing> {
+    this.listed.push(detailed);
+    return Promise.resolve({ processes: this.processes, detailed });
+  }
+
+  end(pids: readonly number[], force: boolean): Promise<readonly EndResult[]> {
+    this.ended.push({ pids, force });
+    return Promise.resolve(pids.map((pid) => ({ pid, outcome: this.outcome, code: null })));
+  }
+
+  protectedPids(): ReadonlySet<number> {
+    return this.guarded;
+  }
+}
+
+/** Fixed listeners; a port in the closed set cannot be opened, and every port tried is recorded. */
+export class FakePortTable implements PortTable {
+  readonly tried: number[] = [];
+
+  constructor(
+    private readonly current: readonly Listener[],
+    private readonly closed: ReadonlySet<number> = new Set(),
+  ) {}
+
+  listeners(): Promise<readonly Listener[]> {
+    return Promise.resolve(this.current);
+  }
+
+  canListen(port: number): Promise<boolean> {
+    this.tried.push(port);
+    return Promise.resolve(!this.closed.has(port));
+  }
 }

@@ -677,6 +677,17 @@ export const en = {
   "net.dns.not-found": "{name} has no {type} records",
   "net.dns.timeout": "The DNS lookup of {name} timed out",
   "net.dns.failed": "The DNS lookup of {name} failed: {code}",
+
+  "core.processes.failed": "{program} could not list processes (exit code {code}): {detail}",
+  "core.processes.unreadable": "Processes could not be read from {source}: {detail}",
+  "core.ports.failed": "{program} could not list listening ports (exit code {code}): {detail}",
+  "core.ports.unreadable": "Listening ports could not be read from {source}: {detail}",
+  "core.end.ended": "Ended {name} ({pid})",
+  "core.end.gone": "{name} ({pid}) had already ended",
+  "core.end.still-running": "{name} ({pid}) is still running; --force ends it at once",
+  "core.end.denied":
+    "Not allowed to end {name} ({pid}): it belongs to another user or to the system, and kiriya never elevates",
+  "core.end.failed": "Could not end {name} ({pid}): {code}",
 } as const;
 
 export type MessageKey = keyof typeof en;
