@@ -349,7 +349,6 @@ export const en = {
   "archive.zip.option.lean": "Leave out .git, node_modules and other dependency or build folders",
   "archive.zip.option.all": "Let globs match hidden entries and dependency folders",
   "archive.zip.to-required": "--to must name the archive to create",
-  "archive.zip.same-name": "Two sources are both named {name}",
   "archive.zip.too-many-entries": "{count} entries need ZIP64, which is not supported",
   "archive.zip.entry-too-large": "{name} is 4 GB or larger, which needs ZIP64",
   "archive.zip.archive-too-large": "{path} would pass 4 GB, which needs ZIP64",
@@ -774,6 +773,8 @@ export const en = {
   "open.done": "Opened {target}",
 
   "doctor.check.clipboard": "{backend}",
+
+  "archive.same-name": "Two sources are both named {name}",
 } as const;
 
 export type MessageKey = keyof typeof en;
