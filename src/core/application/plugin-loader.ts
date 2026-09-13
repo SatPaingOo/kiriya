@@ -7,7 +7,7 @@ import type { CommandRegistry } from "./command-registry.js";
 
 const PLUGIN_ID = /^[a-z][a-z0-9-]*$/;
 /** Words the command line itself uses, which no module may take. */
-const RESERVED_IDS: ReadonlySet<string> = new Set(["core", "help", "version"]);
+const RESERVED_IDS: ReadonlySet<string> = new Set(["core", "help", "mcp", "version"]);
 
 interface PluginModule extends KiriyaModule {
   readonly messages: Readonly<Record<string, string>>;

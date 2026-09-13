@@ -6,7 +6,8 @@ import type { Environment } from "../../domain/ports/environment.js";
 import { Translator } from "../i18n/translator.js";
 import { parseCommandArguments, splitGlobalFlags, type GlobalFlags } from "./argv.js";
 import { CliViewFormat } from "./cli-view-format.js";
-import { commandHelp, mainHelp, moduleHelp, type HelpContext } from "./help.js";
+import { MCP_INPUT, type McpInput } from "../mcp/mcp-application.js";
+import { commandHelp, mainHelp, mcpHelp, moduleHelp, type HelpContext } from "./help.js";
 import { errorJson, resultJson } from "./json-output.js";
 import { createStyle, type Style } from "./style.js";
 import { closest } from "./suggest.js";
@@ -21,6 +22,8 @@ export interface CliDependencies {
   readonly stdin: NodeJS.ReadStream;
   readonly stdout: NodeJS.WriteStream;
   readonly stderr: NodeJS.WriteStream;
+  /** Serves the commands over MCP on stdin and stdout until stdin closes. */
+  readonly serveMcp: (input: McpInput, cwd: string) => Promise<number>;
 }
 
 const EXIT_CODES: Readonly<Record<ErrorKind, number>> = {
@@ -58,6 +61,7 @@ export class CliApplication {
       const [first, ...words] = rest;
       if (first === undefined) return this.print(this.deps.stdout, mainHelp(this.deps.registry.list(), help));
       if (first === "help") return this.help(words[0], words[1], help);
+      if (first === "mcp") return await this.mcp(words, cwd, flags.help, help);
 
       const module = this.findModule(first);
       const { entry, args } = this.resolveCommand(module, words);
@@ -115,8 +119,15 @@ export class CliApplication {
     throw this.unknown("core.usage.unknown-command", { module: module.id, name: verb }, verb, verbsOf(module));
   }
 
+  /** `kiriya mcp` serves every exposed command to an AI agent until the agent closes stdin. */
+  private async mcp(words: readonly string[], cwd: string, showHelp: boolean, context: HelpContext): Promise<number> {
+    if (showHelp) return this.print(this.deps.stdout, mcpHelp(MCP_INPUT.options, context));
+    return this.deps.serveMcp(MCP_INPUT.parse(parseCommandArguments(MCP_INPUT, words)), cwd);
+  }
+
   private help(moduleName: string | undefined, verb: string | undefined, context: HelpContext): number {
     if (moduleName === undefined) return this.print(this.deps.stdout, mainHelp(this.deps.registry.list(), context));
+    if (moduleName === "mcp") return this.print(this.deps.stdout, mcpHelp(MCP_INPUT.options, context));
     const module = this.findModule(moduleName);
     if (verb === undefined) {
       const own = module.commands.get("");

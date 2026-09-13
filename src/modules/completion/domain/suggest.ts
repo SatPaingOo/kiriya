@@ -150,7 +150,8 @@ export function suggest(
   }
   if (position.module === undefined) {
     const help: Suggestion = { value: "help", description: "completion.help-word" };
-    return [...moduleSuggestions(modules), help].filter(starting);
+    const mcp: Suggestion = { value: "mcp", description: "core.mcp.summary" };
+    return [...moduleSuggestions(modules), help, mcp].filter(starting);
   }
   if (position.command === undefined) {
     const own = ownCommand(position.module);
