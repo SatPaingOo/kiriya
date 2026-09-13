@@ -7,11 +7,13 @@ import type { Environment } from "./ports/environment.js";
 import type { FileContent } from "./ports/file-content.js";
 import type { FileSystem } from "./ports/file-system.js";
 import type { Hasher } from "./ports/hasher.js";
+import type { Network } from "./ports/network.js";
 import type { PluginInventory } from "./ports/plugin-inventory.js";
 import type { ProcessRunner } from "./ports/process-runner.js";
 import type { ProtectedPaths } from "./ports/protected-paths.js";
 import type { RandomSource } from "./ports/random-source.js";
 import type { StandardInput } from "./ports/standard-input.js";
+import type { SystemInfo } from "./ports/system-info.js";
 import type { Trash } from "./ports/trash.js";
 import type { TextView } from "./view.js";
 
@@ -32,6 +34,8 @@ export interface CorePorts {
   readonly clock: Clock;
   readonly random: RandomSource;
   readonly stdin: StandardInput;
+  readonly system: SystemInfo;
+  readonly network: Network;
   readonly protectedPaths: ProtectedPaths;
   readonly config: ConfigStore;
   readonly plugins: PluginInventory;
