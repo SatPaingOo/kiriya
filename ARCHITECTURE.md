@@ -9,11 +9,12 @@ what comes next; this file describes what exists and how to extend it.
 argv ─► CliApplication ─► CommandRegistry ─► InputSchema.parse ─► Command.execute ─► CommandResult
                                                                         │                  │
                                                           ports: FileSystem, Trash,   text view or JSON,
-                                                          Confirmation, Clock, ...    then the exit code
+                                                          ProcessRunner, Config, ...  then the exit code
 ```
 
-1. `src/main.ts` builds the adapters for the current operating system, registers every
-   module listed in `src/config/modules.ts`, and hands argv to `CliApplication`.
+1. `src/main.ts` builds the adapters for the current operating system and registers
+   every module listed in `src/config/modules.ts`. It then reads the configuration file
+   and loads the plugins it lists, which register the same way.
 2. `CliApplication` takes out the global flags (`--json`, `--no-color`, `--no-input`,
    `--debug`, `--help`, `--version`), finds the module and the verb, and parses the rest
    with `node:util` `parseArgs` against the command's `InputSchema`.
@@ -47,14 +48,15 @@ The layers exist once in `src/core` and again inside each module. Three more rul
 
 ```text
 src/
-├── main.ts                       composition root
-├── config/                       data: modules, protected paths, dependency folders, clean rules, rebuildable folders
+├── main.ts                       composition root: adapters, built-in modules, then plugins
+├── config/                       data: modules, config keys, protected paths, dependency folders, clean rules
 ├── i18n/locales/en.ts            the message catalog; MessageKey is derived from it
 ├── core/
 │   ├── domain/                   command, module, errors, message, input-schema, view, glob, names, ports/, values/
-│   ├── application/              command-registry, path-guard, walk, paths (expand, outermost, measure), safety
+│   ├── application/              command-registry, plugin-loader, config-values, path-guard, walk, paths, safety
 │   ├── infrastructure/
-│   │   ├── node/                 file system, file content, hasher, compression, process runner, environment, clock
+│   │   ├── node/                 file system and content, hasher, compression, process runner,
+│   │   │                         config file and location, plugin source, environment, clock
 │   │   └── platform/             windows/, linux/, macos/: one trash adapter each
 │   └── presentation/
 │       ├── cli/                  cli-application, argv, help, style, terminal-confirmation, json-output
@@ -62,23 +64,26 @@ src/
 │       └── list-preview.ts       "… and N more" for long lists in views
 └── modules/
     ├── files/                    new list tree info read find grep hash dupes compare copy move rename replace delete clean sync size
-    │   ├── files.module.ts       registers each command with its view
-    │   ├── domain/               sizes and times, text encodings, case styles, extension lists, sync plans
-    │   ├── application/          <verb>-<noun>.use-case.ts with its CommandSpec; transfers, move-entry, text-files
-    │   └── presentation/         <verb>.view.ts
-    └── archive/                  zip unzip
-        ├── archive.module.ts
-        ├── domain/               crc32, zip-format: headers and the central directory as pure functions over bytes
-        ├── application/          create-zip, extract-zip, zip-reader
-        └── presentation/         zip.view.ts, unzip.view.ts
+    ├── archive/                  zip unzip
+    ├── git/                      status fetch pull switch, across every repository under a folder
+    ├── docker/                   ps up down logs rebuild clean, for the compose project in the current folder
+    ├── config/                   path keys list get set unset
+    └── doctor/                   one command: kiriya doctor
+examples/plugins/hello/           a complete plugin in one file
+docs/plugins.md                   the plugin contract
 tests/
-├── unit/                         pure logic, no file system: core/, files/, archive/, i18n/, tools/
-├── integration/                  use cases on a real file system in temporary folders
+├── unit/                         pure logic and use cases with fakes: core/, files/, archive/, git/, docker/, config/, doctor/
+├── integration/                  use cases with real adapters: a real file system, real git repositories
 ├── contract/                     one suite per port, run against its adapters
 ├── e2e/                          the built CLI as a black box
 └── support/                      fakes, temporary folders, and a runner for the built CLI
 tools/                            boundaries.ts and check-boundaries.ts
 ```
+
+Each module has `<module>.module.ts`, which registers its commands with their views,
+and the layer folders it needs. Use cases are `application/<verb>-<noun>.use-case.ts`
+with their `CommandSpec`. Views are `presentation/<verb>.view.ts`, or, for a module
+whose views are small, one `presentation/<module>.views.ts`.
 
 ## Contracts
 
@@ -88,16 +93,24 @@ A command is a class implementing `Command<Input, Output>` with a `CommandSpec<I
 
 | Field | Meaning |
 |---|---|
-| `id` | `<module>.<verb>`, such as `files.delete` |
+| `id` | `<module>.<verb>`, such as `files.delete`; or `<module>` alone for a module that is one command, such as `doctor` |
 | `summary` | Catalog key for help |
 | `input` | `InputSchema`: positionals, options, and `parse(raw)` into the typed input |
 | `examples` | Shown in help |
 | `safety` | `read`, `write` or `destroy`: the most the command can do with any flags |
 | `idempotent`, `usesNetwork`, `runsUserCommands` | Facts the future MCP server exposes and filters on |
 
-The spec lives in the same file as the use case. The text view, a
-`TextView<Output>` function, lives in `presentation/<verb>.view.ts` and formats through
-`ViewFormat`: translation, colour, sizes, times, and paths relative to the working folder.
+`execute(input, context)` receives a `CommandContext`:
+
+| Field | Meaning |
+|---|---|
+| `cwd` | The working folder; resolve every path against it |
+| `confirmation` | Asks the person running the command, or refuses when nobody can be asked |
+| `passthrough` | Where the live output of a program the command runs goes, such as a docker build: the matching stream in a terminal, and stderr with `--json` so stdout stays one document |
+| `signal` | Aborts on Ctrl+C; a program started with it is stopped |
+
+The text view, a `TextView<Output>` function, formats through `ViewFormat`:
+translation, colour, sizes, times, and paths relative to the working folder.
 
 ### Messages
 
@@ -105,14 +118,15 @@ Every user-facing string is a key in `src/i18n/locales/en.ts`, with `{name}` pla
 Code passes `Message` values, `{ key, params }`, and a parameter can itself be a message.
 Text output translates them. JSON output keeps the key and parameters and adds the text,
 so scripts can match on keys and never on wording. A test fails on any catalog key the
-source does not use, and TypeScript fails on any key the catalog does not have.
+source does not use, and TypeScript fails on any key the catalog does not have. Plugins
+bring the text of their own keys, which the translator adds to kiriya's catalog.
 
 ### Errors and exit codes
 
 | Error | Kind | Exit code |
 |---|---|---|
 | Success | | 0 |
-| A `done` result with failures, including a difference found by `files compare` or `files hash --check` | | 1 |
+| A `done` result with failures, such as a difference `files compare` found or a repository `git pull` could not update | | 1 |
 | `NotFoundError`, `ConflictError`, `RefusedError`, `CapabilityUnavailableError`, `OperationFailedError` | `not-found`, `conflict`, `refused`, `capability-unavailable`, `failed` | 1 |
 | `UsageError` | `usage` | 2 |
 | `InterruptedError`, or Ctrl+C during a command | `interrupted` | 130 |
@@ -152,8 +166,9 @@ roots, the home folder, the working folder and its parents, and operating-system
 folders; `requireApproval` asks a yes-or-no question; `requireTypedConfirmation` asks for
 the typed value, and stops before any prompt when a script's `--confirm` does not match.
 
-Commands that change many things preview first: `rename`, `replace`, `clean` and `sync`
-change nothing without `--apply`, and `copy`, `move` and `delete` accept `--dry-run`.
+Commands that change many things preview first: `rename`, `replace`, `clean`,
+`files sync` and `docker clean` change nothing without `--apply`, and `copy`, `move` and
+`delete` accept `--dry-run`.
 
 ### Ports
 
@@ -163,13 +178,38 @@ change nothing without `--apply`, and `copy`, `move` and `delete` accept `--dry-
 | `FileContent` | Bytes inside files: read, write, positioned reads, exclusive creation | `NodeFileContentAdapter` |
 | `Hasher` | File digests read in chunks | `NodeHasherAdapter` |
 | `Compression` | Raw deflate, as ZIP stores it | `NodeCompressionAdapter` |
-| `ProcessRunner` | Find a program on PATH and run it without a shell | `NodeProcessRunnerAdapter` |
+| `ProcessRunner` | Find a program on PATH and run it without a shell, capturing or streaming its output | `NodeProcessRunnerAdapter` |
 | `Trash` | The operating system's trash | `WindowsTrashAdapter` (Recycle Bin through PowerShell), `FreedesktopTrashAdapter`, `MacosTrashAdapter` |
+| `ConfigStore` | The user's configuration file | `JsonConfigStore` |
+| `PluginSource` | Find a plugin named in the configuration and import it | `NodePluginSource` |
+| `PluginInventory` | The plugins this run loaded, and the ones it could not | `PluginLoader` in core application |
 | `Confirmation` | Questions to the person running the command | `TerminalConfirmation` in presentation |
 | `Environment`, `Clock` | The OS, the home folder, variables; the time | `NodeEnvironmentAdapter`, `SystemClockAdapter` |
 | `ProtectedPaths` | Paths no command may delete, move or overwrite | `PathGuard` in core application |
 
 `src/main.ts` is the only place that chooses an adapter by operating system.
+
+## Configuration
+
+One JSON file per user holds kiriya's own settings. It is found at:
+
+| Windows | Linux | macOS |
+|---|---|---|
+| `%APPDATA%\kiriya\config.json` | `$XDG_CONFIG_HOME/kiriya/config.json`, by default `~/.config/kiriya/config.json` | `~/Library/Application Support/kiriya/config.json` |
+
+`KIRIYA_CONFIG` names another file. Values are text or lists of text, and the settings
+kiriya reads are listed in `src/config/config-keys.ts`. A file that is not valid names
+the file and the field; while it is broken, no plugins load, every built-in command
+still works, and `kiriya doctor` reports the problem. The file never holds a secret:
+`kiriya config set` refuses values that look like one.
+
+## Plugins
+
+A plugin is a module that lives outside kiriya: an npm package or a local folder, listed
+in the `plugins` setting. `PluginLoader` imports each one through `PluginSource`, checks
+its shape, refuses an id that is already taken, and registers its commands, so they run
+exactly like built-in ones. A plugin that fails any step is recorded and skipped.
+[docs/plugins.md](./docs/plugins.md) is the contract for plugin authors.
 
 ## Extending kiriya
 
@@ -179,7 +219,7 @@ change nothing without `--apply`, and `copy`, `move` and `delete` accept `--dry-
    and output lines.
 2. Write `src/modules/<module>/application/<verb>-<noun>.use-case.ts`: input and output
    types, the `CommandSpec`, and a class whose constructor takes only the ports it needs.
-3. Write `src/modules/<module>/presentation/<verb>.view.ts`.
+3. Write its view in `src/modules/<module>/presentation/`.
 4. Register both in `<module>.module.ts`.
 5. Test it. Cover the judgement calls, and give every refusal a negative test.
 
@@ -193,6 +233,10 @@ add one line to `src/config/modules.ts`.
 Declare the interface in `src/core/domain/ports/`, implement it in
 `src/core/infrastructure/node/` or `platform/<os>/`, add it to `CorePorts`, construct it in
 `src/main.ts`, and run the port's suite in `tests/contract/` against the new adapter.
+
+### A setting
+
+Add an entry to `src/config/config-keys.ts` with its type and a catalog key describing it.
 
 ## Behaving the same on every OS
 

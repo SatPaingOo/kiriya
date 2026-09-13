@@ -2,12 +2,12 @@
 
 **One command-line toolbox for everyday developer work that behaves the same on Windows, Linux and macOS.**
 
-**Status:** phase 1 in progress · core, `files` and `archive` built and tested · private repository · last reviewed 2026-09-13
+**Status:** phase 2 in progress · core, `files`, `archive`, `git`, `docker`, `config`, `doctor` and plugins built · private repository · last reviewed 2026-09-13
 
-> kiriya (ကိရိယာ, Burmese for "tool") is in its first build phase. The core, the
-> `files` module (18 commands) and the `archive` module (zip, unzip) work, with
-> `--json` on every command, and their tests pass on Windows; CI on Linux and macOS
-> comes next. Nothing here is ready to install yet.
+> kiriya (ကိရိယာ, Burmese for "tool") is being built. The `files` module (18
+> commands) and the `archive` module pass CI on Windows, Linux and macOS. The `git`,
+> `docker` and `config` modules, `kiriya doctor`, and plugins are new in phase 2.
+> Every command answers `--json`. Nothing here is ready to install yet.
 
 ## The problem
 
@@ -40,4 +40,5 @@ operation. Details in [BLUEPRINT.md](./BLUEPRINT.md) section 3.
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | How the code is organised today, and how to add a command, module or adapter |
 | [CONTRIBUTING.md](./CONTRIBUTING.md) | Setup, scripts, the checks every change passes, branches, commits and CI |
 | [AGENTS.md](./AGENTS.md) | The same rules, gathered for AI coding agents |
+| [docs/plugins.md](./docs/plugins.md) | How to write, install and check a plugin |
 | [RESEARCH.md](./RESEARCH.md) | Prior art, CLI and MCP guidelines, distribution options, sources |
