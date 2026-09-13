@@ -9,7 +9,9 @@ import type { FileSystem } from "./ports/file-system.js";
 import type { Hasher } from "./ports/hasher.js";
 import type { Network } from "./ports/network.js";
 import type { PluginInventory } from "./ports/plugin-inventory.js";
+import type { PortTable } from "./ports/port-table.js";
 import type { ProcessRunner } from "./ports/process-runner.js";
+import type { ProcessTable } from "./ports/process-table.js";
 import type { ProtectedPaths } from "./ports/protected-paths.js";
 import type { RandomSource } from "./ports/random-source.js";
 import type { StandardInput } from "./ports/standard-input.js";
@@ -36,6 +38,8 @@ export interface CorePorts {
   readonly stdin: StandardInput;
   readonly system: SystemInfo;
   readonly network: Network;
+  readonly processTable: ProcessTable;
+  readonly portTable: PortTable;
   readonly protectedPaths: ProtectedPaths;
   readonly config: ConfigStore;
   readonly plugins: PluginInventory;

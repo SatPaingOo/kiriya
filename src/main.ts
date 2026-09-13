@@ -12,6 +12,9 @@ import { PathGuard } from "./core/application/path-guard.js";
 import { PluginLoader } from "./core/application/plugin-loader.js";
 import type { CorePorts } from "./core/domain/module.js";
 import type { Environment } from "./core/domain/ports/environment.js";
+import type { PortTable } from "./core/domain/ports/port-table.js";
+import type { ProcessRunner } from "./core/domain/ports/process-runner.js";
+import type { ProcessTable } from "./core/domain/ports/process-table.js";
 import type { Trash } from "./core/domain/ports/trash.js";
 import { configFilePath } from "./core/infrastructure/node/config-location.js";
 import { JsonConfigStore } from "./core/infrastructure/node/json-config-store.adapter.js";
@@ -28,7 +31,13 @@ import { NodeStandardInput } from "./core/infrastructure/node/node-standard-inpu
 import { NodeSystemInfoAdapter } from "./core/infrastructure/node/node-system-info.adapter.js";
 import { SystemClockAdapter } from "./core/infrastructure/node/system-clock.adapter.js";
 import { FreedesktopTrashAdapter } from "./core/infrastructure/platform/linux/freedesktop-trash.adapter.js";
+import { LinuxPortTableAdapter } from "./core/infrastructure/platform/linux/linux-port-table.adapter.js";
+import { LinuxProcessTableAdapter } from "./core/infrastructure/platform/linux/linux-process-table.adapter.js";
+import { MacosPortTableAdapter } from "./core/infrastructure/platform/macos/macos-port-table.adapter.js";
+import { MacosProcessTableAdapter } from "./core/infrastructure/platform/macos/macos-process-table.adapter.js";
 import { MacosTrashAdapter } from "./core/infrastructure/platform/macos/macos-trash.adapter.js";
+import { WindowsPortTableAdapter } from "./core/infrastructure/platform/windows/windows-port-table.adapter.js";
+import { WindowsProcessTableAdapter } from "./core/infrastructure/platform/windows/windows-process-table.adapter.js";
 import { WindowsTrashAdapter } from "./core/infrastructure/platform/windows/windows-trash.adapter.js";
 import { CliApplication } from "./core/presentation/cli/cli-application.js";
 import { en } from "./i18n/locales/en.js";
@@ -41,6 +50,28 @@ function trashFor(environment: Environment): Trash {
       return new MacosTrashAdapter(environment);
     case "linux":
       return new FreedesktopTrashAdapter(environment);
+  }
+}
+
+function processTableFor(environment: Environment, processRunner: ProcessRunner): ProcessTable {
+  switch (environment.os) {
+    case "windows":
+      return new WindowsProcessTableAdapter(processRunner);
+    case "macos":
+      return new MacosProcessTableAdapter(processRunner);
+    case "linux":
+      return new LinuxProcessTableAdapter();
+  }
+}
+
+function portTableFor(environment: Environment, processRunner: ProcessRunner): PortTable {
+  switch (environment.os) {
+    case "windows":
+      return new WindowsPortTableAdapter(processRunner);
+    case "macos":
+      return new MacosPortTableAdapter(processRunner);
+    case "linux":
+      return new LinuxPortTableAdapter();
   }
 }
 
@@ -64,6 +95,8 @@ const ports: CorePorts = {
   stdin: new NodeStandardInput(),
   system: new NodeSystemInfoAdapter(environment, processRunner),
   network: new NodeNetworkAdapter(),
+  processTable: processTableFor(environment, processRunner),
+  portTable: portTableFor(environment, processRunner),
   protectedPaths: new PathGuard(environment),
   config,
   plugins,
