@@ -41,6 +41,18 @@ test("set refuses a setting kiriya does not know, and anything that looks like a
   assert.equal(config.current, null);
 });
 
+test("a setting with choices takes only one of them", async () => {
+  const config = new MemoryConfigStore(FILE);
+  await assert.rejects(
+    new SetSetting(config).execute({ key: "mcp.allowWrite", values: ["yes"] }),
+    failsWith(UsageError, "config.set.not-a-choice"),
+  );
+  assert.equal(config.current, null);
+  const result = expectDone(await new SetSetting(config).execute({ key: "mcp.allowWrite", values: ["true"] }));
+  assert.deepEqual(result.data, { key: "mcp.allowWrite", value: "true", previous: null });
+  assert.deepEqual(config.current, { "mcp.allowWrite": "true" });
+});
+
 test("get prints a setting, and says when it is not set", async () => {
   const config = new MemoryConfigStore(FILE, { plugins: ["a"] });
   assert.deepEqual(expectDone(await new GetSetting(config).execute({ key: "plugins" })).data.value, ["a"]);
@@ -60,6 +72,7 @@ test("unset removes a setting, and changes nothing when it was not set", async (
 test("list shows every known setting, set or not, and marks settings kiriya does not read", async () => {
   const result = expectDone(await new ListSettings(new MemoryConfigStore(FILE, { old: "x" })).execute());
   assert.deepEqual(result.data.settings, [
+    { key: "mcp.allowWrite", value: null, known: true },
     { key: "old", value: "x", known: false },
     { key: "plugins", value: null, known: true },
   ]);

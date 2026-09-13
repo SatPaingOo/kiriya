@@ -9,6 +9,8 @@ export interface KeyInfo {
   readonly type: "string" | "list";
   readonly description: Message;
   readonly example: string;
+  /** The only values a setting takes; null when any value will do. */
+  readonly choices: readonly string[] | null;
 }
 
 export interface KeysOutput {
@@ -33,6 +35,7 @@ export class ListConfigKeys implements Command<NoInput, KeysOutput> {
       type: entry.type,
       description: message(entry.description),
       example: entry.example,
+      choices: entry.choices ?? null,
     }));
     return Promise.resolve(done({ keys }));
   }
