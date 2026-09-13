@@ -775,6 +775,11 @@ export const en = {
   "doctor.check.clipboard": "{backend}",
 
   "archive.same-name": "Two sources are both named {name}",
+  "archive.tar.not-tar": "it does not look like a tar archive",
+  "archive.tar.bad-checksum": "a header's checksum does not match",
+  "archive.tar.bad-header": "a header holds a value that is not a number",
+  "archive.tar.meta-too-large": "an extended header is larger than 1 MB",
+  "archive.tar.truncated": "it ends in the middle of an entry",
 } as const;
 
 export type MessageKey = keyof typeof en;
