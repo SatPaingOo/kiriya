@@ -20,10 +20,12 @@ import { NodeEnvironmentAdapter } from "./core/infrastructure/node/node-environm
 import { NodeFileContentAdapter } from "./core/infrastructure/node/node-file-content.adapter.js";
 import { NodeFileSystemAdapter } from "./core/infrastructure/node/node-file-system.adapter.js";
 import { NodeHasherAdapter } from "./core/infrastructure/node/node-hasher.adapter.js";
+import { NodeNetworkAdapter } from "./core/infrastructure/node/node-network.adapter.js";
 import { NodePluginSource } from "./core/infrastructure/node/node-plugin-source.adapter.js";
 import { NodeProcessRunnerAdapter } from "./core/infrastructure/node/node-process-runner.adapter.js";
 import { NodeRandomSource } from "./core/infrastructure/node/node-random-source.adapter.js";
 import { NodeStandardInput } from "./core/infrastructure/node/node-standard-input.adapter.js";
+import { NodeSystemInfoAdapter } from "./core/infrastructure/node/node-system-info.adapter.js";
 import { SystemClockAdapter } from "./core/infrastructure/node/system-clock.adapter.js";
 import { FreedesktopTrashAdapter } from "./core/infrastructure/platform/linux/freedesktop-trash.adapter.js";
 import { MacosTrashAdapter } from "./core/infrastructure/platform/macos/macos-trash.adapter.js";
@@ -48,17 +50,20 @@ const { version } = JSON.parse(readFileSync(new URL("../../package.json", import
 const environment = new NodeEnvironmentAdapter();
 const config = new JsonConfigStore(configFilePath(environment, process.cwd()));
 const plugins = new PluginLoader();
+const processRunner = new NodeProcessRunnerAdapter();
 const ports: CorePorts = {
   fileSystem: new NodeFileSystemAdapter(),
   fileContent: new NodeFileContentAdapter(),
   hasher: new NodeHasherAdapter(),
   compression: new NodeCompressionAdapter(),
-  processRunner: new NodeProcessRunnerAdapter(),
+  processRunner,
   trash: trashFor(environment),
   environment,
   clock: new SystemClockAdapter(),
   random: new NodeRandomSource(),
   stdin: new NodeStandardInput(),
+  system: new NodeSystemInfoAdapter(environment, processRunner),
+  network: new NodeNetworkAdapter(),
   protectedPaths: new PathGuard(environment),
   config,
   plugins,
