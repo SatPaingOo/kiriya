@@ -2,6 +2,7 @@ import type { MessageKey } from "../../i18n/locales/en.js";
 import type { Command } from "./command.js";
 import type { Clipboard } from "./ports/clipboard.js";
 import type { Clock } from "./ports/clock.js";
+import type { CommandCatalog } from "./ports/command-catalog.js";
 import type { Compression } from "./ports/compression.js";
 import type { ConfigStore } from "./ports/config-store.js";
 import type { Environment } from "./ports/environment.js";
@@ -44,6 +45,8 @@ export interface CorePorts {
   readonly portTable: PortTable;
   readonly clipboard: Clipboard;
   readonly opener: Opener;
+  /** Every registered command, plugins included. */
+  readonly commands: CommandCatalog;
   readonly protectedPaths: ProtectedPaths;
   readonly config: ConfigStore;
   readonly plugins: PluginInventory;
