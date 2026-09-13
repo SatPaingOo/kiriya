@@ -15,4 +15,9 @@ export class NodeEnvironmentAdapter implements Environment {
   variable(name: string): string | undefined {
     return process.env[name];
   }
+
+  variables(): Readonly<Record<string, string>> {
+    const entries = Object.entries(process.env).filter((entry): entry is [string, string] => entry[1] !== undefined);
+    return Object.fromEntries(entries);
+  }
 }

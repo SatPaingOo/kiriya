@@ -21,11 +21,15 @@ export class FakeEnvironment implements Environment {
   constructor(
     readonly os: OsFamily,
     readonly homeDirectory: string,
-    private readonly variables: Readonly<Record<string, string>> = {},
+    private readonly values: Readonly<Record<string, string>> = {},
   ) {}
 
   variable(name: string): string | undefined {
-    return this.variables[name];
+    return this.values[name];
+  }
+
+  variables(): Readonly<Record<string, string>> {
+    return this.values;
   }
 }
 
