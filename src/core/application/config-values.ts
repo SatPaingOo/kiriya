@@ -25,6 +25,11 @@ export function mcpAllowsWrite(values: ConfigValues): boolean {
   return values["mcp.allowWrite"] === "true";
 }
 
+/** Whether the MCP server may offer tools whose work cannot be undone. Only the exact value `true` allows it. */
+export function mcpAllowsDestroy(values: ConfigValues): boolean {
+  return values["mcp.allowDestroy"] === "true";
+}
+
 /** The plugins the configuration lists, in order; none when the setting is missing or malformed. */
 export function pluginEntries(values: ConfigValues): readonly string[] {
   const value = values["plugins"];
