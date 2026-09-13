@@ -767,6 +767,12 @@ export const en = {
   "clip.copy.done": "Copied {count} character(s)",
   "clip.paste.summary": "Print the text on the clipboard",
 
+  "open.summary": "Open a file or folder in its default application, or a web address in the browser",
+  "open.arg.target": "A file, a folder, or an http, https or mailto address",
+  "open.scheme-refused": "Refused: kiriya opens only http, https and mailto addresses, not {scheme}",
+  "open.runs-program": "Refused: opening {path} would run it as a program; open the folder that holds it instead",
+  "open.done": "Opened {target}",
+
   "doctor.check.clipboard": "{backend}",
 } as const;
 

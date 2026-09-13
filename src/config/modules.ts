@@ -10,6 +10,7 @@ import { filesModule } from "../modules/files/files.module.js";
 import { genModule } from "../modules/gen/gen.module.js";
 import { gitModule } from "../modules/git/git.module.js";
 import { netModule } from "../modules/net/net.module.js";
+import { openModule } from "../modules/open/open.module.js";
 import { portModule } from "../modules/port/port.module.js";
 import { procModule } from "../modules/proc/proc.module.js";
 import { sysModule } from "../modules/sys/sys.module.js";
@@ -30,4 +31,5 @@ export const BUILT_IN_MODULES: readonly KiriyaModule[] = [
   portModule,
   procModule,
   clipModule,
+  openModule,
 ];
