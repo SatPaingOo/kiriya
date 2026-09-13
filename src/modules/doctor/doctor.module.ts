@@ -6,7 +6,7 @@ export const doctorModule: KiriyaModule = {
   id: "doctor",
   summary: "doctor.summary",
   register(registrar, ports) {
-    const { processRunner, environment, config, trash, plugins, runtime } = ports;
-    registrar.add(new RunChecks(processRunner, environment, config, trash, plugins, runtime), doctorView);
+    const { processRunner, environment, config, trash, clipboard, plugins, runtime } = ports;
+    registrar.add(new RunChecks(processRunner, environment, config, trash, clipboard, plugins, runtime), doctorView);
   },
 };

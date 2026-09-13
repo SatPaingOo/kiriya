@@ -1,5 +1,6 @@
 import type { KiriyaModule } from "../core/domain/module.js";
 import { archiveModule } from "../modules/archive/archive.module.js";
+import { clipModule } from "../modules/clip/clip.module.js";
 import { configModule } from "../modules/config/config.module.js";
 import { convertModule } from "../modules/convert/convert.module.js";
 import { dockerModule } from "../modules/docker/docker.module.js";
@@ -28,4 +29,5 @@ export const BUILT_IN_MODULES: readonly KiriyaModule[] = [
   netModule,
   portModule,
   procModule,
+  clipModule,
 ];
