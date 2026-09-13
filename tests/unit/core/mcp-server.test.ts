@@ -143,6 +143,7 @@ async function serve(settings: { allowWrite?: boolean; allowDestroy?: boolean } 
         registrar.add(move, () => []);
         registrar.add(remove, () => []);
         registrar.add(command({ id: "files.secret", terminalOnly: true }), () => []);
+        registrar.add(command({ id: "files.peek", sensitive: true }), () => []);
         registrar.add(
           command({ id: "files.fail" }, () => Promise.reject(new RefusedError("core.confirm.declined"))),
           () => [],
@@ -367,6 +368,7 @@ test("an unknown tool, or one kept back, is a protocol error", async () => {
     "files.watch",
     "files.clash",
     "files.secret",
+    "files.peek",
     "files.move",
   ];
   for (const [index, name] of names.entries()) {
@@ -424,6 +426,7 @@ test("with mcp.allowWrite, write tools are offered and their questions answered,
     "files.fail",
     "files.list",
     "files.move",
+    "files.peek",
     "files.wait",
   ]);
   assert.equal(resultOf(await exchange(server, sent, callTool(2, "files.move", { path: "a" })))["isError"], false);

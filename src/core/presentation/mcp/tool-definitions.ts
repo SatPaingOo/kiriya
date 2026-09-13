@@ -44,9 +44,28 @@ export const OUTPUT_SCHEMA: JsonObject = {
   required: ["ok"],
 };
 
-/** The options a tool takes: those only for a terminal stay out. */
-function toolOptions(input: InputSchema<unknown>): Array<[string, OptionSpec]> {
-  return Object.entries(input.options).filter(([, option]) => option.terminalOnly !== true);
+/** What decides which options a tool offers besides the ordinary ones. */
+export type ToolAccess = {
+  /** The user's `mcp.allowWrite` setting, which lets sensitive options in. */
+  readonly sensitive: boolean;
+  /** The tool changes something, so options that reach hidden folders stay out. */
+  readonly changes: boolean;
+};
+
+const READING: ToolAccess = { sensitive: false, changes: false };
+
+export function toolAccess(spec: CommandSpec<unknown>, allowWrite: boolean): ToolAccess {
+  return { sensitive: allowWrite, changes: spec.safety !== "read" };
+}
+
+/** The options a tool takes: never those only for a terminal, and the others as access allows. */
+function toolOptions(input: InputSchema<unknown>, access: ToolAccess): Array<[string, OptionSpec]> {
+  return Object.entries(input.options).filter(
+    ([, option]) =>
+      option.terminalOnly !== true &&
+      (option.sensitive !== true || access.sensitive) &&
+      (option.reachesHidden !== true || !access.changes),
+  );
 }
 
 /** All four annotations, always, because a client assumes the worst for any left out. */
@@ -60,7 +79,12 @@ export function annotationsOf(spec: CommandSpec<unknown>): ToolAnnotations {
 }
 
 /** One property per argument and option, named as in help; arguments a command needs are required. */
-export function inputSchemaOf(commandId: string, input: InputSchema<unknown>, translator: Translator): JsonObject {
+export function inputSchemaOf(
+  commandId: string,
+  input: InputSchema<unknown>,
+  translator: Translator,
+  access: ToolAccess = READING,
+): JsonObject {
   const properties: JsonObject = {};
   const required: string[] = [];
   const claim = (name: string, schema: JsonObject): void => {
@@ -82,7 +106,7 @@ export function inputSchemaOf(commandId: string, input: InputSchema<unknown>, tr
     );
     if (positional.required) required.push(positional.name);
   }
-  for (const [name, option] of toolOptions(input)) {
+  for (const [name, option] of toolOptions(input, access)) {
     const text = translator.text(message(option.description));
     const description = option.valueName === undefined ? text : `${text} ${option.valueName}`;
     if (option.type === "boolean") claim(name, { type: "boolean", description });
@@ -92,11 +116,15 @@ export function inputSchemaOf(commandId: string, input: InputSchema<unknown>, tr
   return { type: "object", properties, ...(required.length > 0 ? { required } : {}), additionalProperties: false };
 }
 
-export function toolDefinition(spec: CommandSpec<unknown>, translator: Translator): ToolDefinition {
+export function toolDefinition(
+  spec: CommandSpec<unknown>,
+  translator: Translator,
+  allowWrite: boolean,
+): ToolDefinition {
   return {
     name: spec.id,
     description: translator.text(message(spec.summary)),
-    inputSchema: inputSchemaOf(spec.id, spec.input, translator),
+    inputSchema: inputSchemaOf(spec.id, spec.input, translator, toolAccess(spec, allowWrite)),
     outputSchema: OUTPUT_SCHEMA,
     annotations: annotationsOf(spec),
   };
@@ -118,10 +146,10 @@ function textList(value: unknown, name: string): string[] {
  * The JSON arguments of a call as the command's raw input, checked against the schema
  * the tool publishes. The command's own parse checks the values next, as it does for argv.
  */
-export function rawInputOf(input: InputSchema<unknown>, args: unknown): RawInput {
+export function rawInputOf(input: InputSchema<unknown>, args: unknown, access: ToolAccess = READING): RawInput {
   const given = args ?? {};
   if (!isObject(given)) throw new UsageError("core.mcp.arguments-not-object");
-  const options = new Map(toolOptions(input));
+  const options = new Map(toolOptions(input, access));
   for (const name of Object.keys(given)) {
     if (!options.has(name) && !input.positionals.some((positional) => positional.name === name)) {
       throw new UsageError("core.mcp.unknown-argument", { name });

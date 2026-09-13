@@ -5,7 +5,12 @@ import type { CommandSpec, SafetyLevel } from "../../../src/core/domain/command.
 import { UsageError } from "../../../src/core/domain/errors.js";
 import type { InputSchema } from "../../../src/core/domain/input-schema.js";
 import { Translator } from "../../../src/core/presentation/i18n/translator.js";
-import { annotationsOf, inputSchemaOf, rawInputOf } from "../../../src/core/presentation/mcp/tool-definitions.js";
+import {
+  annotationsOf,
+  inputSchemaOf,
+  rawInputOf,
+  type ToolAccess,
+} from "../../../src/core/presentation/mcp/tool-definitions.js";
 
 /** Shows each key as its own text, so the tests do not depend on wording. */
 const keys = new Translator({});
@@ -163,5 +168,33 @@ test("all four annotations follow the spec", () => {
     destructiveHint: true,
     idempotentHint: false,
     openWorldHint: false,
+  });
+});
+
+test("a sensitive option is offered only when the user allows it, and one reaching hidden folders only to tools that change nothing", () => {
+  const schema: InputSchema<unknown> = {
+    positionals: [],
+    options: {
+      full: { type: "boolean", description: "proc.list.option.full", sensitive: true },
+      all: { type: "boolean", description: "files.option.all", reachesHidden: true },
+    },
+    parse: (raw) => raw,
+  };
+  const names = (access: ToolAccess): string[] =>
+    Object.keys(inputSchemaOf("x", schema, keys, access)["properties"] as Record<string, unknown>);
+  assert.deepEqual(names({ sensitive: false, changes: false }), ["all"]);
+  assert.deepEqual(names({ sensitive: true, changes: false }), ["full", "all"]);
+  assert.deepEqual(names({ sensitive: true, changes: true }), ["full"]);
+  assert.equal(
+    usageKey(() => rawInputOf(schema, { full: true })),
+    "core.mcp.unknown-argument",
+  );
+  assert.equal(
+    usageKey(() => rawInputOf(schema, { all: true }, { sensitive: true, changes: true })),
+    "core.mcp.unknown-argument",
+  );
+  assert.deepEqual(rawInputOf(schema, { full: true, all: true }, { sensitive: true, changes: false }), {
+    positionals: [],
+    options: { full: true, all: true },
   });
 });

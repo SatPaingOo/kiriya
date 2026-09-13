@@ -61,6 +61,8 @@ test("an MCP client lists the read commands as tools and runs one in the folder 
   });
   assert.equal(byName.get("net.check")?.annotations["openWorldHint"], true);
   assert.equal(Object.hasOwn(byName.get("env.show")?.inputSchema.properties ?? {}, "reveal"), false);
+  assert.equal(Object.hasOwn(byName.get("proc.list")?.inputSchema.properties ?? {}, "full"), false);
+  assert.ok(!names.includes("open") && !names.includes("clip.paste"), "sensitive reads are kept back");
 
   const listed = await mcp.call("files.list");
   assert.equal(listed["isError"], false);
