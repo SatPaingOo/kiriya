@@ -1,0 +1,33 @@
+# Dependencies and build output
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+*.tgz
+
+# Logs and local environment
+*.log
+npm-debug.log*
+.env
+.env.*
+!.env.example
+
+# Temporary test output
+.tmp/
+
+# Operating systems
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Local folders of AI coding agents
+.claude/
+.cursor/
+.zcode/
+.windsurf/
+.aider*
