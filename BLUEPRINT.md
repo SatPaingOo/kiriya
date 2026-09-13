@@ -199,16 +199,19 @@ presentation  →  application  →  domain  ←  infrastructure
 
 | Layer | Holds | May import |
 |---|---|---|
-| `domain` | Entities, value objects, pure functions, port interfaces, typed errors | Nothing outside `domain`: no `node:` modules, no I/O |
-| `application` | Use cases: one class per command | `domain` only |
-| `infrastructure` | Adapters that implement exactly one port each | `domain`, Node.js, operating-system programs |
-| `presentation` | CLI parsing, help, renderers, exit codes, the MCP server | `application`, `domain` |
+| `domain` | Entities, value objects, pure functions, port interfaces, typed errors | `domain` and catalog types only: no `node:` modules, no I/O |
+| `application` | Use cases: one class per command | `domain`, `config` data, and `node:path` for path arithmetic; no I/O |
+| `infrastructure` | Adapters that implement exactly one port each | `domain`, `config` data, Node.js, operating-system programs |
+| `presentation` | CLI parsing, help, text views, JSON output, exit codes, the MCP server | `application`, `domain`, Node.js terminal APIs |
 
-Two more rules:
+`node:path` is allowed in `application` because it is pure string arithmetic whose
+rules differ by OS, and reimplementing it would be the kind of drift kiriya exists to
+remove. More rules:
 
 - **A module never imports another module.** What two modules share moves into `core`.
-- **`src/main.ts` is the composition root**, the only file that constructs adapters
-  and wires them into use cases.
+- **`src/main.ts` is the composition root**, the only file that constructs adapters,
+  wires them into use cases, and imports the message catalog as a value.
+- **No runtime dependencies:** every import is a relative file or a `node:` built-in.
 
 All rules are enforced by a test, section 7.12.
 
@@ -230,7 +233,7 @@ kiriya/
 │   ├── main.ts                        # composition root
 │   ├── config/                        # data, not code: module list, clean rules, protected paths, limits
 │   ├── i18n/
-│   │   └── locales/                   # en.json; more locales after the first release
+│   │   └── locales/                   # en.ts: the catalog, and the MessageKey type derived from it
 │   ├── core/                          # the kernel every module uses
 │   │   ├── domain/
 │   │   │   ├── command.ts             # CommandSpec, Command, CommandResult, SafetyLevel
@@ -247,16 +250,16 @@ kiriya/
 │   │   │   │   └── macos/
 │   │   │   └── config/                # json-config.store.ts, input-schema parser
 │   │   └── presentation/
-│   │       ├── cli/                   # argv parsing, help, exit codes, terminal confirmation
-│   │       ├── render/                # text renderer contract, JSON renderer
+│   │       ├── cli/                   # argv parsing, help, JSON output, exit codes, terminal confirmation
+│   │       ├── i18n/                  # translator: messages to text
 │   │       └── mcp/                   # stdio server, tool mapping, elicitation
 │   └── modules/
 │       ├── files/
 │       │   ├── files.module.ts        # registers this module's commands
 │       │   ├── domain/                # pure: glob, case styles, text encoding, transfer plans
-│       │   ├── application/           # delete-paths.use-case.ts, find-files.use-case.ts, ...
+│       │   ├── application/           # delete-paths.use-case.ts: the use case and its CommandSpec
 │       │   ├── infrastructure/        # adapters only this module needs
-│       │   └── presentation/          # delete.command.ts: input schema and text renderer
+│       │   └── presentation/          # delete.view.ts: the text view
 │       ├── archive/  git/  docker/  config/
 │       └── port/  proc/  env/  sys/  net/  convert/  gen/  clip/  open/  doctor/  completion/
 ├── tests/
@@ -264,7 +267,7 @@ kiriya/
 │   ├── contract/                      # one suite per port, run against every adapter
 │   ├── integration/                   # real file system in temporary folders, real git
 │   ├── e2e/                           # the built CLI and MCP server as black boxes, golden output
-│   └── fixtures/
+│   └── support/                       # fakes, temporary folders, fixtures
 ├── tools/                             # development scripts: import-boundary check, docs generation
 └── docs/
     └── commands/                      # reference pages generated from command specs
@@ -352,8 +355,8 @@ export const filesModule: KiriyaModule = {
    confirmation.
 4. `DeletePaths.execute` expands the glob through `FileSystem`, refuses protected
    paths through `PathGuard`, asks `Confirmation`, then calls `Trash`.
-5. The CLI passes the result to the command's text renderer, or to the JSON
-   renderer with `--json`, and maps the result or typed error to an exit code.
+5. The CLI passes the result to the command's text view, or prints it as JSON
+   with `--json`, and maps the result or typed error to an exit code.
 
 From MCP only step 2 differs: arguments arrive as JSON, and `Confirmation` becomes
 an elicitation request to the user.
@@ -395,11 +398,11 @@ example: "no clipboard program found; install wl-clipboard or xclip".
 
 | Add… | Edit |
 |---|---|
-| a command to a module | a new `*.command.ts` and `*.use-case.ts`, plus one line in the module's `*.module.ts` |
+| a command to a module | a new `*.use-case.ts` with its spec and a `*.view.ts`, plus one line in the module's `*.module.ts` |
 | a module | a new `src/modules/<name>/` folder, plus one entry in `src/config/modules.ts` |
 | support for an OS program | a new adapter in `core/infrastructure/platform/<os>/`, plus the adapter table in `src/config/platforms.ts` |
-| an output format | a new renderer in `core/presentation/render/` |
-| a locale | a new `src/i18n/locales/<code>.json`; a test checks it has every key |
+| an output format | a new formatter in `core/presentation/cli/`, beside `json-output.ts` |
+| a locale | a new `src/i18n/locales/<code>.ts` typed as `Catalog`, so the compiler rejects a missing key |
 | a clean rule or a protected path | `src/config/clean-rules.ts` or `src/config/protected-paths.ts` |
 | a tool for one stack or organisation | a plugin, section 6.7 |
 
@@ -487,7 +490,7 @@ These rules are complete in themselves. They become `CONTRIBUTING.md` and
 
 | Principle | The check a reviewer runs |
 |---|---|
-| **Single responsibility** | A use case computes, a renderer formats, an adapter talks to the OS. A file doing two of these is split. Its one reason to change fits in one sentence. |
+| **Single responsibility** | A use case computes, a view formats, an adapter talks to the OS. A file doing two of these is split. Its one reason to change fits in one sentence. |
 | **Open/closed** | A new command, module, OS program, format or locale is added with exactly the edits in section 6.6. A `switch` over command ids or OS names outside `main.ts` and `config/` is rejected. |
 | **Liskov substitution** | Every adapter of a port passes that port's contract suite on every OS. No adapter leaks a PowerShell message, an errno or a program's exit code to a use case. |
 | **Interface segregation** | Ports stay small: `Trash`, `Clipboard`, `ProcessTable` and `PortTable` are separate, never one `Platform` interface with every method. A use case receives only the ports it calls. |
@@ -501,7 +504,7 @@ These rules are complete in themselves. They become `CONTRIBUTING.md` and
 | Adapter | Class implementing exactly one port | `WindowsTrashAdapter`, `NodeFileSystemAdapter` |
 | Value object | Class that validates in its constructor, so an invalid value cannot exist | `AbsolutePath`, `ByteSize`, `GlobPattern` |
 | Computation | Plain exported function, pure | `globToRegExp`, `renameByCase`, `crc32`, `parseSize` |
-| Renderer | Plain function from result to lines | `deleteTextRenderer` |
+| View | Plain function from result to lines | `deleteView` |
 | Module | Plain object satisfying `KiriyaModule` | `filesModule` |
 
 A pure function is never wrapped in a class to look consistent. No static-only
@@ -511,7 +514,7 @@ utility classes.
 
 | Thing | Convention | Example |
 |---|---|---|
-| File | `kebab-case.ts`, with a role suffix where it has a role | `delete-paths.use-case.ts`, `windows-trash.adapter.ts`, `delete.command.ts`, `files.module.ts` |
+| File | `kebab-case.ts`, with a role suffix where it has a role | `delete-paths.use-case.ts`, `windows-trash.adapter.ts`, `delete.view.ts`, `files.module.ts` |
 | Folder | `kebab-case` | `core/infrastructure/platform/` |
 | Class, interface, type | `PascalCase` | `DeletePaths`, `Trash`, `SafetyLevel` |
 | Function, variable | `camelCase` | `globToRegExp` |
@@ -520,7 +523,7 @@ utility classes.
 | CLI syntax | `kiriya <module> <verb> [arguments] [--flags]` | `kiriya port kill 3000` |
 | Flag | `--kebab-case`; a short flag only for very common options | `--dry-run`, `-i` for `--ignore-case` |
 | Message key | `<module>.<command>.<message>` | `files.delete.confirm` |
-| Test | `tests/<layer>/<mirrors src>/<name>.test.ts` | `tests/unit/modules/files/application/delete-paths.use-case.test.ts` |
+| Test | `tests/<layer>/<area>/<subject>.test.ts`, where the area is `core` or a module name | `tests/integration/files/delete-paths.test.ts` |
 
 ### 7.6 Errors and exit codes
 
@@ -567,8 +570,10 @@ Based on the guidelines in [RESEARCH.md](./RESEARCH.md) section 2.
 
 ### 7.9 i18n and configuration
 
-- Every user-facing message is a key in `src/i18n/locales/en.json`; a test fails when
-  any locale file lacks a key. JSON output is never translated.
+- Every user-facing message is a key in `src/i18n/locales/en.ts`, which the `MessageKey`
+  type is derived from. Another locale is typed as `Catalog`, so the compiler fails when
+  it lacks a key, and a test fails on a key no source file uses. JSON output keeps keys
+  and parameters, so scripts never depend on wording.
 - Only English ships at first. A later locale is chosen with `--lang` or
   `KIRIYA_LANG`, never from the OS locale automatically, because terminals do not
   yet shape complex scripts such as Myanmar correctly
@@ -623,7 +628,7 @@ Each invariant has a test that runs on every OS.
 | Contract | Each port | One suite per port, run against every adapter on its own OS |
 | Integration | `infrastructure` | Real file system inside temporary folders, real git, processes the test started itself |
 | End to end | The built CLI and MCP server | Exit codes, stdout and stderr separation, golden text in `en`, golden JSON |
-| Boundaries | The source tree | A dependency-free script in `tools/` fails on a module importing another module, on `domain` or `application` importing `infrastructure` or `presentation`, and on any `node:` import in `domain` |
+| Boundaries | The source tree | A dependency-free script in `tools/` fails on a module importing another module, on a layer importing one section 6.1 does not allow, on a `node:` import in `domain` or any but `node:path` in `application`, on a catalog value import outside `main.ts`, and on any package import |
 
 - Test the judgement calls: invalid input, empty results, conflicts, refusals,
   missing capabilities, timeouts. A test of only the easy case is not enough.
@@ -633,8 +638,9 @@ Each invariant has a test that runs on every OS.
 - **CI matrix:** Windows, Linux and macOS, each on Node 22, Node 24 and the Current release.
   While the repository is private, free CI is 2,000 minutes a month and macOS
   minutes cost about ten times Linux ones ([RESEARCH.md](./RESEARCH.md) section 4),
-  so pull requests run Linux and Windows on Node 22 only, and the full matrix runs
-  on `main` and before a release. Public repositories run the full matrix everywhere at no cost.
+  so while it is private CI runs Linux and Windows on Node 22, and the full matrix runs
+  when started by hand: before merging a change to adapters, paths or processes, and
+  before a release. A public repository runs the full matrix on every push and pull request at no cost.
 
 ### 7.13 Comments and documentation
 
@@ -703,7 +709,7 @@ A phase is done when every acceptance criterion holds.
 
 | Question | Default if not answered |
 |---|---|
-| May kiriya ship small signed native helpers: a Windows executable for trash, clipboard and processes, and a macOS helper for trash with Put Back? | No, recommended after phase 0: every operation worked without helpers. A helper would only buy Windows speed and trash under application-control policies. Awaiting the maintainer's decision. |
+| May kiriya ship small signed native helpers: a Windows executable for trash, clipboard and processes, and a macOS helper for trash with Put Back? | **Decided 2026-09-13: no.** Every operation worked without helpers in phase 0; a helper would only buy Windows speed and trash under application-control policies. |
 | A short alias command, such as `kiri`? | No alias until users ask for one |
 
 ---
