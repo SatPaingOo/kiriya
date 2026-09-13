@@ -76,7 +76,7 @@ export const replaceSpec: CommandSpec<ReplaceInput> = {
       name: { type: "string", description: "files.option.name", valueName: "<glob>" },
       all: { type: "boolean", description: "files.option.all" },
       apply: { type: "boolean", description: "files.replace.option.apply" },
-      yes: { type: "boolean", description: "files.replace.option.yes", short: "y" },
+      yes: { type: "boolean", description: "files.replace.option.yes", short: "y", terminalOnly: true },
     },
     parse(raw) {
       const reader = new RawReader(raw);

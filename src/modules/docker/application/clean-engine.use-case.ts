@@ -48,7 +48,12 @@ export const cleanSpec: CommandSpec<CleanInput> = {
     options: {
       volumes: { type: "boolean", description: "docker.clean.option.volumes" },
       apply: { type: "boolean", description: "docker.clean.option.apply" },
-      confirm: { type: "string", description: "docker.clean.option.confirm", valueName: CLEAN_CONFIRMATION },
+      confirm: {
+        type: "string",
+        description: "docker.clean.option.confirm",
+        valueName: CLEAN_CONFIRMATION,
+        terminalOnly: true,
+      },
     },
     parse(raw) {
       const reader = new RawReader(raw);

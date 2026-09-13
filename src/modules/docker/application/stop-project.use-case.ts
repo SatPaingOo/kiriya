@@ -34,7 +34,12 @@ export const downSpec: CommandSpec<DownInput> = {
     options: {
       file: fileOption,
       volumes: { type: "boolean", description: "docker.down.option.volumes" },
-      confirm: { type: "string", description: "docker.down.option.confirm", valueName: "<project>" },
+      confirm: {
+        type: "string",
+        description: "docker.down.option.confirm",
+        valueName: "<project>",
+        terminalOnly: true,
+      },
     },
     parse(raw) {
       const reader = new RawReader(raw);

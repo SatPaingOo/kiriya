@@ -76,7 +76,12 @@ export const untarSpec: CommandSpec<UntarInput> = {
       to: { type: "string", description: "archive.untar.option.to", valueName: "<folder>", path: true },
       list: { type: "boolean", description: "archive.untar.option.list" },
       overwrite: { type: "boolean", description: "archive.untar.option.overwrite" },
-      confirm: { type: "string", description: "archive.untar.option.confirm", valueName: "<count>" },
+      confirm: {
+        type: "string",
+        description: "archive.untar.option.confirm",
+        valueName: "<count>",
+        terminalOnly: true,
+      },
     },
     parse(raw) {
       const reader = new RawReader(raw);

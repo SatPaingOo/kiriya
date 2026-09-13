@@ -32,7 +32,12 @@ export const killSpec: CommandSpec<KillInput> = {
     positionals: [{ name: "target", description: "proc.kill.arg.target", required: true, variadic: false }],
     options: {
       force: { type: "boolean", description: "proc.kill.option.force" },
-      confirm: { type: "string", description: "proc.kill.option.confirm", valueName: "<id-or-name>" },
+      confirm: {
+        type: "string",
+        description: "proc.kill.option.confirm",
+        valueName: "<id-or-name>",
+        terminalOnly: true,
+      },
     },
     parse(raw) {
       const reader = new RawReader(raw);
