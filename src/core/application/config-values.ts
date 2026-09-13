@@ -20,6 +20,11 @@ export function checkConfigTypes(values: ConfigValues, file: string): void {
   }
 }
 
+/** Whether the MCP server may offer tools that change files. Only the exact value `true` allows it. */
+export function mcpAllowsWrite(values: ConfigValues): boolean {
+  return values["mcp.allowWrite"] === "true";
+}
+
 /** The plugins the configuration lists, in order; none when the setting is missing or malformed. */
 export function pluginEntries(values: ConfigValues): readonly string[] {
   const value = values["plugins"];
