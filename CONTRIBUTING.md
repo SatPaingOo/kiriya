@@ -73,9 +73,12 @@ them. No test reads your own kiriya configuration: the end-to-end runner points
 
 | Job | Runs on |
 |---|---|
-| `quality`: lint, format, types | Linux, Node 22 |
+| `quality`: lint, format, types, and what the npm package would contain | Linux, Node 22 |
 | `test`: build, boundaries, all tests, including the real trash | Public repository: Windows, Linux and macOS, each on Node 22, 24 and the current release. Private repository: Linux and Windows on Node 22 |
 
 A private repository has limited CI minutes, and macOS minutes cost about ten times Linux
 ones, so there the full matrix runs only when started by hand from the Actions tab with
 `full` checked. Do that before merging anything that touches an adapter, paths, or processes.
+
+`.github/workflows/release.yml` publishes to npm when a GitHub release is published, through
+trusted publishing and with provenance; [docs/releasing.md](./docs/releasing.md) has the steps.
