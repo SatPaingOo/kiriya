@@ -3,8 +3,10 @@ import path from "node:path";
 import { test } from "node:test";
 import { CommandRegistry } from "../../../src/core/application/command-registry.js";
 import { RootScope } from "../../../src/core/application/root-scope.js";
+import { requireApproval, requireTypedConfirmation } from "../../../src/core/application/safety.js";
 import { done, type Command, type CommandSpec } from "../../../src/core/domain/command.js";
 import { RefusedError } from "../../../src/core/domain/errors.js";
+import type { RawInput } from "../../../src/core/domain/input-schema.js";
 import { message, type Message } from "../../../src/core/domain/message.js";
 import type { CorePorts } from "../../../src/core/domain/module.js";
 import type { FileSystem } from "../../../src/core/domain/ports/file-system.js";
@@ -14,6 +16,7 @@ import type { JsonObject, RequestId } from "../../../src/core/presentation/mcp/p
 import { en } from "../../../src/i18n/locales/en.js";
 
 const ROOT = path.resolve(path.sep, "work");
+const CONFIG = path.join(ROOT, "kiriya", "config.json");
 const MODERN = {
   "io.modelcontextprotocol/protocolVersion": "2026-07-28",
   "io.modelcontextprotocol/clientCapabilities": {},
@@ -51,7 +54,9 @@ function command(
   };
 }
 
-async function serve(): Promise<{ server: McpServer; sent: JsonObject[]; logged: Message[]; ran: string[] }> {
+async function serve(
+  allowWrite = false,
+): Promise<{ server: McpServer; sent: JsonObject[]; logged: Message[]; ran: string[] }> {
   const ran: string[] = [];
   const registry = new CommandRegistry();
   registry.register(
@@ -84,6 +89,29 @@ async function serve(): Promise<{ server: McpServer; sent: JsonObject[]; logged:
         registrar.add(list, () => []);
         registrar.add(wait, () => []);
         registrar.add(clash, () => []);
+        const move = command(
+          {
+            id: "files.move",
+            safety: "write",
+            input: {
+              positionals: [
+                { name: "path", description: "files.list.arg.path", required: false, variadic: false, path: true },
+              ],
+              options: { overwrite: { type: "boolean", description: "files.transfer.option.overwrite" } },
+              parse: (raw) => raw,
+            },
+          },
+          async (input, context) => {
+            await requireApproval(context, message("files.rename.ask", { count: 1 }), false);
+            ran.push("files.move approved");
+            if ((input as RawInput).options["overwrite"] === true) {
+              await requireTypedConfirmation(context, message("files.rename.ask", { count: 1 }), "1", undefined);
+            }
+            return done({});
+          },
+        );
+        registrar.add(move, () => []);
+        registrar.add(command({ id: "files.secret", terminalOnly: true }), () => []);
         registrar.add(
           command({ id: "files.fail" }, () => Promise.reject(new RefusedError("core.confirm.declined"))),
           () => [],
@@ -102,7 +130,8 @@ async function serve(): Promise<{ server: McpServer; sent: JsonObject[]; logged:
     registry,
     translator: new Translator(en),
     version: "9.9.9",
-    scope: await RootScope.open(plainFileSystem, [], ROOT),
+    scope: await RootScope.open(plainFileSystem, [], ROOT, [CONFIG]),
+    allowWrite,
     send: (item) => sent.push(item),
     log: (item) => logged.push(item),
   });
@@ -148,7 +177,13 @@ test("server/discover names the modern version, the tools capability and the ser
       resultType: "complete",
       supportedVersions: ["2026-07-28"],
       capabilities: { tools: {} },
-      instructions: new Translator(en).text(message("core.mcp.instructions", { start: ROOT, roots: ROOT })),
+      instructions: new Translator(en).text(
+        message("core.mcp.instructions", {
+          tools: message("core.mcp.instructions.read-only"),
+          start: ROOT,
+          roots: ROOT,
+        }),
+      ),
       ttlMs: 300_000,
       cacheScope: "private",
       _meta: { "io.modelcontextprotocol/serverInfo": { name: "kiriya", version: "9.9.9" } },
@@ -268,7 +303,15 @@ test("a refused command, a bad argument and a path outside the root are error re
 
 test("an unknown tool, or one kept back, is a protocol error", async () => {
   const { server, sent } = await serve();
-  for (const [index, name] of ["files.nope", "files.copy", "files.delete", "files.watch", "files.clash"].entries()) {
+  for (const [index, name] of [
+    "files.nope",
+    "files.copy",
+    "files.delete",
+    "files.watch",
+    "files.clash",
+    "files.secret",
+    "files.move",
+  ].entries()) {
     const error = errorOf(await exchange(server, sent, callTool(index, name)));
     assert.deepEqual([error.code, error.message], [-32602, `Unknown tool: ${name}`]);
   }
@@ -313,4 +356,38 @@ test("malformed messages get JSON-RPC errors, while notifications and responses 
   assert.equal(await exchange(server, sent, { jsonrpc: "2.0", method: "notifications/unknown" }), undefined);
   assert.equal(await exchange(server, sent, { jsonrpc: "2.0", id: 5, result: {} }), undefined);
   assert.deepEqual(sent, []);
+});
+
+test("with mcp.allowWrite, write tools are offered and their questions answered, but work that cannot be undone is refused", async () => {
+  const { server, sent, ran } = await serve(true);
+  const answer = await exchange(server, sent, {
+    jsonrpc: "2.0",
+    id: 1,
+    method: "tools/list",
+    params: { _meta: MODERN },
+  });
+  const listed = resultOf(answer) as { tools: Array<{ name: string }> } & JsonObject;
+  assert.deepEqual(
+    listed.tools.map((tool) => tool.name),
+    ["files.copy", "files.fail", "files.list", "files.move", "files.wait"],
+  );
+  assert.equal(resultOf(await exchange(server, sent, callTool(2, "files.move", { path: "a" })))["isError"], false);
+  const overwrite = resultOf(await exchange(server, sent, callTool(3, "files.move", { path: "a", overwrite: true })));
+  assert.equal(overwrite["isError"], true);
+  const error = (overwrite["structuredContent"] as JsonObject)["error"] as { kind: string; message: { key: string } };
+  assert.deepEqual([error.kind, error.message.key], ["refused", "core.mcp.cannot-confirm"]);
+  assert.deepEqual(ran, ["files.move approved", "files.move approved"]);
+});
+
+test("work that changes something may not reach kiriya's configuration file, while reading it may", async () => {
+  const { server, sent, ran } = await serve(true);
+  const keyOf = (result: JsonObject): string =>
+    ((result["structuredContent"] as JsonObject)["error"] as { message: { key: string } }).message.key;
+  for (const [id, value] of ["kiriya/config.json", "kiriya", "."].entries()) {
+    const refused = resultOf(await exchange(server, sent, callTool(id, "files.move", { path: value })));
+    assert.equal(keyOf(refused), "core.mcp.guarded", value);
+  }
+  const read = resultOf(await exchange(server, sent, callTool(9, "files.list", { path: "kiriya/config.json" })));
+  assert.equal(read["isError"], false);
+  assert.deepEqual(ran, [`files.list in ${ROOT}`]);
 });
