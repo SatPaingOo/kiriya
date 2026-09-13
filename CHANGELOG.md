@@ -38,4 +38,7 @@ Nothing is published yet. The first release, 0.1.0, will contain everything belo
 - `completion`: tab completion for bash, zsh, fish and PowerShell.
 - `mcp`: `kiriya mcp` serves every command that changes nothing to AI agents as MCP
   tools over stdio, for the 2026-07-28 protocol and for clients that still open with
-  `initialize`. Paths must stay inside the `--root` folders, symlinks included.
+  `initialize`. Paths must stay inside the `--root` folders, symlinks included. With
+  `kiriya config set mcp.allowWrite true`, commands that change files in ways that can be
+  undone are offered too; `config set`, `config unset`, `docker up` and `docker rebuild`
+  never are.

@@ -27,7 +27,8 @@ argv ─► CliApplication ─► CommandRegistry ─► InputSchema.parse ─�
 6. Errors are typed. `CliApplication` maps them to exit codes in one place.
 
 `kiriya mcp` runs the same commands for AI agents. `serveMcp` reads one JSON-RPC message
-per line from stdin, and `McpServer` offers each `read` command as a tool. A call's JSON
+per line from stdin, and `McpServer` offers each `read` command as a tool, and each `write` command when
+the `mcp.allowWrite` setting allows it. A call's JSON
 arguments become the raw input argv would give, `RootScope` refuses any path outside
 the server's roots, and the answer is the document `--json` prints. Typed errors become
 results with `isError: true`. [docs/mcp.md](./docs/mcp.md) describes it from a client's side.
@@ -68,7 +69,7 @@ src/
 │   │   └── platform/             windows/, linux/, macos/: trash, process and port tables, clipboard, opener
 │   └── presentation/
 │       ├── cli/                  cli-application, argv, help, style, terminal-confirmation, json-output
-│       ├── mcp/                  mcp-application (stdio), mcp-server, tool-definitions, tool-results, protocol
+│       ├── mcp/                  mcp-application (stdio), mcp-server, mcp-confirmation, tool-definitions, tool-results, protocol
 │       ├── i18n/                 translator
 │       ├── list-preview.ts       "… and N more" for long lists in views
 │       └── ended-processes.ts    one line per ended process, and aligned columns
@@ -120,6 +121,7 @@ A command is a class implementing `Command<Input, Output>` with a `CommandSpec<I
 | `examples` | Shown in help |
 | `safety` | `read`, `write` or `destroy`: the most the command can do with any flags |
 | `idempotent`, `usesNetwork`, `runsUserCommands` | Facts the MCP server turns into tool annotations; a command that runs user commands is never a tool |
+| `terminalOnly` | Optional. Set on a command that must never be an MCP tool, such as `config set` |
 
 `execute(input, context)` receives a `CommandContext`:
 
@@ -204,7 +206,7 @@ Commands that change many things preview first: `rename`, `replace`, `clean`,
 | `ConfigStore` | The user's configuration file | `JsonConfigStore` |
 | `PluginSource` | Find a plugin named in the configuration and import it | `NodePluginSource` |
 | `PluginInventory` | The plugins this run loaded, and the ones it could not | `PluginLoader` in core application |
-| `Confirmation` | Questions to the person running the command | `TerminalConfirmation` in presentation; `DecliningConfirmation` over MCP |
+| `Confirmation` | Questions to the person running the command | `TerminalConfirmation` in presentation; `McpConfirmation` over MCP, which answers from the `mcp.allowWrite` setting |
 | `Environment`, `Clock` | The OS, the home folder, variables; the time | `NodeEnvironmentAdapter`, `SystemClockAdapter` |
 | `RandomSource` | Cryptographically secure random bytes; tests inject predictable ones | `NodeRandomSource` |
 | `StandardInput` | What is piped in, read to the end with a size limit, and whether a person is typing instead | `NodeStandardInput`; `ClosedStandardInput` over MCP, where stdin carries the protocol |
@@ -228,7 +230,8 @@ One JSON file per user holds kiriya's own settings. It is found at:
 | `%APPDATA%\kiriya\config.json` | `$XDG_CONFIG_HOME/kiriya/config.json`, by default `~/.config/kiriya/config.json` | `~/Library/Application Support/kiriya/config.json` |
 
 `KIRIYA_CONFIG` names another file. Values are text or lists of text, and the settings
-kiriya reads are listed in `src/config/config-keys.ts`. A file that is not valid names
+kiriya reads are listed in `src/config/config-keys.ts`. A setting may name the only values
+it takes, as `mcp.allowWrite` does. A file that is not valid names
 the file and the field; while it is broken, no plugins load, every built-in command
 still works, and `kiriya doctor` reports the problem. The file never holds a secret:
 `kiriya config set` refuses values that look like one.
