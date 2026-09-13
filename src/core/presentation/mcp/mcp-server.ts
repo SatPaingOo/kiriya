@@ -4,7 +4,7 @@ import { KiriyaError } from "../../domain/errors.js";
 import { message, type Message } from "../../domain/message.js";
 import { byCodePoint } from "../../domain/names.js";
 import type { Translator } from "../i18n/translator.js";
-import { DecliningConfirmation } from "./declining-confirmation.js";
+import { McpConfirmation } from "./mcp-confirmation.js";
 import {
   INTERNAL_ERROR,
   INVALID_PARAMS,
@@ -37,6 +37,8 @@ export interface McpServerOptions {
   readonly translator: Translator;
   readonly version: string;
   readonly scope: RootScope;
+  /** The user's `mcp.allowWrite` setting: commands that change files become tools too. */
+  readonly allowWrite: boolean;
   /** Sends one message to the client. */
   readonly send: (message: JsonObject) => void;
   /** Tells whoever reads the server's diagnostics, never the client. */
@@ -54,10 +56,14 @@ interface Tool {
   readonly definition: ToolDefinition;
 }
 
-/** Read commands become tools. A command that runs a program the user names never does. */
-function exposed(entry: RegisteredCommand): boolean {
+/**
+ * Read commands become tools, and write commands when the user allows it. A command that
+ * runs a program the user names, or one only for a terminal, never does.
+ */
+function exposed(entry: RegisteredCommand, allowWrite: boolean): boolean {
   const { spec } = entry.command;
-  return spec.safety === "read" && !spec.runsUserCommands;
+  if (spec.runsUserCommands || spec.terminalOnly === true) return false;
+  return spec.safety === "read" || (spec.safety === "write" && allowWrite);
 }
 
 const keyOf = (id: RequestId): string => `${typeof id}:${id}`;
@@ -76,7 +82,7 @@ export class McpServer {
     const entries = options.registry
       .list()
       .flatMap((module) => [...module.commands.values()])
-      .filter(exposed)
+      .filter((entry) => exposed(entry, options.allowWrite))
       .sort((a, b) => byCodePoint(a.command.spec.id, b.command.spec.id));
     for (const entry of entries) {
       const { spec } = entry.command;
@@ -239,17 +245,17 @@ export class McpServer {
     if (tool === undefined) throw new ProtocolError(INVALID_PARAMS, message("core.mcp.error.unknown-tool", { name }));
 
     const { command } = tool.entry;
-    const { scope, translator } = this.options;
+    const { scope, translator, allowWrite } = this.options;
     let output = "";
     let result: ToolResult;
     try {
       const raw = rawInputOf(command.spec.input, params["arguments"]);
-      await scope.refuseOutside(pathValues(command.spec.input, raw));
+      await scope.refuseOutside(pathValues(command.spec.input, raw), command.spec.safety !== "read");
       const input = command.spec.input.parse(raw);
       const outcome = await command.execute(input, {
         cwd: scope.start,
         signal,
-        confirmation: new DecliningConfirmation(),
+        confirmation: new McpConfirmation(allowWrite),
         passthrough: {
           write: (text) => {
             output = (output + text).slice(-OUTPUT_KEPT);
@@ -274,8 +280,11 @@ export class McpServer {
   }
 
   private instructions(): string {
-    const { scope, translator } = this.options;
-    return translator.text(message("core.mcp.instructions", { start: scope.start, roots: scope.roots.join(", ") }));
+    const { scope, translator, allowWrite } = this.options;
+    const tools = message(allowWrite ? "core.mcp.instructions.write" : "core.mcp.instructions.read-only");
+    return translator.text(
+      message("core.mcp.instructions", { tools, start: scope.start, roots: scope.roots.join(", ") }),
+    );
   }
 
   private fail(id: RequestId | null, error: ProtocolError): void {

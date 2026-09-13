@@ -158,6 +158,6 @@ const cli = new CliApplication({
   environment,
   ...streams,
   serveMcp: (input, cwd) =>
-    serveMcp({ registry, catalog, version, fileSystem: ports.fileSystem, ...streams }, input, cwd),
+    serveMcp({ registry, catalog, version, fileSystem: ports.fileSystem, config, ...streams }, input, cwd),
 });
 process.exitCode = await cli.run(argv, process.cwd());

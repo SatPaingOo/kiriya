@@ -1,7 +1,11 @@
 import { createInterface } from "node:readline";
 import type { CommandRegistry } from "../../application/command-registry.js";
+import { mcpAllowsWrite } from "../../application/config-values.js";
 import { RootScope } from "../../application/root-scope.js";
+import { KiriyaError } from "../../domain/errors.js";
 import { RawReader, type InputSchema } from "../../domain/input-schema.js";
+import { message, type Message } from "../../domain/message.js";
+import type { ConfigStore } from "../../domain/ports/config-store.js";
 import type { FileSystem } from "../../domain/ports/file-system.js";
 import { Translator } from "../i18n/translator.js";
 import { McpServer } from "./mcp-server.js";
@@ -25,6 +29,7 @@ export interface McpDependencies {
   readonly catalog: Readonly<Record<string, string>>;
   readonly version: string;
   readonly fileSystem: FileSystem;
+  readonly config: ConfigStore;
   readonly stdin: NodeJS.ReadableStream;
   readonly stdout: NodeJS.WritableStream;
   readonly stderr: NodeJS.WritableStream;
@@ -33,18 +38,28 @@ export interface McpDependencies {
 /**
  * `kiriya mcp`: one JSON-RPC message per line on stdin and stdout until stdin closes.
  * Only protocol messages reach stdout; diagnostics go to stderr. A root that is not a
- * folder stops it before it reads anything.
+ * folder stops it before it reads anything. The settings are read once, at the start.
  */
 export async function serveMcp(deps: McpDependencies, input: McpInput, cwd: string): Promise<number> {
   const translator = new Translator(deps.catalog);
-  const scope = await RootScope.open(deps.fileSystem, input.roots, cwd);
+  const log = (value: Message): void => {
+    deps.stderr.write(`${translator.text(value)}\n`);
+  };
+  const scope = await RootScope.open(deps.fileSystem, input.roots, cwd, [deps.config.path]);
+  // A configuration file that cannot be read allows nothing beyond reading.
+  const allowWrite = await deps.config.read().then(mcpAllowsWrite, (error: unknown) => {
+    const detail = error instanceof KiriyaError ? translator.text(error.detail) : String(error);
+    log(message("core.mcp.config-unreadable", { detail }));
+    return false;
+  });
   const server = new McpServer({
     registry: deps.registry,
     translator,
     version: deps.version,
     scope,
+    allowWrite,
     send: (value) => deps.stdout.write(`${JSON.stringify(value)}\n`),
-    log: (value) => deps.stderr.write(`${translator.text(value)}\n`),
+    log,
   });
 
   const lines = createInterface({ input: deps.stdin, crlfDelay: Number.POSITIVE_INFINITY });

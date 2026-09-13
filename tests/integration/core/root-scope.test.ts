@@ -70,6 +70,18 @@ test("several roots each let their own paths in, and a root reached through a li
   await assert.rejects(scope.refuseOutside([path.join(base, "other")]), RefusedError);
 });
 
+test("work that changes something may not reach a guarded file or a folder holding it, while reading may", async (t) => {
+  const { root } = await project(t);
+  const config = path.join(root, "settings", "kiriya", "config.json");
+  const scope = await RootScope.open(fileSystem, [], root, [config]);
+  const guarded = (error: unknown): boolean => error instanceof RefusedError && error.detail.key === "core.mcp.guarded";
+  for (const value of ["settings/kiriya/config.json", "settings/kiriya", "settings", ".", "settings/*/config.json"]) {
+    await assert.rejects(scope.refuseOutside([value], true), guarded, value);
+    await scope.refuseOutside([value]);
+  }
+  await scope.refuseOutside(["src/app.ts", "notes.md"], true);
+});
+
 test("a root must be a folder that exists", async (t) => {
   const { base } = await project(t);
   await assert.rejects(RootScope.open(fileSystem, ["missing"], base), NotFoundError);
