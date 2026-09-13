@@ -557,10 +557,6 @@ export const en = {
   "convert.arg.value": "The text to convert; - or nothing reads what is piped in",
   "convert.option.file": "Read a file's exact bytes instead",
   "convert.option.decode": "Decode instead of encode",
-  "convert.input-missing": "Give the text as an argument, pipe it in, or pass --file",
-  "convert.input-twice": "Give the text as an argument or with --file, not both",
-  "convert.input-not-text": "The input is not UTF-8 text; pass --file for binary data",
-  "convert.input-too-large": "The input is larger than {limit}",
   "convert.decoded-binary": "The decoded bytes are not UTF-8 text, so they are not printed",
   "convert.base64.summary": "Encode text or a file as base64, or decode base64 back to text",
   "convert.base64.option.url": "Use the URL-safe alphabet, without padding",
@@ -747,6 +743,11 @@ export const en = {
   "proc.tree.arg.pid": "The process whose tree to show; every process when left out",
   "proc.tree.pid-invalid": "Not a process id: {pid}",
   "proc.tree.no-pid": "No process has the id {pid}",
+
+  "core.input.missing": "Give the text as an argument, pipe it in, or pass --file",
+  "core.input.twice": "Give the text as an argument or with --file, not both",
+  "core.input.not-text": "The input is not UTF-8 text; pass --file for binary data",
+  "core.input.too-large": "The input is larger than {limit}",
 } as const;
 
 export type MessageKey = keyof typeof en;
