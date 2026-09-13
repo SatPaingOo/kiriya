@@ -5,8 +5,9 @@
 lists its tools and calls them, and kiriya runs each call the way the command line would,
 under the same safety rules.
 
-For now only commands that change nothing are offered. Commands that write or delete
-come in later steps of phase 4 in [BLUEPRINT.md](../BLUEPRINT.md), each behind a setting.
+Commands that change nothing are offered by default, and commands that change files in
+ways that can be undone when you allow it (see [Settings](#settings)). Commands whose work
+cannot be undone come in a later step of phase 4 in [BLUEPRINT.md](../BLUEPRINT.md).
 
 ## Add it to a client
 
@@ -49,6 +50,34 @@ Roots limit paths, not everything a command can see. As on the command line, `en
 kiriya's own configuration file. Use your client's permission settings to choose which
 tools an agent may call without asking.
 
+## Settings
+
+The server reads kiriya's configuration file once, when it starts, so start it again
+after changing a setting.
+
+| Setting | Effect |
+|---|---|
+| `mcp.allowWrite` | `true` offers the commands that change files in ways that can be undone, such as `files.new`, `files.move`, `files.rename`, `files.replace` and `git.switch`. Their yes-or-no questions are answered yes, as `--yes` would answer them on the command line. |
+
+```bash
+kiriya config set mcp.allowWrite true
+```
+
+Some things stay out of an agent's reach whatever the settings say:
+
+- Work that cannot be undone, such as replacing a file with `files move --overwrite`, is
+  refused, because nobody can type its confirmation over MCP yet. Commands that can
+  reach that level, such as `files.delete`, are not offered.
+- `config set` and `config unset` are never tools, and no tool that changes something
+  may reach kiriya's configuration file or a folder holding it. An agent cannot give
+  itself more than you did, or list a plugin of its own.
+- `docker up` and `docker rebuild` are never tools: they start whatever programs a
+  compose file names, and an agent that changes files could write one.
+
+Write tools change files inside the roots, and programs that later run there act on
+what they find: git runs hooks from `.git/hooks`, and package managers run the scripts
+in `package.json`. Allow write tools for folders where that is acceptable.
+
 ## Tools
 
 | Part | What kiriya sends |
@@ -59,8 +88,9 @@ tools an agent may call without asking.
 | Output | The JSON document `--json` prints, as structured content and again as text |
 | Annotations | All four: `readOnlyHint`, `destructiveHint`, `idempotentHint`, and `openWorldHint` for commands that use the network |
 
-A few options exist only for a person at a terminal and are not offered: `env show --reveal`,
-so secret values stay hidden, and `docker logs --follow`, which never ends.
+A few options exist only for a person at a terminal and are not offered: `--yes` and
+`--confirm`, which an agent must never answer for you; `env show --reveal`, so secret
+values stay hidden; and `docker logs --follow`, which never ends.
 
 A command that fails, a refused path and a bad argument come back as a result with
 `isError: true` and the typed error, so the model can correct its call. Lists keep their
