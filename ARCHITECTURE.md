@@ -54,12 +54,12 @@ src/
 ├── core/
 │   ├── domain/                   command, module, errors, message, input-schema, view, glob, names,
 │   │                             text-case, encodings, secrets, ports/, values/
-│   ├── application/              command-registry, plugin-loader, config-values, path-guard, walk, paths, safety, process-ending
+│   ├── application/              command-registry, plugin-loader, config-values, path-guard, walk, paths, safety, process-ending, text-input
 │   ├── infrastructure/
 │   │   ├── node/                 file system and content, hasher, compression, process runner,
 │   │   │                         config file and location, plugin source, environment, clock,
 │   │   │                         random source, standard input, system info, network
-│   │   └── platform/             windows/, linux/, macos/: trash, process table and port table adapters
+│   │   └── platform/             windows/, linux/, macos/: trash, process and port tables, clipboard, opener
 │   └── presentation/
 │       ├── cli/                  cli-application, argv, help, style, terminal-confirmation, json-output
 │       ├── i18n/                 translator
@@ -78,11 +78,13 @@ src/
     ├── sys/                      info tools report
     ├── net/                      ip check dns
     ├── port/                     who kill free
-    └── proc/                     list find kill tree
+    ├── proc/                     list find kill tree
+    ├── clip/                     copy paste
+    └── open/                     one command: kiriya open <file|folder|url>
 examples/plugins/hello/           a complete plugin in one file
 docs/plugins.md                   the plugin contract
 tests/
-├── unit/                         pure logic and use cases with fakes: core/, files/, archive/, git/, docker/, config/, doctor/, gen/, convert/, env/, sys/, net/, port/, proc/
+├── unit/                         pure logic and use cases with fakes: core/, files/, archive/, git/, docker/, config/, doctor/, gen/, convert/, env/, sys/, net/, port/, proc/, clip/, open/
 ├── integration/                  use cases with real adapters: a real file system, real git repositories
 ├── contract/                     one suite per port, run against its adapters
 ├── e2e/                          the built CLI as a black box
@@ -201,6 +203,8 @@ Commands that change many things preview first: `rename`, `replace`, `clean`,
 | `Network` | This machine's addresses, a TCP connection out, the system resolver and DNS queries | `NodeNetworkAdapter` |
 | `ProcessTable` | Every process, with parent ids and command lines when asked; ending processes; the ids never to end | `WindowsProcessTableAdapter` (`tasklist`, or `Get-CimInstance` for details), `LinuxProcessTableAdapter` (`/proc`), `MacosProcessTableAdapter` (`ps`) |
 | `PortTable` | Listening TCP sockets and their owners, and whether a port can be opened | `WindowsPortTableAdapter` (`netstat -ano`), `LinuxPortTableAdapter` (`/proc/net/tcp`), `MacosPortTableAdapter` (`netstat` and `lsof`) |
+| `Clipboard` | Text to and from the system clipboard, and what serves it here | `WindowsClipboardAdapter` (`Set-Clipboard` through PowerShell), `LinuxClipboardAdapter` (`wl-clipboard`, `xclip` or `xsel`), `MacosClipboardAdapter` (`pbcopy` with a UTF-8 locale) |
+| `Opener` | A file, folder or web address handed to the application the OS chooses | `WindowsOpenerAdapter` (`explorer.exe`), `LinuxOpenerAdapter` (`xdg-open`), `MacosOpenerAdapter` (`open`) |
 | `ProtectedPaths` | Paths no command may delete, move or overwrite | `PathGuard` in core application |
 
 `src/main.ts` is the only place that chooses an adapter by operating system.
