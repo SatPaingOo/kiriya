@@ -4,9 +4,13 @@ kiriya is in early development. This guide covers the local setup, the checks ev
 change must pass, and how work flows into `main`. Read [ARCHITECTURE.md](./ARCHITECTURE.md)
 before changing code, and [BLUEPRINT.md](./BLUEPRINT.md) section 7 for the code standards.
 
+Contributions are licensed under the [MIT License](./LICENSE), and everyone taking part
+follows the [code of conduct](./CODE_OF_CONDUCT.md). Report a security problem privately,
+as [SECURITY.md](./SECURITY.md) describes, never in a public issue.
+
 ## Setup
 
-You need Node.js 22.13 or later and npm.
+You need Node.js 22.13 or later and npm; `nvm use` picks the version in `.nvmrc`.
 
 ```bash
 npm ci
