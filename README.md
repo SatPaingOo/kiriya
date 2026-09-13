@@ -2,11 +2,12 @@
 
 **One command-line toolbox for everyday developer work that behaves the same on Windows, Linux and macOS.**
 
-**Status:** design · phase 0 spike passed in CI · private repository · last reviewed 2026-09-13
+**Status:** phase 1 in progress · core, `files` and `archive` built and tested · private repository · last reviewed 2026-09-13
 
-> kiriya (ကိရိယာ, Burmese for "tool") is at the design stage. A working prototype
-> of its first modules exists, tested on Windows only, and is the starting point
-> for the first phase. Nothing here is ready to install yet.
+> kiriya (ကိရိယာ, Burmese for "tool") is in its first build phase. The core, the
+> `files` module (18 commands) and the `archive` module (zip, unzip) work, with
+> `--json` on every command, and their tests pass on Windows; CI on Linux and macOS
+> comes next. Nothing here is ready to install yet.
 
 ## The problem
 
@@ -36,4 +37,7 @@ operation. Details in [BLUEPRINT.md](./BLUEPRINT.md) section 3.
 | File | Holds |
 |---|---|
 | [BLUEPRINT.md](./BLUEPRINT.md) | What kiriya is, the tool catalog, architecture, code standards, decisions, plan |
+| [ARCHITECTURE.md](./ARCHITECTURE.md) | How the code is organised today, and how to add a command, module or adapter |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | Setup, scripts, the checks every change passes, branches, commits and CI |
+| [AGENTS.md](./AGENTS.md) | The same rules, gathered for AI coding agents |
 | [RESEARCH.md](./RESEARCH.md) | Prior art, CLI and MCP guidelines, distribution options, sources |
