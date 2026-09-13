@@ -1,0 +1,8 @@
+{
+  "name": "kiriya-plugin-hello",
+  "version": "1.0.0",
+  "description": "An example kiriya plugin with one command",
+  "private": true,
+  "type": "module",
+  "main": "index.js"
+}
