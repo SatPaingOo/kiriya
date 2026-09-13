@@ -2,7 +2,7 @@
 
 **One command-line toolbox for everyday developer work that behaves the same on Windows, Linux and macOS.**
 
-**Status:** phase 3 in progress · every v1 module built · release files in place · not on npm yet · private repository · last reviewed 2026-09-14
+**Status:** phase 3 in progress · every v1 module built · release files in place · MCP server started, read-only tools · not on npm yet · private repository · last reviewed 2026-09-14
 
 > kiriya (ကိရိယာ, Burmese for "tool") has every module planned for its first release
 > built and tested in CI on Windows, Linux and macOS, with Node.js 22, 24 and the current
@@ -54,7 +54,8 @@ on tab completion, see [docs/completion.md](./docs/completion.md).
 | `completion` | `kiriya completion bash` | Tab completion for bash, zsh, fish and PowerShell |
 
 `kiriya help <module>` lists a module's commands, and `kiriya help <module> <command>`
-explains one.
+explains one. `kiriya mcp` serves the commands that change nothing to AI agents over
+MCP; see [docs/mcp.md](./docs/mcp.md).
 
 ## The problem
 
@@ -89,6 +90,7 @@ operation. Details in [BLUEPRINT.md](./BLUEPRINT.md) section 3.
 | [AGENTS.md](./AGENTS.md) | The same rules, gathered for AI coding agents |
 | [docs/plugins.md](./docs/plugins.md) | How to write, install and check a plugin |
 | [docs/completion.md](./docs/completion.md) | How to turn on tab completion in bash, zsh, fish and PowerShell |
+| [docs/mcp.md](./docs/mcp.md) | How to serve kiriya to AI agents over MCP, and what it offers them |
 | [docs/releasing.md](./docs/releasing.md) | How a release is prepared, published from CI and checked |
 | [RESEARCH.md](./RESEARCH.md) | Prior art, CLI and MCP guidelines, distribution options, sources |
 | [CHANGELOG.md](./CHANGELOG.md) | What each release adds and changes |
