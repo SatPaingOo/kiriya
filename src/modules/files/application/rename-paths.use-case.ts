@@ -55,7 +55,9 @@ export const renameSpec: CommandSpec<RenameInput> = {
   usesNetwork: false,
   runsUserCommands: false,
   input: {
-    positionals: [{ name: "paths", description: "files.rename.arg.paths", required: false, variadic: true }],
+    positionals: [
+      { name: "paths", description: "files.rename.arg.paths", required: false, variadic: true, path: true },
+    ],
     options: {
       case: { type: "string", description: "files.rename.option.case", valueName: `<${CASE_STYLES.join("|")}>` },
       find: { type: "string", description: "files.rename.option.find", valueName: "<text>" },

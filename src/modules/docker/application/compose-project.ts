@@ -21,6 +21,7 @@ export const fileOption: OptionSpec = {
   type: "string",
   description: "docker.option.file",
   valueName: "<compose.yaml>",
+  path: true,
 };
 
 export const servicesPositional: PositionalSpec = {

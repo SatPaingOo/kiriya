@@ -9,6 +9,10 @@ export interface OptionSpec {
   readonly multiple?: boolean;
   /** Shown in help after the flag, such as `<size>`. */
   readonly valueName?: string;
+  /** Holds a file or folder path, or a glob of them. Over MCP it must stay inside the server's roots. */
+  readonly path?: boolean;
+  /** Only for a person at a terminal and never offered over MCP, such as `--reveal`, which shows secret values. */
+  readonly terminalOnly?: boolean;
 }
 
 export interface PositionalSpec {
@@ -18,9 +22,11 @@ export interface PositionalSpec {
   readonly variadic: boolean;
   /** The only values it takes, which completion offers. */
   readonly choices?: readonly string[];
+  /** Holds a file or folder path, or a glob of them. Over MCP it must stay inside the server's roots. */
+  readonly path?: boolean;
 }
 
-/** Values as they arrive from argv or, later, an MCP call, before validation. */
+/** Values as they arrive from argv or an MCP call, before validation. */
 export interface RawInput {
   readonly positionals: readonly string[];
   readonly options: Readonly<Record<string, string | boolean | readonly string[] | undefined>>;

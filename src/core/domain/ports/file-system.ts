@@ -23,6 +23,8 @@ export interface FileSystem {
   stat(path: string): Promise<FileStat | null>;
   readDirectory(path: string): Promise<readonly DirectoryEntry[]>;
   readLink(path: string): Promise<string>;
+  /** The absolute path with every symlink resolved; null when nothing is there or a link leads nowhere. */
+  realPath(path: string): Promise<string | null>;
   /** Creates missing parents too; nothing happens when the folder exists. */
   createDirectory(path: string): Promise<void>;
   /** ConflictError when anything already exists at the path. */

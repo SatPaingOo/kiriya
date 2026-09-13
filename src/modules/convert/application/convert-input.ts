@@ -13,4 +13,9 @@ export const valuePositional: PositionalSpec = {
   variadic: false,
 };
 
-export const fileOption: OptionSpec = { type: "string", description: "convert.option.file", valueName: "<path>" };
+export const fileOption: OptionSpec = {
+  type: "string",
+  description: "convert.option.file",
+  valueName: "<path>",
+  path: true,
+};

@@ -63,7 +63,7 @@ export const grepSpec: CommandSpec<GrepInput> = {
   input: {
     positionals: [
       { name: "pattern", description: "files.grep.arg.pattern", required: true, variadic: false },
-      { name: "paths", description: "files.grep.arg.paths", required: false, variadic: true },
+      { name: "paths", description: "files.grep.arg.paths", required: false, variadic: true, path: true },
     ],
     options: {
       literal: { type: "boolean", description: "files.grep.option.literal" },

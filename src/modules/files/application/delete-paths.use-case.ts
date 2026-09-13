@@ -49,7 +49,7 @@ export const deleteSpec: CommandSpec<DeleteInput> = {
   usesNetwork: false,
   runsUserCommands: false,
   input: {
-    positionals: [{ name: "paths", description: "files.delete.arg.paths", required: true, variadic: true }],
+    positionals: [{ name: "paths", description: "files.delete.arg.paths", required: true, variadic: true, path: true }],
     options: {
       permanent: { type: "boolean", description: "files.delete.option.permanent" },
       "dry-run": { type: "boolean", description: "files.delete.option.dry-run" },

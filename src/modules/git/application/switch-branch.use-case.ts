@@ -57,7 +57,7 @@ export const switchSpec: CommandSpec<SwitchInput> = {
   input: {
     positionals: [
       { name: "branch", description: "git.switch.arg.branch", required: true, variadic: false },
-      { name: "folder", description: "git.arg.folder", required: false, variadic: false },
+      { name: "folder", description: "git.arg.folder", required: false, variadic: false, path: true },
     ],
     options: {
       create: { type: "boolean", description: "git.switch.option.create" },

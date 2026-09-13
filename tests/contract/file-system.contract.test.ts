@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readdir, readFile, stat as nodeStat, utimes } from "node:fs/promises";
+import { readdir, readFile, stat as nodeStat, symlink, utimes } from "node:fs/promises";
 import path from "node:path";
 import { test } from "node:test";
 import { ConflictError, NotFoundError } from "../../src/core/domain/errors.js";
@@ -112,5 +112,21 @@ for (const [name, create] of ADAPTERS) {
     assert.equal(await fileSystem.removeEmptyDirectory(path.join(root, "full")), false);
     assert.equal(await fileSystem.removeEmptyDirectory(path.join(root, "empty")), true);
     assert.deepEqual((await readdir(root)).sort(), ["a.txt", "b.txt", "full"]);
+  });
+
+  test(`${name}: realPath follows links, and is null for nothing or a link that leads nowhere`, async (t) => {
+    const fileSystem = create();
+    const root = await temporaryFolder(t);
+    await layout(root, { "real/file.txt": "x" });
+    const real = await fileSystem.realPath(root);
+    assert.ok(real !== null && path.isAbsolute(real));
+    assert.equal(await fileSystem.realPath(path.join(root, "real", "missing")), null);
+
+    // A junction needs no privilege on Windows; other systems ignore the type and make a symlink.
+    await symlink(path.join(root, "real"), path.join(root, "link"), "junction");
+    assert.equal(await fileSystem.realPath(path.join(root, "link", "file.txt")), path.join(real, "real", "file.txt"));
+    await symlink(path.join(root, "gone"), path.join(root, "dangling"), "junction");
+    assert.equal(await fileSystem.realPath(path.join(root, "dangling")), null);
+    assert.notEqual(await fileSystem.lstat(path.join(root, "dangling")), null);
   });
 }

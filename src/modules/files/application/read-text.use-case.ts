@@ -41,7 +41,7 @@ export const readSpec: CommandSpec<ReadInput> = {
   usesNetwork: false,
   runsUserCommands: false,
   input: {
-    positionals: [{ name: "file", description: "files.read.arg.file", required: true, variadic: false }],
+    positionals: [{ name: "file", description: "files.read.arg.file", required: true, variadic: false, path: true }],
     options: {
       head: { type: "string", description: "files.read.option.head", valueName: "<n>" },
       tail: { type: "string", description: "files.read.option.tail", valueName: "<n>" },

@@ -34,7 +34,7 @@ export const showSpec: CommandSpec<ShowInput> = {
   runsUserCommands: false,
   input: {
     positionals: [{ name: "filter", description: "env.show.arg.filter", required: false, variadic: false }],
-    options: { reveal: { type: "boolean", description: "env.show.option.reveal" } },
+    options: { reveal: { type: "boolean", description: "env.show.option.reveal", terminalOnly: true } },
     parse(raw) {
       const reader = new RawReader(raw);
       return { filter: reader.positional(0), reveal: reader.flag("reveal") };
