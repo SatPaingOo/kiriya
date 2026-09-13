@@ -6,7 +6,7 @@ import { ListSettings } from "../../../src/modules/config/application/list-setti
 import { SetSetting } from "../../../src/modules/config/application/set-setting.use-case.js";
 import { ShowConfigPath } from "../../../src/modules/config/application/show-config-path.use-case.js";
 import { UnsetSetting } from "../../../src/modules/config/application/unset-setting.use-case.js";
-import { looksSecret } from "../../../src/modules/config/domain/secrets.js";
+import { looksSecret } from "../../../src/core/domain/secrets.js";
 import { expectDone, MemoryConfigStore } from "../../support/fakes.js";
 
 const FILE = "/home/dev/.config/kiriya/config.json";

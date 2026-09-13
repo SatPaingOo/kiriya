@@ -4,7 +4,7 @@ import { done } from "../../../core/domain/command.js";
 import { RefusedError, UsageError } from "../../../core/domain/errors.js";
 import { RawReader } from "../../../core/domain/input-schema.js";
 import type { ConfigStore, ConfigValue } from "../../../core/domain/ports/config-store.js";
-import { looksSecret } from "../domain/secrets.js";
+import { looksSecret } from "../../../core/domain/secrets.js";
 import { CONFIG_COMMAND } from "./config-commands.js";
 
 export interface SetInput {
