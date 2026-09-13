@@ -800,6 +800,16 @@ export const en = {
   "archive.untar.damaged": "{path} cannot be read: {reason}",
   "archive.untar.changed": "{path} changed while it was being extracted",
   "archive.untar.skipped-links": "{count} link(s) and special file(s) skipped",
+
+  "completion.summary":
+    "Tab completion for kiriya's modules, commands, options and values in bash, zsh, fish and PowerShell",
+  "completion.script.summary": "Print the completion script for a shell; its first lines say how to load it",
+  "completion.arg.shell": "bash, zsh, fish or powershell",
+  "completion.shell-invalid": "Not a supported shell: {shell}; use bash, zsh, fish or powershell",
+  "completion.suggest.summary": "Print what can come next on a command line, for the completion scripts to show",
+  "completion.suggest.option.current": "The word being completed, which may be empty",
+  "completion.suggest.option.word": "A word before it on the command line, once for each word",
+  "completion.help-word": "Show help for a module or one of its commands",
 } as const;
 
 export type MessageKey = keyof typeof en;
