@@ -54,16 +54,17 @@ src/
 ├── core/
 │   ├── domain/                   command, module, errors, message, input-schema, view, glob, names,
 │   │                             text-case, encodings, secrets, ports/, values/
-│   ├── application/              command-registry, plugin-loader, config-values, path-guard, walk, paths, safety
+│   ├── application/              command-registry, plugin-loader, config-values, path-guard, walk, paths, safety, process-ending
 │   ├── infrastructure/
 │   │   ├── node/                 file system and content, hasher, compression, process runner,
 │   │   │                         config file and location, plugin source, environment, clock,
 │   │   │                         random source, standard input, system info, network
-│   │   └── platform/             windows/, linux/, macos/: one trash adapter each
+│   │   └── platform/             windows/, linux/, macos/: trash, process table and port table adapters
 │   └── presentation/
 │       ├── cli/                  cli-application, argv, help, style, terminal-confirmation, json-output
 │       ├── i18n/                 translator
-│       └── list-preview.ts       "… and N more" for long lists in views
+│       ├── list-preview.ts       "… and N more" for long lists in views
+│       └── ended-processes.ts    one line per ended process, and aligned columns
 └── modules/
     ├── files/                    new list tree info read find grep hash dupes compare copy move rename replace delete clean sync size
     ├── archive/                  zip unzip
@@ -75,11 +76,13 @@ src/
     ├── convert/                  base64 hex url json jwt time case, from an argument, stdin or a file
     ├── env/                      show path check: variables with secrets hidden, PATH problems, .env against .env.example
     ├── sys/                      info tools report
-    └── net/                      ip check dns
+    ├── net/                      ip check dns
+    ├── port/                     who kill free
+    └── proc/                     list find kill tree
 examples/plugins/hello/           a complete plugin in one file
 docs/plugins.md                   the plugin contract
 tests/
-├── unit/                         pure logic and use cases with fakes: core/, files/, archive/, git/, docker/, config/, doctor/, gen/, convert/, env/, sys/, net/
+├── unit/                         pure logic and use cases with fakes: core/, files/, archive/, git/, docker/, config/, doctor/, gen/, convert/, env/, sys/, net/, port/, proc/
 ├── integration/                  use cases with real adapters: a real file system, real git repositories
 ├── contract/                     one suite per port, run against its adapters
 ├── e2e/                          the built CLI as a black box
@@ -196,6 +199,8 @@ Commands that change many things preview first: `rename`, `replace`, `clean`,
 | `StandardInput` | What is piped in, read to the end with a size limit, and whether a person is typing instead | `NodeStandardInput` |
 | `SystemInfo` | The OS name and kernel, processor, memory, uptime, host name, locale and time zone | `NodeSystemInfoAdapter`: os-release on Linux, `sw_vers` on macOS |
 | `Network` | This machine's addresses, a TCP connection out, the system resolver and DNS queries | `NodeNetworkAdapter` |
+| `ProcessTable` | Every process, with parent ids and command lines when asked; ending processes; the ids never to end | `WindowsProcessTableAdapter` (`tasklist`, or `Get-CimInstance` for details), `LinuxProcessTableAdapter` (`/proc`), `MacosProcessTableAdapter` (`ps`) |
+| `PortTable` | Listening TCP sockets and their owners, and whether a port can be opened | `WindowsPortTableAdapter` (`netstat -ano`), `LinuxPortTableAdapter` (`/proc/net/tcp`), `MacosPortTableAdapter` (`netstat` and `lsof`) |
 | `ProtectedPaths` | Paths no command may delete, move or overwrite | `PathGuard` in core application |
 
 `src/main.ts` is the only place that chooses an adapter by operating system.
