@@ -7,10 +7,19 @@ export interface ConfigKey {
   readonly description: MessageKey;
   /** Values as they would follow `kiriya config set <key>`. */
   readonly example: string;
+  /** The only values a `string` setting takes. */
+  readonly choices?: readonly string[];
 }
 
 /** Every setting kiriya reads. Adding a setting means adding an entry here. */
 export const CONFIG_KEYS: readonly ConfigKey[] = [
+  {
+    key: "mcp.allowWrite",
+    type: "string",
+    description: "config.key.mcp-allow-write",
+    example: "true",
+    choices: ["true", "false"],
+  },
   {
     key: "plugins",
     type: "list",

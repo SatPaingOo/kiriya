@@ -25,6 +25,8 @@ export const setSpec: CommandSpec<SetInput> = {
   examples: ["kiriya config set plugins kiriya-plugin-example", "kiriya config set plugins ./team/plugin ./my/plugin"],
   safety: "write",
   ...CONFIG_COMMAND,
+  // Over MCP an agent could turn on more tools for itself, or list a plugin that runs its own code.
+  terminalOnly: true,
   input: {
     positionals: [
       { name: "key", description: "config.set.arg.key", required: true, variadic: false },
@@ -48,6 +50,9 @@ export class SetSetting implements Command<SetInput, SetOutput> {
     if (known === undefined) throw new UsageError("config.set.unknown-key", { key: input.key });
     if (known.type === "string" && input.values.length !== 1) {
       throw new UsageError("config.set.one-value", { key: input.key });
+    }
+    if (known.choices !== undefined && !known.choices.includes(input.values[0] ?? "")) {
+      throw new UsageError("config.set.not-a-choice", { key: input.key, choices: known.choices.join(", ") });
     }
     // The file sits in plain text in the user's profile, so it never takes a secret.
     if (input.values.some(looksSecret)) throw new RefusedError("config.set.secret");

@@ -16,6 +16,9 @@ export const pathView: TextView<PathOutput> = (output) => [output.path];
 export const keysView: TextView<KeysOutput> = (output, format) =>
   output.keys.flatMap((entry) => [
     `${format.bold(entry.key)}  ${format.dim(entry.type)}  ${format.text(entry.description)}`,
+    ...(entry.choices === null
+      ? []
+      : [format.dim(`  ${format.text(message("config.keys.choices", { choices: entry.choices.join(", ") }))}`)]),
     format.dim(
       `  ${format.text(message("config.keys.example", { command: `kiriya config set ${entry.key} ${entry.example}` }))}`,
     ),
