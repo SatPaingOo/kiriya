@@ -1,8 +1,9 @@
 name: release
 
-# Publishes kiriya to npm when a GitHub release is published. It uses npm trusted
-# publishing (OIDC), so no npm token is stored anywhere, and npm adds provenance
-# because the repository and the package are public. docs/releasing.md has the steps.
+# Publishes kiriya to npm when a GitHub release is published, then its server metadata
+# to the MCP Registry. Both sign in through OIDC, so no token is stored anywhere, and npm
+# adds provenance because the repository and the package are public. docs/releasing.md
+# has the steps.
 
 on:
   release:
@@ -41,12 +42,54 @@ jobs:
       - run: npm ci
       - run: npm test
 
-      - name: Check the tag, the version, the changelog and the package contents
+      - name: Check the tag, the version, the changelog, server.json and the package contents
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
           node dist/tools/check-release.js
+          node dist/tools/check-server.js
           npm pack --dry-run --json > pack.json
           node dist/tools/check-package.js pack.json
 
       - run: npm publish --provenance --access public
+
+  mcp-registry:
+    name: publish to the MCP Registry
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      # mcp-publisher signs in with GitHub OIDC, which allows names under io.github.SatPaingOo/.
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # The registry checks mcpName in the package on npm, which can take a moment to appear.
+      - name: Wait until npm serves the new version with its mcpName
+        run: |
+          name="$(node -p "require('./package.json').name")"
+          version="$(node -p "require('./package.json').version")"
+          expected="$(node -p "require('./package.json').mcpName")"
+          for attempt in $(seq 1 30); do
+            if [ "$(npm view "${name}@${version}" mcpName 2>/dev/null)" = "${expected}" ]; then exit 0; fi
+            sleep 10
+          done
+          echo "npm does not serve ${name}@${version} with mcpName ${expected}"
+          exit 1
+
+      # Pinned, and checked against the checksum the registry project published with that version.
+      - name: Install mcp-publisher
+        env:
+          MCP_PUBLISHER_VERSION: 1.8.1
+          MCP_PUBLISHER_SHA256: a06c9096dcb9727c13555b6be26c7effa707b01f06a4c561ba7a3635443cf2cc
+        run: |
+          curl -fsSL -o mcp-publisher.tar.gz \
+            "https://github.com/modelcontextprotocol/registry/releases/download/v${MCP_PUBLISHER_VERSION}/mcp-publisher_linux_amd64.tar.gz"
+          echo "${MCP_PUBLISHER_SHA256}  mcp-publisher.tar.gz" | sha256sum --check --strict
+          tar xzf mcp-publisher.tar.gz mcp-publisher
+
+      - run: ./mcp-publisher login github-oidc
+      - run: ./mcp-publisher publish
