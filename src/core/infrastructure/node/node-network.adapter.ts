@@ -1,4 +1,6 @@
 import { Resolver, lookup as systemLookup } from "node:dns/promises";
+import { request as httpRequest } from "node:http";
+import { request as httpsRequest } from "node:https";
 import { createConnection } from "node:net";
 import { networkInterfaces } from "node:os";
 import { InterruptedError } from "../../domain/errors.js";
@@ -7,6 +9,8 @@ import type {
   ConnectOutcome,
   DnsRecord,
   DnsRecordType,
+  HttpFailure,
+  HttpOutcome,
   LookupFailure,
   LookupOutcome,
   Network,
@@ -38,6 +42,13 @@ function errorCode(error: unknown): string | null {
   if ("code" in error && typeof error.code === "string") return error.code;
   if (error instanceof AggregateError) return errorCode((error.errors as unknown[])[0]);
   return null;
+}
+
+/** A certificate or TLS problem is told apart, since trying again does not fix it by itself. */
+function httpFailure(code: string | null): HttpFailure {
+  if (code === null) return "failed";
+  if (code.startsWith("ERR_TLS_") || code.startsWith("ERR_SSL_") || /CERT|SELF_SIGNED/.test(code)) return "tls";
+  return CONNECT_FAILURES[code] ?? "failed";
 }
 
 function lookupFailure(error: unknown): LookupOutcome {
@@ -105,6 +116,42 @@ export class NodeNetworkAdapter implements Network {
         const failure = (code === null ? undefined : CONNECT_FAILURES[code]) ?? "failed";
         settle({ ok: false, failure, code, ms: elapsed() });
       });
+    });
+  }
+
+  request(url: string, timeoutMs: number, signal: AbortSignal): Promise<HttpOutcome> {
+    if (signal.aborted) return Promise.reject(new InterruptedError("core.error.interrupted"));
+    return new Promise((resolve, reject) => {
+      const started = performance.now();
+      const elapsed = (): number => Math.round(performance.now() - started);
+      const target = new URL(url);
+      const send = target.protocol === "https:" ? httpsRequest : httpRequest;
+      const outgoing = send(target, { method: "GET", headers: { "user-agent": "kiriya" } });
+      let settled = false;
+      // null means the run was interrupted.
+      const settle = (outcome: HttpOutcome | null): void => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        signal.removeEventListener("abort", onAbort);
+        outgoing.destroy();
+        if (outcome === null) reject(new InterruptedError("core.error.interrupted"));
+        else resolve(outcome);
+      };
+      const onAbort = (): void => settle(null);
+      const timer = setTimeout(() => settle({ ok: false, failure: "timeout", code: null, ms: elapsed() }), timeoutMs);
+      signal.addEventListener("abort", onAbort, { once: true });
+      outgoing.once("response", (response) => {
+        // The status is all a wait needs, so the body is never read.
+        response.destroy();
+        settle({ ok: true, status: response.statusCode ?? 0, ms: elapsed() });
+      });
+      // Kept after settling, because destroying the request can still emit an error.
+      outgoing.on("error", (error) => {
+        const code = errorCode(error);
+        settle({ ok: false, failure: httpFailure(code), code, ms: elapsed() });
+      });
+      outgoing.end();
     });
   }
 

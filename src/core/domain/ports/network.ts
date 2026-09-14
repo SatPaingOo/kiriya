@@ -17,6 +17,13 @@ export type ConnectOutcome =
   | { readonly ok: true; readonly address: string; readonly ms: number }
   | { readonly ok: false; readonly failure: ConnectFailure; readonly code: string | null; readonly ms: number };
 
+/** Why a request got no status: a connection failure, or a certificate or TLS failure. */
+export type HttpFailure = ConnectFailure | "tls";
+
+export type HttpOutcome =
+  | { readonly ok: true; readonly status: number; readonly ms: number }
+  | { readonly ok: false; readonly failure: HttpFailure; readonly code: string | null; readonly ms: number };
+
 export const DNS_RECORD_TYPES = ["a", "aaaa", "cname", "mx", "txt", "ns"] as const;
 export type DnsRecordType = (typeof DNS_RECORD_TYPES)[number];
 
@@ -34,11 +41,16 @@ export type LookupOutcome =
   | { readonly ok: true; readonly records: readonly DnsRecord[] }
   | { readonly ok: false; readonly failure: LookupFailure; readonly code: string | null };
 
-/** This machine's network: its own addresses, TCP connections out, and name lookups. */
+/** This machine's network: its own addresses, TCP connections and web requests out, and name lookups. */
 export interface Network {
   addresses(): readonly NetworkAddress[];
   /** Opens a TCP connection and closes it at once. Aborting the signal throws InterruptedError. */
   connect(host: string, port: number, timeoutMs: number, signal: AbortSignal): Promise<ConnectOutcome>;
+  /**
+   * Sends one GET to an http or https address and settles on the status, without reading the
+   * body or following a redirect. Aborting the signal throws InterruptedError.
+   */
+  request(url: string, timeoutMs: number, signal: AbortSignal): Promise<HttpOutcome>;
   /** Addresses as programs on this machine get them: the hosts file first, then DNS. */
   lookup(name: string): Promise<LookupOutcome>;
   /** Records of one type, asked of the DNS servers directly. */
