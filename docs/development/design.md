@@ -76,7 +76,7 @@ which blocks the Windows trash path.
 
 ### Built
 
-The sixteen modules in the [module list](../modules/README.md), the MCP server and plugins.
+The modules in the [module list](../modules/README.md), the MCP server and plugins.
 
 ### Next
 
@@ -100,7 +100,7 @@ the adoption of the tools that do each job today.
 | Rank | Command | What | Safety | Network | When |
 |---|---|---|---|---|---|
 | 1 | `secrets scan` | Find committed secrets in a repository's files and history | read | no | next |
-| 2 | `wait` | Wait until a port listens, a URL answers or a file appears, with a timeout | read | for URLs only | next |
+| 2 | `wait` | Wait until a port listens, a URL answers or a file appears, with a timeout | read | for URLs only | built |
 | 3 | `loc` | Lines of code by language | read | no | next |
 | 4 | `git hooks` | List, install and remove git hooks across repositories | write | no | next |
 | 5 | `http` | Send an HTTP request and print the response, with `--json` | read | yes | later |
@@ -460,6 +460,7 @@ A change is done when all of these hold:
 | v1 modules | `port`, `proc`, `env`, `sys`, `net`, `convert`, `gen`, `clip`, `open`, `doctor`, `completion`; licence, changelog, security policy, code of conduct, release workflow | Done 2026-09-14 |
 | MCP server | `read`, `write` and `destroy` tools over both protocol versions, registry metadata and an MCPB bundle, tested with the official SDK | Done 2026-09-14 |
 | Docs | Getting started, usage, and a guide per module with a generated reference; module help in the CLI | Done 2026-09-14 |
+| v2 modules | Started before the first release, each after a design issue: `wait` ([#19](https://github.com/SatPaingOo/kiriya/issues/19)) | `wait` done 2026-09-14 |
 | First release | The repository made public; npm through trusted publishing with provenance; the MCP Registry and the MCPB bundle ([Releasing](releasing.md)) | Waits for the maintainer. Done when a clean machine on each OS installs kiriya from the README alone, `kiriya doctor` passes, and `npm audit signatures` verifies the package |
 | Growth | The [next](#next) list and the research candidates; a Scoop bucket and a Homebrew tap; winget and single-file binaries when the distribution decision's condition holds | Users other than the maintainers report issues and depend on releases |
 

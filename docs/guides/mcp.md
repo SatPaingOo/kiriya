@@ -61,7 +61,7 @@ after changing a setting.
 
 | Setting | Effect |
 |---|---|
-| `mcp.allowWrite` | `true` offers the commands that change files in ways that can be undone, such as `files.new`, `files.move`, `files.rename`, `files.replace` and `git.switch`. Their yes-or-no questions are answered yes, as `--yes` would answer them on the command line. It also offers the reads that can show secrets or send data away: `open`, which can put anything in a web address, `clip.paste`, and the `full` option of `proc.list`, which shows command lines. |
+| `mcp.allowWrite` | `true` offers the commands that change files in ways that can be undone, such as `files.new`, `files.move`, `files.rename`, `files.replace` and `git.switch`. Their yes-or-no questions are answered yes, as `--yes` would answer them on the command line. It also offers the reads that can show secrets or send data away: `open`, which can put anything in a web address, `wait.url`, for the same reason, `clip.paste`, and the `full` option of `proc.list`, which shows command lines. |
 | `mcp.allowDestroy` | `true` offers the commands whose work cannot be undone, such as `files.delete`, `files.sync`, `archive.unzip`, `port.kill` and `proc.kill`, to clients that support elicitation. Every question such a command asks goes to you through the client, a typed confirmation included, and nothing changes unless you accept. |
 
 ```bash

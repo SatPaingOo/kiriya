@@ -52,6 +52,7 @@ then DNS. `--type` asks DNS directly for records of one type: `a`, `aaaa`, `cnam
 ## Related
 
 - [port](port.md) shows which process listens on a port on this machine.
+- [wait](wait.md) tries again until a port or a web address answers.
 
 <!-- kiriya:reference -->
 <!-- Written by `npm run docs` from the command specs. Change the specs, not this part. -->
