@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "description": "One command-line toolbox for everyday developer work that behaves the same on Windows, Linux and macOS.",
+  "mcpName": "io.github.SatPaingOo/kiriya",
   "license": "MIT",
   "author": "Sat Paing Oo",
   "repository": {
