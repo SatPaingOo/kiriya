@@ -18,11 +18,15 @@ export interface McpInput {
 
 /** What `kiriya mcp` takes on its command line. */
 export const MCP_INPUT: InputSchema<McpInput> = {
-  positionals: [],
+  positionals: [{ name: "folders", description: "core.mcp.arg.folders", required: false, variadic: true, path: true }],
   options: {
     root: { type: "string", multiple: true, path: true, description: "core.mcp.option.root", valueName: "<folder>" },
   },
-  parse: (raw) => ({ roots: new RawReader(raw).strings("root") }),
+  // Folders as arguments serve an app that passes a list of them, such as the one an MCP bundle starts.
+  parse: (raw) => {
+    const reader = new RawReader(raw);
+    return { roots: [...reader.positionalsFrom(0), ...reader.strings("root")] };
+  },
 };
 
 export interface McpDependencies {

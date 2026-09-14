@@ -1,6 +1,6 @@
 import type { RegisteredCommand, RegisteredModule } from "../../application/command-registry.js";
 import { GLOBAL_OPTIONS, type GlobalOption } from "../../domain/global-options.js";
-import type { OptionSpec } from "../../domain/input-schema.js";
+import type { InputSchema, OptionSpec } from "../../domain/input-schema.js";
 import { message } from "../../domain/message.js";
 import type { Translator } from "../i18n/translator.js";
 import type { Style } from "./style.js";
@@ -54,17 +54,22 @@ export function mainHelp(modules: readonly RegisteredModule[], context: HelpCont
 }
 
 /** `kiriya mcp`, which serves the commands to AI agents instead of being one of them. */
-export function mcpHelp(options: Readonly<Record<string, OptionSpec>>, context: HelpContext): string[] {
+export function mcpHelp(input: InputSchema<unknown>, context: HelpContext): string[] {
   const { translator, style } = context;
   return [
     `${style.bold("kiriya mcp")} — ${translator.text(message("core.mcp.summary"))}`,
     "",
     style.bold(translator.text(message("core.help.usage"))),
-    "  kiriya mcp [--root <folder>]...",
+    "  kiriya mcp [folders...] [--root <folder>]...",
+    "",
+    style.bold(translator.text(message("core.help.arguments"))),
+    ...table(
+      input.positionals.map((positional) => [positional.name, translator.text(message(positional.description))]),
+    ),
     "",
     style.bold(translator.text(message("core.help.options"))),
     ...table(
-      Object.entries(options).map(([name, spec]) => [
+      Object.entries(input.options).map(([name, spec]) => [
         optionLabel(name, spec),
         translator.text(message(spec.description)),
       ]),
