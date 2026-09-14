@@ -25,6 +25,7 @@ commands themselves so it always matches the CLI.
 | [`port`](port.md) | See which process listens on a TCP port, end it, or find a free port, the same on every OS. | `free` `kill` `who` |
 | [`proc`](proc.md) | List, find and end processes, and show them as a tree, the same on every OS. | `find` `kill` `list` `tree` |
 | [`sys`](sys.md) | This machine and the developer tools on it, described the same way on every OS. | `info` `report` `tools` |
+| [`wait`](wait.md) | Wait until a port listens, a web address answers or a file appears, the same way on every OS. | `file` `port` `url` |
 <!-- /kiriya:modules -->
 
 In the terminal, `kiriya --help` lists the modules, and `kiriya help <module>` explains one

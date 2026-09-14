@@ -76,6 +76,10 @@ engine, not only the project in this folder.
   and `clean` need `mcp.allowDestroy` and ask you through the client. `up` and `rebuild` are
   never offered, because a compose file names the programs they start.
 
+## Related
+
+- [wait](wait.md) waits until a service's port or health check answers after `up`.
+
 <!-- kiriya:reference -->
 <!-- Written by `npm run docs` from the command specs. Change the specs, not this part. -->
 

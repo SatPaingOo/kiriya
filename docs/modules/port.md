@@ -68,6 +68,7 @@ $env:PORT = kiriya port free; npm run dev
 
 - [proc](proc.md) finds and ends processes by name or id.
 - [net](net.md) checks whether a port on another host answers.
+- [wait](wait.md) waits until a port listens, or until it is free with `--gone`.
 
 <!-- kiriya:reference -->
 <!-- Written by `npm run docs` from the command specs. Change the specs, not this part. -->

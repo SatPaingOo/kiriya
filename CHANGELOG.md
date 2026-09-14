@@ -36,6 +36,10 @@ Nothing is published yet. The first release, 0.1.0, will contain everything belo
 - `clip`: copy and paste, with Unicode intact.
 - `open`: a file, folder or web address, never running a program.
 - `completion`: tab completion for bash, zsh, fish and PowerShell.
+- `wait`: port, url and file. Wait until a TCP port accepts connections, or stops with `--gone`;
+  until a web address answers with a 2xx status, or one `--status` names; or until a file
+  appears, or goes with `--gone`. It tries every half second until `--timeout`, 60 seconds by
+  default, and exits with 1 when the time runs out.
 - `mcp`: `kiriya mcp` serves every command that changes nothing to AI agents as MCP
   tools over stdio, for the 2026-07-28 protocol and for clients that still open with
   `initialize`. Paths must stay inside the `--root` folders, symlinks included. With
@@ -43,7 +47,7 @@ Nothing is published yet. The first release, 0.1.0, will contain everything belo
   undone are offered too, and with `mcp.allowDestroy true`, commands whose work cannot be
   undone, to clients that support elicitation: each asks the user before it changes
   anything. `config set`, `config unset`, `docker up` and `docker rebuild` are never offered.
-  `open`, `clip paste` and `proc list --full` need `mcp.allowWrite`, and no tool that
+  `open`, `clip paste`, `proc list --full` and `wait url` need `mcp.allowWrite`, and no tool that
   changes something may reach inside a `.git` folder. `kiriya mcp` also takes its folders
   as arguments, and each release carries an MCP bundle for Claude's desktop app.
 - Help and docs: `kiriya help <module>` explains what a module is for, shows examples and
