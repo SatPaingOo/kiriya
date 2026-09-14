@@ -73,7 +73,7 @@ them. No test reads your own kiriya configuration: the end-to-end runner points
 
 | Job | Runs on |
 |---|---|
-| `quality`: lint, format, types, and what the npm package would contain | Linux, Node 22 |
+| `quality`: lint, format, types, what the npm package would contain, and whether `server.json` matches `package.json` | Linux, Node 22 |
 | `test`: build, boundaries, all tests, including the real trash | Public repository: Windows, Linux and macOS, each on Node 22, 24 and the current release. Private repository: Linux and Windows on Node 22 |
 
 A private repository has limited CI minutes, and macOS minutes cost about ten times Linux
