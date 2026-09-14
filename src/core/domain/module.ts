@@ -59,10 +59,16 @@ export interface CommandRegistrar {
 
 /**
  * The contract for built-in modules and plugins alike. A plugin also exports the
- * English text of its own message keys; docs/plugins.md describes the whole contract.
+ * English text of its own message keys; docs/guides/plugins.md describes the whole contract.
  */
 export interface KiriyaModule {
   readonly id: string;
   readonly summary: MessageKey;
+  /** A paragraph for `kiriya help <module>`: what the module is for, and how careful its commands are. */
+  readonly about?: MessageKey;
+  /** A few of the module's most common command lines, shown by `kiriya help <module>`. */
+  readonly examples?: readonly string[];
+  /** The web address of the module's guide, which help points to. */
+  readonly guide?: string;
   register(registrar: CommandRegistrar, ports: CorePorts): void;
 }

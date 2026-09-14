@@ -14,7 +14,16 @@ export interface RegisteredCommand {
 export interface RegisteredModule {
   readonly id: string;
   readonly summary: MessageKey;
+  /** The paragraph help shows about the module, when it has one. */
+  readonly about: MessageKey | null;
+  readonly examples: readonly string[];
+  /** The web address of the module's guide, when it has one. */
+  readonly guide: string | null;
   readonly commands: ReadonlyMap<string, RegisteredCommand>;
+}
+
+interface ModuleEntry extends RegisteredModule {
+  readonly commands: Map<string, RegisteredCommand>;
 }
 
 /** The verb of a command id in a module: `files.list` gives `list`, `doctor` in doctor gives "", anything else null. */
@@ -27,15 +36,19 @@ function verbOf(commandId: string, moduleId: string): string | null {
 
 /** Built-in modules and plugins register here; presentation looks commands up by module and verb. */
 export class CommandRegistry implements CommandCatalog {
-  private readonly modules = new Map<
-    string,
-    { id: string; summary: MessageKey; commands: Map<string, RegisteredCommand> }
-  >();
+  private readonly modules = new Map<string, ModuleEntry>();
 
   /** Registers every command of a module, or none of them when one is rejected. */
   register(module: KiriyaModule, ports: CorePorts): void {
     if (this.modules.has(module.id)) throw new Error(`module ${module.id} is registered twice`);
-    const entry = { id: module.id, summary: module.summary, commands: new Map<string, RegisteredCommand>() };
+    const entry: ModuleEntry = {
+      id: module.id,
+      summary: module.summary,
+      about: module.about ?? null,
+      examples: module.examples ?? [],
+      guide: module.guide ?? null,
+      commands: new Map<string, RegisteredCommand>(),
+    };
     const registrar: CommandRegistrar = {
       add<Input, Output>(command: Command<Input, Output>, view: TextView<Output>): void {
         const verb = verbOf(command.spec.id, module.id);

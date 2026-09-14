@@ -9,6 +9,14 @@ import { jsonView, jwtView, outputView, timeView } from "./presentation/convert.
 export const convertModule: KiriyaModule = {
   id: "convert",
   summary: "convert.summary",
+  about: "convert.about",
+  examples: [
+    "kiriya convert base64 --decode aGVsbG8=",
+    "kiriya convert json --file package.json",
+    "kiriya convert jwt --file token.txt",
+    "kiriya convert time 1767225600",
+  ],
+  guide: "https://github.com/SatPaingOo/kiriya/blob/main/docs/modules/convert.md",
   register(registrar, ports) {
     const sources = { stdin: ports.stdin, fileSystem: ports.fileSystem, content: ports.fileContent };
     registrar.add(new ConvertCodec("base64", sources), outputView);

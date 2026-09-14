@@ -10,6 +10,14 @@ import { getView, keysView, listView, pathView, setView, unsetView } from "./pre
 export const configModule: KiriyaModule = {
   id: "config",
   summary: "config.summary",
+  about: "config.about",
+  examples: [
+    "kiriya config path",
+    "kiriya config keys",
+    "kiriya config set plugins kiriya-plugin-example",
+    "kiriya config set mcp.allowWrite true",
+  ],
+  guide: "https://github.com/SatPaingOo/kiriya/blob/main/docs/modules/config.md",
   register(registrar, ports) {
     registrar.add(new ShowConfigPath(ports.config), pathView);
     registrar.add(new ListConfigKeys(), keysView);
