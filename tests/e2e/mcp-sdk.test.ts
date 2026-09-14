@@ -9,8 +9,8 @@ import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
 import { layout } from "../support/fakes.js";
 
 /**
- * kiriya's MCP server against a client built with the official TypeScript SDK, which
- * BLUEPRINT.md section 9 asks of phase 4. The SDK is a development dependency only.
+ * kiriya's MCP server against a client built with the official TypeScript SDK, as the
+ * roadmap in docs/development/design.md asked. The SDK is a development dependency only.
  */
 
 const MAIN = fileURLToPath(new URL("../../src/main.js", import.meta.url));

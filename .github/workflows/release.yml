@@ -2,7 +2,7 @@ name: release
 
 # Publishes kiriya to npm when a GitHub release is published, then its server metadata
 # to the MCP Registry. Both sign in through OIDC, so no token is stored anywhere, and npm
-# adds provenance because the repository and the package are public. docs/releasing.md
+# adds provenance because the repository and the package are public. docs/development/releasing.md
 # has the steps.
 
 on:

@@ -1,7 +1,7 @@
 # Architecture
 
-How kiriya's code is organised today. [BLUEPRINT.md](./BLUEPRINT.md) explains why, and
-what comes next; this file describes what exists and how to extend it.
+How kiriya's code is organised today. [The design](design.md) explains why, and what
+comes next; this page describes what exists and how to extend it.
 
 ## One command, end to end
 
@@ -33,7 +33,7 @@ client that supports elicitation: `McpConfirmation` then asks the user, across r
 signed `requestState` in the 2026-07-28 version, and with a request of the server's own before it. A call's JSON
 arguments become the raw input argv would give, `RootScope` refuses any path outside
 the server's roots, and the answer is the document `--json` prints. Typed errors become
-results with `isError: true`. [docs/mcp.md](./docs/mcp.md) describes it from a client's side.
+results with `isError: true`. [MCP server](../guides/mcp.md) describes it from a client's side.
 
 ## Layers
 
@@ -93,15 +93,14 @@ src/
     ├── open/                     one command: kiriya open <file|folder|url>
     └── completion/               kiriya completion <shell>, and suggest, which the scripts ask
 examples/plugins/hello/           a complete plugin in one file
-docs/plugins.md                   the plugin contract
-docs/mcp.md                       kiriya as an MCP server, from a client's side
+docs/                             user docs, module guides with generated references, guides, and these notes
 tests/
 ├── unit/                         pure logic and use cases with fakes: core/, files/, archive/, git/, docker/, config/, doctor/, gen/, convert/, env/, sys/, net/, port/, proc/, clip/, open/, completion/
 ├── integration/                  use cases with real adapters: a real file system, real git repositories
 ├── contract/                     one suite per port, run against its adapters
 ├── e2e/                          the built CLI and its MCP server as black boxes
 └── support/                      fakes, temporary folders, a runner for the built CLI, and a line client for its MCP server
-tools/                            import boundaries, package contents, release and server.json checks, and the MCP bundle
+tools/                            import boundaries, package contents, release and server.json checks, the MCP bundle, and the generated docs
 ```
 
 Each module has `<module>.module.ts`, which registers its commands with their views,
@@ -245,7 +244,7 @@ A plugin is a module that lives outside kiriya: an npm package or a local folder
 in the `plugins` setting. `PluginLoader` imports each one through `PluginSource`, checks
 its shape, refuses an id that is already taken, and registers its commands, so they run
 exactly like built-in ones. A plugin that fails any step is recorded and skipped.
-[docs/plugins.md](./docs/plugins.md) is the contract for plugin authors.
+[Plugins](../guides/plugins.md) is the contract for plugin authors.
 
 ## Extending kiriya
 
@@ -258,11 +257,16 @@ exactly like built-in ones. A plugin that fails any step is recorded and skipped
 3. Write its view in `src/modules/<module>/presentation/`.
 4. Register both in `<module>.module.ts`.
 5. Test it. Cover the judgement calls, and give every refusal a negative test.
+6. Run `npm run docs`, which adds the command to the reference in `docs/modules/<module>.md`,
+   and describe any new task the command serves in that guide.
 
 ### A module
 
 Create `src/modules/<name>/` with `<name>.module.ts` and the layer folders it needs, then
-add one line to `src/config/modules.ts`.
+add one line to `src/config/modules.ts`. Give the module an `about` paragraph, a few `examples`
+and its `guide` address, which `kiriya help <name>` shows. Write `docs/modules/<name>.md` with
+an empty `kiriya:reference` block, then run `npm run docs`, which also adds the module to the
+lists of modules.
 
 ### A port or an adapter
 
@@ -282,3 +286,19 @@ Add an entry to `src/config/config-keys.ts` with its type and a catalog key desc
 - New names must be valid on Windows, Linux and macOS alike: `invalidNameReason` checks them.
 - Start programs with an argument array through `ProcessRunner`, never a shell string.
 - Times are whole milliseconds since the epoch. Text keeps the encoding it was read in.
+
+## Documentation
+
+Parts of the docs are written from the code, so they cannot drift from it. `npm run docs`
+fills each block between `<!-- kiriya:<name> -->` and `<!-- /kiriya:<name> -->`:
+
+| Page | Block | Written from |
+|---|---|---|
+| `docs/modules/<module>.md` | `reference` | Every command's spec: usage, arguments, options, safety, MCP exposure, examples |
+| `README.md`, `docs/modules/README.md` | `modules` | The registered modules and their summaries |
+| `docs/usage.md` | `global-options`, `settings` | `GLOBAL_OPTIONS` and `CONFIG_KEYS` |
+
+`tools/docs-reference.ts` renders the blocks, and `tools/docs.ts` writes them. CI runs
+`node dist/tools/docs.js --check`, which fails when a block is out of date, a built-in module
+lacks its `about`, `examples` or `guide`, or a relative link in the docs leads to a missing
+file or heading.

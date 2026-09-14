@@ -1,8 +1,8 @@
-# Writing a kiriya plugin
+# Plugins
 
 A plugin adds a module to kiriya: `kiriya <plugin> <command>`, with help, `--json`,
 confirmations and exit codes that work exactly as they do for built-in modules.
-[`examples/plugins/hello`](../examples/plugins/hello/index.js) is a complete plugin in
+[`examples/plugins/hello`](../../examples/plugins/hello/index.js) is a complete plugin in
 one file; read it alongside this page.
 
 ## Trust
@@ -33,6 +33,9 @@ its `package.json`, then `"main"`, then `index.js`. Its default export is an obj
 |---|---|
 | `id` | Lower-case letters, digits and hyphens, starting with a letter. It is the module name on the command line, so it must not be taken by a built-in module, another plugin, or `core`, `help`, `mcp` or `version`. |
 | `summary` | A message key for one line of help about the module |
+| `about` | Optional. A message key for the paragraph `kiriya help <id>` shows: what the module is for, and how careful its commands are |
+| `examples` | Optional. A few command lines that `kiriya help <id>` shows |
+| `guide` | Optional. The web address of the module's guide, starting with `https://`, which help points to |
 | `messages` | The English text of every message key the plugin uses. Each key starts with `<id>.`. Text may hold `{name}` placeholders. |
 | `register(registrar, ports)` | Calls `registrar.add(command, view)` once per command |
 
@@ -103,7 +106,7 @@ A view turns `data` into lines of text. `format` translates messages and offers 
 
 `register` receives the same ports built-in modules use: `fileSystem`, `fileContent`,
 `hasher`, `compression`, `processRunner`, `trash`, `environment`, `clock`,
-`protectedPaths`, `config`, `plugins` and `runtime`. [ARCHITECTURE.md](../ARCHITECTURE.md#ports)
+`protectedPaths`, `config`, `plugins` and `runtime`. [Architecture](../development/architecture.md#ports)
 describes each one. Using them rather than Node.js directly is what keeps a plugin's
 behaviour the same on Windows, Linux and macOS: errors arrive as the same typed errors,
 programs start without a shell, and protected paths are refused the same way.
@@ -111,5 +114,5 @@ programs start without a shell, and protected paths are refused the same way.
 ## Not yet
 
 - Types for plugin authors. They come as a separate `@kiriya/sdk` package once plugin
-  authors need them (BLUEPRINT.md section 6.9).
+  authors need them ([Design](../development/design.md#split-triggers)).
 - Settings that belong to a plugin, and messages in languages other than English.
