@@ -9,6 +9,9 @@ import { cleanView, downView, logsView, psView, rebuildView, upView } from "./pr
 export const dockerModule: KiriyaModule = {
   id: "docker",
   summary: "docker.summary",
+  about: "docker.about",
+  examples: ["kiriya docker ps", "kiriya docker up --build", "kiriya docker logs api -f", "kiriya docker clean"],
+  guide: "https://github.com/SatPaingOo/kiriya/blob/main/docs/modules/docker.md",
   register(registrar, ports) {
     const { fileSystem, fileContent, processRunner } = ports;
     registrar.add(new ListContainers(fileSystem, fileContent, processRunner), psView);

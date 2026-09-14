@@ -15,6 +15,8 @@ export const en = {
   "core.help.global-options": "Global options",
   "core.help.module-hint": "Run {command} to see a module's commands.",
   "core.help.command-hint": "Run {command} for a command's arguments and options.",
+  "core.help.guide": "Guide: {address}",
+  "core.help.guides": "Guides to every module: {address}",
 
   "core.option.json": "Print the result as JSON on stdout",
   "core.option.no-color": "Print without colour",
@@ -72,6 +74,8 @@ export const en = {
 
   "files.summary":
     "Files and folders: create, find, read, search, compare, copy, move, rename and delete, the same on every OS",
+  "files.about":
+    "Everyday work on files and folders, with the same results in PowerShell, cmd, bash and zsh. kiriya expands globs itself, so quote them; they ignore case and skip hidden entries and dependency folders such as node_modules unless --all is given. rename, replace, clean and sync only show their plan until --apply, and copy, move and delete take --dry-run. delete sends to the trash. Removing for good or replacing what exists needs a typed confirmation, and drive roots, the home folder, the working folder and its parents, and system folders are always refused.",
   "files.option.all": "Include hidden entries and dependency folders such as node_modules",
   "core.path.not-a-folder": "Not a folder: {path}",
   "core.glob.no-match": "Nothing matches {pattern}",
@@ -340,6 +344,8 @@ export const en = {
 
   "archive.summary":
     "ZIP and tar.gz archives, made and opened the same way on every OS with no zip, tar or 7-Zip installed",
+  "archive.about":
+    "Make and open .zip, .tar.gz, .tgz and .tar archives with nothing else installed, with the same result on every OS. A new archive never replaces an existing file, and --lean leaves out .git, node_modules and build folders. Extracting refuses the whole archive when any entry would land outside its folder, and replaces existing files only with --overwrite and a typed confirmation.",
   "archive.read.not-a-zip": "Not a zip file: {path}",
   "archive.read.zip64": "{path} uses ZIP64, which is not supported",
   "archive.read.damaged": "The zip directory of {path} is damaged",
@@ -390,10 +396,15 @@ export const en = {
   "core.plugin.no-messages": "{id} has no messages object",
   "core.plugin.bad-message": "{id}: the message {key} must start with {id}. and hold text",
   "core.plugin.no-summary": "{id}: its summary must be one of its own message keys",
+  "core.plugin.bad-about": "{id}: its about must be one of its own message keys",
+  "core.plugin.bad-examples": "{id}: its examples must be a list of text",
+  "core.plugin.bad-guide": "{id}: its guide must be a web address starting with https://",
   "core.plugin.taken": "the id {id} already belongs to kiriya or another plugin",
   "core.plugin.register-failed": "{id} could not register its commands: {detail}",
 
   "config.summary": "kiriya's own settings, such as the plugins to load, in one file per user",
+  "config.about":
+    "kiriya's own settings, in one JSON file per user: which plugins to load, and what kiriya mcp may offer AI agents. config path shows where the file is, config keys lists every setting and the values it takes, and set and unset change the file. The file never holds a secret, so set refuses values that look like one, and AI agents are never offered set or unset.",
   "config.arg.key": "The setting's name",
   "config.key.plugins": "Plugins to load: npm package names, or paths relative to this file",
   "config.key.mcp-allow-destroy":
@@ -423,6 +434,8 @@ export const en = {
 
   "doctor.summary":
     "Check what this machine gives kiriya: runtime, configuration, trash, clipboard, git, docker and plugins",
+  "doctor.about":
+    "Check what this machine gives kiriya before a command needs it: the Node.js version, the configuration file, the trash, the clipboard, git, docker and plugins. Each check says ok, warn or fail, and what is missing. It changes nothing and exits with 1 when a check fails, so a script can run it first.",
   "doctor.status.ok": "ok",
   "doctor.status.warn": "warn",
   "doctor.status.fail": "fail",
@@ -444,6 +457,8 @@ export const en = {
   "doctor.plugin-failed": "The plugin {entry} was not loaded: {reason}",
 
   "git.summary": "Git across every repository under a folder: status, fetch, pull and switch",
+  "git.about":
+    "Work with every git repository under a folder at once: see which have uncommitted or unpushed work or no remote, fetch them all, fast-forward them, or put them on one branch. It runs the git on PATH and never commits, pushes, merges or stashes. pull skips repositories with uncommitted files, and switch refuses them and asks before it changes any branch.",
   "git.not-installed": "git is not on PATH; install Git and try again",
   "git.arg.folder": "A repository, or a folder holding repositories; the current folder by default",
   "git.option.depth": "How many folder levels to search for repositories; 3 by default",
@@ -496,6 +511,8 @@ export const en = {
   "git.switch.all-on": "Every repository is already on {branch}",
 
   "docker.summary": "docker compose for the project in the current folder, and a previewed clean-up of the engine",
+  "docker.about":
+    "Run the docker compose project in the current folder, or the one --file names, with the same commands on every OS, and win back disk space from the engine. It runs the docker program on PATH. down keeps the project's volumes unless --volumes, which asks for the project name first, and clean only shows the space it would reclaim until --apply and a typed confirmation.",
   "docker.not-installed": "docker is not on PATH; install Docker and try again",
   "docker.not-running": "Docker is installed, but its engine is not running; start it and try again",
   "docker.no-compose-file": "No compose file in {folder}; pass --file to name one",
@@ -546,6 +563,8 @@ export const en = {
   "core.stdin.too-large": "What was piped in is larger than {limit}",
 
   "gen.summary": "Random identifiers, passwords and tokens from the operating system's secure random source",
+  "gen.about":
+    "Make UUIDs, ULIDs, passwords and tokens from the operating system's secure random source, the same way on every OS and without the network. kiriya stores nothing it makes, and --count makes several at once.",
   "gen.option.count": "How many to make; 1 by default",
   "gen.count-too-large": "--count can be at most {max}",
   "gen.out-of-range": "--{option} must be from {min} to {max}",
@@ -561,6 +580,8 @@ export const en = {
 
   "convert.summary":
     "Convert text between base64, hex, URL encoding, JSON, JWT, times and cases, entirely on this machine",
+  "convert.about":
+    "Convert text between base64, hex, URL encoding, JSON, JWT, times and cases entirely on this machine, so tokens and data never go to a website. Most commands read the text from an argument, from what is piped in, or from a file with --file. jwt only decodes: it never checks a signature and never sends the token anywhere.",
   "convert.arg.value": "The text to convert; - or nothing reads what is piped in",
   "convert.option.file": "Read a file's exact bytes instead",
   "convert.option.decode": "Decode instead of encode",
@@ -603,6 +624,8 @@ export const en = {
   "convert.case.to-required": "--to must name the case to change to",
 
   "env.summary": "Environment variables, PATH and .env files, read the same way on every OS",
+  "env.about":
+    "Read the environment the same way in every shell: list variables with secret-looking values hidden, find missing, duplicate, empty and relative folders in PATH, and check a .env file against its .env.example. Nothing changes. env check compares names only and never shows values, and AI agents are never offered --reveal, which shows hidden values.",
   "env.show.summary": "List environment variables, hiding values that look secret",
   "env.show.arg.filter": "Only variables whose name contains this text, in any case",
   "env.show.option.reveal": "Show secret-looking values too",
@@ -637,6 +660,8 @@ export const en = {
   "env.check.ok": "All {count} variable(s) from {example} are set in {file}",
 
   "sys.summary": "This machine and the developer tools on it, described the same way on every OS",
+  "sys.about":
+    "Describe this machine and the developer tools on it the same way on every OS: the operating system, processor, memory, locale and runtime, and the versions of node, python, dotnet, java, go, git and docker. sys report prints both as Markdown for a bug report, without the host name. Nothing changes.",
   "sys.info.summary": "Show the operating system, processor, memory, uptime, locale and runtime",
   "sys.tools.summary": "Find node, python, dotnet, java, go, git and docker, and their versions",
   "sys.report.summary": "Print machine facts and tool versions as Markdown for a bug report, without the host name",
@@ -658,6 +683,8 @@ export const en = {
   "sys.report.not-found": "not found: {names}",
 
   "net.summary": "Local addresses, TCP reachability and DNS lookups, the same on every OS",
+  "net.about":
+    "Answer everyday network questions the same way on every OS: which addresses this machine has, whether a TCP port on a host answers, and what a name resolves to. check and dns use the network; ip only reads this machine. Nothing changes.",
   "net.ip.summary": "List this machine's network addresses",
   "net.ip.option.all": "Include loopback addresses",
   "net.ip.none": "No network addresses found",
@@ -693,6 +720,8 @@ export const en = {
   "core.end.failed": "Could not end {name} ({pid}): {code}",
 
   "port.summary": "See which process listens on a TCP port, end it, or find a free port, the same on every OS",
+  "port.about":
+    "Find what holds a TCP port, end it, or pick a free one, without netstat, lsof or ss. who shows the listening processes, free prints a port nothing uses, and kill ends the listeners after you type the port number. Without administrator rights, Linux and macOS hide which process of another user holds a port; kiriya says so and never asks for elevation.",
   "port.invalid": "Not a TCP port: {port}; use a number from 1 to 65535",
   "port.column.port": "PORT",
   "port.column.address": "ADDRESS",
@@ -719,6 +748,8 @@ export const en = {
   "port.free.none": "No free TCP port from {from} to 65535",
 
   "proc.summary": "List, find and end processes, and show them as a tree, the same on every OS",
+  "proc.about":
+    "List, find and end processes, and see them as a tree, without tasklist, ps or Get-Process. kill ends a process by id, or every process with a name, after you type that id or name, and --force ends them at once instead of asking them to exit. kiriya never ends itself, the program that started it, or the operating system's first processes.",
   "proc.column.pid": "PID",
   "proc.column.parent": "PARENT",
   "proc.column.memory": "MEMORY",
@@ -760,7 +791,7 @@ export const en = {
   "core.mcp.arg.folders": "Folders the agent may reach; the current folder when none is given here or with --root",
   "core.mcp.option.root": "A folder the agent may reach, repeated for more; the current folder when left out",
   "core.mcp.help-details":
-    "Commands that change nothing become tools. With kiriya config set mcp.allowWrite true, so do commands that change files, and with mcp.allowDestroy true, commands whose work cannot be undone, which ask you first. Every path must stay inside a root, and relative paths start at the first root. docs/mcp.md shows how to add kiriya to an MCP client.",
+    "Commands that change nothing become tools. With kiriya config set mcp.allowWrite true, so do commands that change files, and with mcp.allowDestroy true, commands whose work cannot be undone, which ask you first. Every path must stay inside a root, and relative paths start at the first root. How to add kiriya to an MCP client: https://github.com/SatPaingOo/kiriya/blob/main/docs/guides/mcp.md",
   "core.help.mcp-hint": "Run {command} to serve these commands to AI agents over MCP.",
   "core.mcp.instructions":
     "kiriya's developer tools, which behave the same on Windows, Linux and macOS. {tools} Relative paths start at {start}; paths outside {roots} are refused.",
@@ -808,6 +839,8 @@ export const en = {
   "core.open.failed": "{program} could not open {target} (exit code {code}): {detail}",
 
   "clip.summary": "Copy text to the clipboard and paste it back, with Unicode intact on every OS",
+  "clip.about":
+    "Copy text to the system clipboard and paste it back, with Unicode such as Myanmar text intact on every OS. copy takes an argument, what is piped in, or a file, and warns when the text looks like a secret. On Linux it needs a desktop session and wl-clipboard, xclip or xsel; kiriya doctor shows which one it found.",
   "clip.copy.summary": "Copy text from an argument, what is piped in, or a file to the clipboard",
   "clip.copy.arg.text": "The text to copy; - or nothing reads what is piped in",
   "clip.copy.option.file": "Copy a text file's content instead",
@@ -817,6 +850,8 @@ export const en = {
   "clip.paste.summary": "Print the text on the clipboard",
 
   "open.summary": "Open a file or folder in its default application, or a web address in the browser",
+  "open.about":
+    "Open a file or folder in the application the operating system chooses, or a web address in the browser, with one command on every OS. It opens only files, folders and http, https and mailto addresses, and refuses anything that would run as a program.",
   "open.arg.target": "A file, a folder, or an http, https or mailto address",
   "open.scheme-refused": "Refused: kiriya opens only http, https and mailto addresses, not {scheme}",
   "open.runs-program": "Refused: opening {path} would run it as a program; open the folder that holds it instead",
@@ -852,6 +887,8 @@ export const en = {
 
   "completion.summary":
     "Tab completion for kiriya's modules, commands, options and values in bash, zsh, fish and PowerShell",
+  "completion.about":
+    "Tab completion for kiriya's modules, commands, options and option values in bash, zsh, fish and PowerShell. kiriya completion <shell> prints a script to load from your shell's profile; the script asks kiriya what can come next, so plugins complete too with nothing to reinstall.",
   "completion.script.summary": "Print the completion script for a shell; its first lines say how to load it",
   "completion.arg.shell": "bash, zsh, fish or powershell",
   "completion.shell-invalid": "Not a supported shell: {shell}; use bash, zsh, fish or powershell",

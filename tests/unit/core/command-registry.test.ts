@@ -54,3 +54,21 @@ test("a command outside its module, a duplicate verb or a duplicate module is a 
   registry.register(moduleWith("files", []), ports);
   assert.throws(() => registry.register(moduleWith("files", []), ports), /twice/);
 });
+
+test("a module's paragraph, examples and guide are kept for help, and a module may leave them out", () => {
+  const registry = new CommandRegistry();
+  const files = {
+    ...moduleWith("files", ["files.list"]),
+    about: "files.about",
+    examples: ["kiriya files list"],
+  } as const;
+  registry.register({ ...files, guide: "https://example.com/files" }, ports);
+  registry.register(moduleWith("zip", ["zip.pack"]), ports);
+  const kept = registry.module("files");
+  const left = registry.module("zip");
+  assert.deepEqual(
+    [kept?.about, kept?.examples, kept?.guide],
+    ["files.about", ["kiriya files list"], "https://example.com/files"],
+  );
+  assert.deepEqual([left?.about, left?.examples, left?.guide], [null, [], null]);
+});

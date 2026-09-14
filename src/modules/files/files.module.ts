@@ -39,6 +39,14 @@ import { treeView } from "./presentation/tree.view.js";
 export const filesModule: KiriyaModule = {
   id: "files",
   summary: "files.summary",
+  about: "files.about",
+  examples: [
+    'kiriya files find --name "*.log" --older 30d',
+    "kiriya files grep TODO src --ext .ts",
+    "kiriya files delete dist --dry-run",
+    "kiriya files clean ~/projects",
+  ],
+  guide: "https://github.com/SatPaingOo/kiriya/blob/main/docs/modules/files.md",
   register(registrar, ports) {
     const { fileSystem, fileContent, hasher, processRunner, trash, environment, clock, protectedPaths } = ports;
     registrar.add(new CreatePaths(fileSystem, environment), newView);

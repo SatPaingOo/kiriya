@@ -2,7 +2,7 @@
  * An example kiriya plugin with one command: `kiriya hello greet [name]`.
  *
  * A plugin runs inside kiriya with your permissions, like any program you install.
- * Read a plugin before you list it in your configuration. docs/plugins.md describes
+ * Read a plugin before you list it in your configuration. docs/guides/plugins.md describes
  * the contract this file follows.
  */
 
@@ -36,8 +36,12 @@ const greetView = (output, format) => {
 export default {
   id: "hello",
   summary: "hello.summary",
+  // Optional: a paragraph and examples for `kiriya help hello`, and `guide`, the web address of a guide.
+  about: "hello.about",
+  examples: ["kiriya hello greet Mya"],
   messages: {
     "hello.summary": "An example plugin that says hello",
+    "hello.about": "A complete plugin in one file, to copy when writing your own. It only greets, and changes nothing.",
     "hello.greet.summary": "Say hello",
     "hello.greet.arg.name": "Who to greet; world by default",
     "hello.greet.option.shout": "Say it in capitals",

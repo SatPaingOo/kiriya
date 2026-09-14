@@ -16,10 +16,11 @@ function plugin(
   id: string,
   commandId = `${id}.run`,
   messages = `"${id}.summary": "S", "${id}.run.summary": "R"`,
+  fields = "",
 ): string {
   const spec = `{ id: "${commandId}", summary: "${id}.run.summary", examples: [], safety: "read", idempotent: true, usesNetwork: false, runsUserCommands: false, input: { positionals: [], options: {}, parse: () => ({}) } }`;
   const command = `{ spec: ${spec}, execute: () => Promise.resolve({ kind: "done", data: {}, warnings: [], failures: [] }) }`;
-  return `export default { id: "${id}", summary: "${id}.summary", messages: { ${messages} }, register(registrar) { registrar.add(${command}, () => []); } };\n`;
+  return `export default { id: "${id}", summary: "${id}.summary", ${fields}messages: { ${messages} }, register(registrar) { registrar.add(${command}, () => []); } };\n`;
 }
 
 test("the example plugin loads, registers its command, and brings its messages", async () => {
@@ -71,7 +72,16 @@ test("each broken plugin is recorded with its reason and skipped, and the rest s
     "taken.mjs": plugin("files"),
     "reserved.mjs": plugin("help"),
     "stray.mjs": plugin("stray", "elsewhere.run"),
+    "bad-about.mjs": plugin("about", undefined, undefined, 'about: "about.missing", '),
+    "bad-examples.mjs": plugin("examples", undefined, undefined, 'examples: "kiriya examples run", '),
+    "bad-guide.mjs": plugin("guide", undefined, undefined, 'guide: "docs/guide.md", '),
     "good.mjs": plugin("good"),
+    "helpful.mjs": plugin(
+      "helpful",
+      undefined,
+      `"helpful.summary": "S", "helpful.run.summary": "R", "helpful.about": "A"`,
+      'about: "helpful.about", examples: ["kiriya helpful run"], guide: "https://example.com/helpful", ',
+    ),
   });
   const registry = new CommandRegistry();
   registry.register({ id: "files", summary: "files.summary", register: () => undefined }, ports);
@@ -86,13 +96,17 @@ test("each broken plugin is recorded with its reason and skipped, and the rest s
     "./taken.mjs",
     "./reserved.mjs",
     "./stray.mjs",
+    "./bad-about.mjs",
+    "./bad-examples.mjs",
+    "./bad-guide.mjs",
     "./good.mjs",
+    "./helpful.mjs",
   ];
   await loader.load(entries, root, new NodePluginSource(), registry, ports);
 
   assert.deepEqual(
     loader.loaded().map((item) => item.id),
-    ["good"],
+    ["good", "helpful"],
   );
   assert.deepEqual(
     loader.problems().map((problem) => [problem.entry, problem.reason.key]),
@@ -106,8 +120,16 @@ test("each broken plugin is recorded with its reason and skipped, and the rest s
       ["./taken.mjs", "core.plugin.taken"],
       ["./reserved.mjs", "core.plugin.taken"],
       ["./stray.mjs", "core.plugin.register-failed"],
+      ["./bad-about.mjs", "core.plugin.bad-about"],
+      ["./bad-examples.mjs", "core.plugin.bad-examples"],
+      ["./bad-guide.mjs", "core.plugin.bad-guide"],
     ],
   );
   assert.equal(registry.module("stray"), undefined);
   assert.equal(loader.messages["keys.summary"], undefined);
+  const helpful = registry.module("helpful");
+  assert.deepEqual(
+    [helpful?.about, helpful?.examples, helpful?.guide],
+    ["helpful.about", ["kiriya helpful run"], "https://example.com/helpful"],
+  );
 });

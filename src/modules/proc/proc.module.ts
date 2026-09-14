@@ -8,6 +8,9 @@ import { killView, processesView, treeView } from "./presentation/proc.views.js"
 export const procModule: KiriyaModule = {
   id: "proc",
   summary: "proc.summary",
+  about: "proc.about",
+  examples: ["kiriya proc find vite", "kiriya proc tree", "kiriya proc kill node"],
+  guide: "https://github.com/SatPaingOo/kiriya/blob/main/docs/modules/proc.md",
   register(registrar, ports) {
     registrar.add(new ListProcesses(ports.processTable), processesView);
     registrar.add(new FindProcesses(ports.processTable), processesView);
