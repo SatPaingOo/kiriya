@@ -121,7 +121,7 @@ test("kiriya mcp explains itself, and stops at once when a root is not a folder"
   const root = await temporaryFolder(t);
   const help = runKiriya(root, ["mcp", "--help"]);
   assert.equal(help.code, 0);
-  assert.match(help.stdout, /kiriya mcp \[--root <folder>\]\.\.\./);
+  assert.match(help.stdout, /kiriya mcp \[folders\.\.\.\] \[--root <folder>\]\.\.\./);
   assert.equal(runKiriya(root, ["help", "mcp"]).stdout, help.stdout);
   assert.match(runKiriya(root, []).stdout, /kiriya mcp --help/);
 
