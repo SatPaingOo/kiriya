@@ -39,6 +39,7 @@
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
     "build": "npm run clean && tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
+    "docs": "npm run build && node dist/tools/docs.js",
     "test": "npm run build && node dist/tools/check-boundaries.js && node --test \"dist/tests/**/*.test.js\"",
     "lint": "eslint .",
     "format": "prettier --write .",

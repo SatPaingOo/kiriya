@@ -1,5 +1,6 @@
 import type { CommandRegistry, RegisteredCommand } from "../../application/command-registry.js";
 import { pathValues, type RootScope } from "../../application/root-scope.js";
+import type { CommandSpec } from "../../domain/command.js";
 import { InterruptedError, KiriyaError } from "../../domain/errors.js";
 import { message, type Message } from "../../domain/message.js";
 import { byCodePoint } from "../../domain/names.js";
@@ -73,16 +74,22 @@ interface Tool {
   readonly definition: ToolDefinition;
 }
 
+/** The user's settings that decide which commands become tools. */
+export interface ToolSettings {
+  readonly allowWrite: boolean;
+  readonly allowDestroy: boolean;
+}
+
 /**
  * Read commands become tools, and sensitive read, write and destroy commands when the user
  * allows them. A command that runs a program the user names, or one only for a terminal, never does.
+ * The generated docs say the same of each command through this function.
  */
-function exposed(entry: RegisteredCommand, options: McpServerOptions): boolean {
-  const { spec } = entry.command;
+export function offeredAsTool(spec: CommandSpec<unknown>, settings: ToolSettings): boolean {
   if (spec.runsUserCommands || spec.terminalOnly === true) return false;
-  if (spec.sensitive === true && !options.allowWrite) return false;
-  if (spec.safety === "write") return options.allowWrite;
-  if (spec.safety === "destroy") return options.allowDestroy;
+  if (spec.sensitive === true && !settings.allowWrite) return false;
+  if (spec.safety === "write") return settings.allowWrite;
+  if (spec.safety === "destroy") return settings.allowDestroy;
   return true;
 }
 
@@ -107,7 +114,7 @@ export class McpServer {
     const entries = options.registry
       .list()
       .flatMap((module) => [...module.commands.values()])
-      .filter((entry) => exposed(entry, options))
+      .filter((entry) => offeredAsTool(entry.command.spec, options))
       .sort((a, b) => byCodePoint(a.command.spec.id, b.command.spec.id));
     for (const entry of entries) {
       const { spec } = entry.command;
