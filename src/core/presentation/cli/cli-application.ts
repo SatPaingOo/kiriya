@@ -121,13 +121,13 @@ export class CliApplication {
 
   /** `kiriya mcp` serves every exposed command to an AI agent until the agent closes stdin. */
   private async mcp(words: readonly string[], cwd: string, showHelp: boolean, context: HelpContext): Promise<number> {
-    if (showHelp) return this.print(this.deps.stdout, mcpHelp(MCP_INPUT.options, context));
+    if (showHelp) return this.print(this.deps.stdout, mcpHelp(MCP_INPUT, context));
     return this.deps.serveMcp(MCP_INPUT.parse(parseCommandArguments(MCP_INPUT, words)), cwd);
   }
 
   private help(moduleName: string | undefined, verb: string | undefined, context: HelpContext): number {
     if (moduleName === undefined) return this.print(this.deps.stdout, mainHelp(this.deps.registry.list(), context));
-    if (moduleName === "mcp") return this.print(this.deps.stdout, mcpHelp(MCP_INPUT.options, context));
+    if (moduleName === "mcp") return this.print(this.deps.stdout, mcpHelp(MCP_INPUT, context));
     const module = this.findModule(moduleName);
     if (verb === undefined) {
       const own = module.commands.get("");

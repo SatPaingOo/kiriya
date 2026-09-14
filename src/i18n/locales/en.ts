@@ -757,6 +757,7 @@ export const en = {
   "core.input.too-large": "The input is larger than {limit}",
 
   "core.mcp.summary": "Serve kiriya's commands to AI agents over the Model Context Protocol, on stdin and stdout",
+  "core.mcp.arg.folders": "Folders the agent may reach; the current folder when none is given here or with --root",
   "core.mcp.option.root": "A folder the agent may reach, repeated for more; the current folder when left out",
   "core.mcp.help-details":
     "Commands that change nothing become tools. With kiriya config set mcp.allowWrite true, so do commands that change files, and with mcp.allowDestroy true, commands whose work cannot be undone, which ask you first. Every path must stay inside a root, and relative paths start at the first root. docs/mcp.md shows how to add kiriya to an MCP client.",
