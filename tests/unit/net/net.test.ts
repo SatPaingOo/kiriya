@@ -6,7 +6,7 @@ import type { ConnectOutcome, LookupOutcome, Network, NetworkAddress } from "../
 import { CheckConnection, checkSpec } from "../../../src/modules/net/application/check-connection.use-case.js";
 import { addressesSpec, ListAddresses } from "../../../src/modules/net/application/list-addresses.use-case.js";
 import { dnsSpec, LookupName } from "../../../src/modules/net/application/lookup-name.use-case.js";
-import { formatTarget, parseTarget } from "../../../src/modules/net/domain/targets.js";
+import { formatTarget, parseTarget } from "../../../src/core/domain/targets.js";
 import { commandContext, expectDone } from "../../support/fakes.js";
 
 const raw = (positionals: readonly string[], options: RawInput["options"] = {}): RawInput => ({ positionals, options });
