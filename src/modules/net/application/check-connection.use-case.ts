@@ -5,7 +5,7 @@ import { RawReader } from "../../../core/domain/input-schema.js";
 import { message, type Message } from "../../../core/domain/message.js";
 import type { ConnectFailure, ConnectOutcome, Network } from "../../../core/domain/ports/network.js";
 import type { MessageKey } from "../../../i18n/locales/en.js";
-import { formatTarget, parseTarget, type Target } from "../domain/targets.js";
+import { formatTarget, parseTarget, type Target } from "../../../core/domain/targets.js";
 
 const MAX_TIMEOUT_SECONDS = 120;
 
