@@ -44,4 +44,5 @@ Nothing is published yet. The first release, 0.1.0, will contain everything belo
   undone, to clients that support elicitation: each asks the user before it changes
   anything. `config set`, `config unset`, `docker up` and `docker rebuild` are never offered.
   `open`, `clip paste` and `proc list --full` need `mcp.allowWrite`, and no tool that
-  changes something may reach inside a `.git` folder.
+  changes something may reach inside a `.git` folder. `kiriya mcp` also takes its folders
+  as arguments, and each release carries an MCP bundle for Claude's desktop app.

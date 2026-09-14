@@ -101,7 +101,7 @@ tests/
 ├── contract/                     one suite per port, run against its adapters
 ├── e2e/                          the built CLI and its MCP server as black boxes
 └── support/                      fakes, temporary folders, a runner for the built CLI, and a line client for its MCP server
-tools/                            import boundaries, package contents, release and server.json checks
+tools/                            import boundaries, package contents, release and server.json checks, and the MCP bundle
 ```
 
 Each module has `<module>.module.ts`, which registers its commands with their views,

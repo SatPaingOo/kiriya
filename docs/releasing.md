@@ -6,7 +6,8 @@ tests the release, checks it, and publishes it through npm trusted publishing. B
 the repository and the package are public, npm adds provenance. After npm, it publishes
 [server.json](../server.json), the server's metadata, to the
 [MCP Registry](https://modelcontextprotocol.io/registry/about), which points MCP clients
-at that npm package.
+at that npm package. It also builds the MCP bundle, `kiriya-<version>.mcpb`, and attaches it
+to the GitHub release for one-click install in Claude's desktop app.
 
 ## Once, before the first release
 
@@ -68,6 +69,9 @@ And that the MCP Registry lists the new version:
 ```bash
 curl "https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.SatPaingOo/kiriya"
 ```
+
+Finally, on each operating system, open the release's `.mcpb` file in Claude's desktop app,
+pick a folder, and ask the agent to list it.
 
 Phase 3 of [BLUEPRINT.md](../BLUEPRINT.md) is done when all of this passes on Windows,
 Linux and macOS.
