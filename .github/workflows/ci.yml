@@ -42,6 +42,8 @@ jobs:
           node dist/tools/check-package.js pack.json
       - name: Check server.json, which the MCP Registry reads, against package.json
         run: node dist/tools/check-server.js
+      - name: Check the docs against the CLI, and every link in them
+        run: node dist/tools/docs.js --check
 
   test:
     name: ${{ matrix.os }} · Node ${{ matrix.node }}
