@@ -1,5 +1,5 @@
 /**
- * The import rules of BLUEPRINT.md section 6.1, checked with no dependencies.
+ * The import rules in docs/development/architecture.md, checked with no dependencies.
  * File paths are relative to `src/` and always use `/`.
  */
 import path from "node:path";

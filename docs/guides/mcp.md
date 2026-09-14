@@ -1,4 +1,4 @@
-# kiriya as an MCP server
+# MCP server
 
 `kiriya mcp` serves kiriya's commands to AI agents over the
 [Model Context Protocol](https://modelcontextprotocol.io/). The agent's client starts it,

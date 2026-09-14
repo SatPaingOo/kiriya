@@ -4,7 +4,7 @@ kiriya is published to npm by CI only, never from a laptop.
 `.github/workflows/release.yml` runs when a GitHub release is published. It builds and
 tests the release, checks it, and publishes it through npm trusted publishing. Because
 the repository and the package are public, npm adds provenance. After npm, it publishes
-[server.json](../server.json), the server's metadata, to the
+[server.json](../../server.json), the server's metadata, to the
 [MCP Registry](https://modelcontextprotocol.io/registry/about), which points MCP clients
 at that npm package. It also builds the MCP bundle, `kiriya-<version>.mcpb`, and attaches it
 to the GitHub release for one-click install in Claude's desktop app.
@@ -14,7 +14,7 @@ to the GitHub release for one-click install in Claude's desktop app.
 1. Make the repository public. npm adds provenance only for a public repository and
    a public package.
 2. In the repository's settings, turn on private vulnerability reporting, which
-   [SECURITY.md](../SECURITY.md) points reporters to.
+   [SECURITY.md](../../SECURITY.md) points reporters to.
 3. On npmjs.com, turn on two-factor authentication for the publishing account.
 4. Add a trusted publisher for the `kiriya` package: owner `SatPaingOo`, repository
    `kiriya`, workflow `release.yml`, environment `npm`.
@@ -33,8 +33,8 @@ to the GitHub release for one-click install in Claude's desktop app.
 1. On a branch, prepare the release in one pull request:
    - Set `version` in `package.json`. For the first release, also remove
      `"private": true`, which until then stops any publish.
-   - Set the same version in [server.json](../server.json), in both places it appears.
-   - In [CHANGELOG.md](../CHANGELOG.md), turn `## [Unreleased]` into
+   - Set the same version in [server.json](../../server.json), in both places it appears.
+   - In [CHANGELOG.md](../../CHANGELOG.md), turn `## [Unreleased]` into
      `## [<version>] - <YYYY-MM-DD>`, and start a new empty `## [Unreleased]` above it.
 2. Merge it once CI passes on every operating system.
 3. On GitHub, create a release from `main` with the tag `v<version>`, such as `v0.1.0`,
@@ -73,5 +73,4 @@ curl "https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.Sat
 Finally, on each operating system, open the release's `.mcpb` file in Claude's desktop app,
 pick a folder, and ask the agent to list it.
 
-Phase 3 of [BLUEPRINT.md](../BLUEPRINT.md) is done when all of this passes on Windows,
-Linux and macOS.
+The first release is done when all of this passes on Windows, Linux and macOS.

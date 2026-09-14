@@ -2,7 +2,7 @@ import path from "node:path";
 import type { Environment } from "../../domain/ports/environment.js";
 
 /**
- * Where this user's configuration file lives (BLUEPRINT.md section 7.9): KIRIYA_CONFIG
+ * Where this user's configuration file lives (docs/usage.md): KIRIYA_CONFIG
  * when set; otherwise %APPDATA% on Windows, $XDG_CONFIG_HOME or ~/.config on Linux,
  * and Application Support on macOS. A relative XDG value is ignored, as the specification says.
  */

@@ -46,3 +46,7 @@ Nothing is published yet. The first release, 0.1.0, will contain everything belo
   `open`, `clip paste` and `proc list --full` need `mcp.allowWrite`, and no tool that
   changes something may reach inside a `.git` folder. `kiriya mcp` also takes its folders
   as arguments, and each release carries an MCP bundle for Claude's desktop app.
+- Help and docs: `kiriya help <module>` explains what a module is for, shows examples and
+  points to its guide. Every module has a guide in `docs/modules/` with a command reference
+  written from the commands themselves, and CI fails when the docs and the CLI disagree.
+  Plugins may add `about`, `examples` and `guide` to their own help.
