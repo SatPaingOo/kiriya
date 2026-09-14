@@ -40,6 +40,8 @@ jobs:
         run: |
           npm pack --dry-run --json > pack.json
           node dist/tools/check-package.js pack.json
+      - name: Check server.json, which the MCP Registry reads, against package.json
+        run: node dist/tools/check-server.js
 
   test:
     name: ${{ matrix.os }} · Node ${{ matrix.node }}
