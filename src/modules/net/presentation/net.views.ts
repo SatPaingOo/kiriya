@@ -3,7 +3,7 @@ import type { TextView } from "../../../core/domain/view.js";
 import type { CheckOutput } from "../application/check-connection.use-case.js";
 import type { AddressesOutput } from "../application/list-addresses.use-case.js";
 import type { DnsOutput } from "../application/lookup-name.use-case.js";
-import { formatTarget } from "../domain/targets.js";
+import { formatTarget } from "../../../core/domain/targets.js";
 
 const NO_MAC = "00:00:00:00:00:00";
 
