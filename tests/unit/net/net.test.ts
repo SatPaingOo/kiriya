@@ -2,7 +2,13 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { UsageError } from "../../../src/core/domain/errors.js";
 import type { RawInput } from "../../../src/core/domain/input-schema.js";
-import type { ConnectOutcome, LookupOutcome, Network, NetworkAddress } from "../../../src/core/domain/ports/network.js";
+import type {
+  ConnectOutcome,
+  HttpOutcome,
+  LookupOutcome,
+  Network,
+  NetworkAddress,
+} from "../../../src/core/domain/ports/network.js";
 import { CheckConnection, checkSpec } from "../../../src/modules/net/application/check-connection.use-case.js";
 import { addressesSpec, ListAddresses } from "../../../src/modules/net/application/list-addresses.use-case.js";
 import { dnsSpec, LookupName } from "../../../src/modules/net/application/lookup-name.use-case.js";
@@ -44,6 +50,11 @@ class FakeNetwork implements Network {
   connect(host: string, port: number, timeoutMs: number): Promise<ConnectOutcome> {
     this.calls.push(`connect ${host} ${port} ${timeoutMs}`);
     return Promise.resolve(this.connected);
+  }
+
+  request(url: string, timeoutMs: number): Promise<HttpOutcome> {
+    this.calls.push(`request ${url} ${timeoutMs}`);
+    return Promise.resolve({ ok: true, status: 200, ms: 3 });
   }
 
   lookup(name: string): Promise<LookupOutcome> {

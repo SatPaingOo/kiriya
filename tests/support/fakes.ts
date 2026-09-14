@@ -1,3 +1,4 @@
+import { InterruptedError } from "../../src/core/domain/errors.js";
 import assert from "node:assert/strict";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -46,6 +47,33 @@ export class FixedClock implements Clock {
 
   now(): number {
     return this.epochMs;
+  }
+
+  sleep(): Promise<void> {
+    return Promise.resolve();
+  }
+}
+
+/** A clock whose time moves only when something sleeps, so a wait of minutes ends at once. */
+export class SteppingClock implements Clock {
+  /** The length of each sleep, in order. */
+  readonly sleeps: number[] = [];
+
+  constructor(
+    private time: number,
+    /** Runs after each sleep with the number of sleeps so far, such as to create the file a wait is for. */
+    private readonly afterSleep: (count: number) => Promise<void> = () => Promise.resolve(),
+  ) {}
+
+  now(): number {
+    return this.time;
+  }
+
+  async sleep(ms: number, signal: AbortSignal): Promise<void> {
+    if (signal.aborted) throw new InterruptedError("core.error.interrupted");
+    this.sleeps.push(ms);
+    this.time += ms;
+    await this.afterSleep(this.sleeps.length);
   }
 }
 
