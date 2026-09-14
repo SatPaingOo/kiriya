@@ -34,10 +34,14 @@ claude mcp add kiriya -- kiriya mcp
 On Windows, `kiriya` installed by npm is a `.cmd` file, which some clients cannot start
 directly. For those, set `"command": "cmd"` and `"args": ["/c", "kiriya", "mcp"]`.
 
+In Claude's desktop app, open `kiriya-<version>.mcpb`, which each GitHub release carries.
+The app asks which folders kiriya may reach and starts the server on them.
+
 ## Roots
 
-`--root <folder>` names a folder the agent may reach, and can be repeated. Without it,
-the only root is the folder the server starts in. Relative paths start at the first root.
+The folders the agent may reach are given as arguments, as in `kiriya mcp ~/code/app ~/notes`,
+or with `--root <folder>`, which can be repeated. Without either, the only root is the folder
+the server starts in. Relative paths start at the first root.
 
 Every argument that names a file or folder must lie inside a root, both as written and
 with symlinks followed, so neither `..` nor a link leads out. A glob is checked from the
