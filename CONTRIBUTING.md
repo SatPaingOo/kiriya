@@ -1,12 +1,13 @@
 # Contributing
 
 kiriya is in early development. This guide covers the local setup, the checks every
-change must pass, and how work flows into `main`. Read [ARCHITECTURE.md](./ARCHITECTURE.md)
-before changing code, and [BLUEPRINT.md](./BLUEPRINT.md) section 7 for the code standards.
+change must pass, and how work flows into `main`. Read the
+[architecture](docs/development/architecture.md) before changing code, and the
+[code standards](docs/development/design.md#code-standards) every change follows.
 
-Contributions are licensed under the [MIT License](./LICENSE), and everyone taking part
-follows the [code of conduct](./CODE_OF_CONDUCT.md). Report a security problem privately,
-as [SECURITY.md](./SECURITY.md) describes, never in a public issue.
+Contributions are licensed under the [MIT License](LICENSE), and everyone taking part
+follows the [code of conduct](CODE_OF_CONDUCT.md). Report a security problem privately,
+as [SECURITY.md](SECURITY.md) describes, never in a public issue.
 
 ## Setup
 
@@ -28,6 +29,7 @@ node dist/src/main.js files list
 | `npm run format` | Formats with Prettier; `npm run format:check` only checks |
 | `npm run typecheck` | Type-checks without writing files |
 | `npm run dev` | Recompiles on every change |
+| `npm run docs` | Builds, then writes the parts of the docs generated from the command specs |
 
 Run one test file after a build with `node --test dist/tests/unit/files/glob.test.js`.
 
@@ -57,7 +59,22 @@ them. No test reads your own kiriya configuration: the end-to-end runner points
 - Every refusal has a negative test: protected paths, declined confirmations, conflicts.
 - Every new user-facing string is a key in `src/i18n/locales/en.ts`.
 - No new dependency, runtime or development, without agreement in an issue first.
-- `ARCHITECTURE.md` changes with the structure; `BLUEPRINT.md` changes with a decision.
+- Docs change with behaviour: the module's guide in `docs/modules/`, and `npm run docs` for its
+  reference. `docs/development/architecture.md` changes with the structure, and
+  `docs/development/design.md` with a decision.
+- `CHANGELOG.md` has an entry for every user-visible change.
+
+## Documentation
+
+| Folder | Holds |
+|---|---|
+| `docs/` | Getting started and usage, for people using kiriya |
+| `docs/modules/` | One guide per module. Its reference, between the `kiriya:reference` markers, is written by `npm run docs`: change the command's spec or messages, never that part |
+| `docs/guides/` | Topics across modules: the MCP server, tab completion and plugins |
+| `docs/development/` | Architecture, design, research and releasing, for contributors |
+
+Write for someone new to kiriya, in plain English. CI fails when a generated part is out of
+date or a relative link leads nowhere.
 
 ## Branches and commits
 
@@ -73,7 +90,7 @@ them. No test reads your own kiriya configuration: the end-to-end runner points
 
 | Job | Runs on |
 |---|---|
-| `quality`: lint, format, types, what the npm package would contain, and whether `server.json` matches `package.json` | Linux, Node 22 |
+| `quality`: lint, format, types, what the npm package would contain, whether `server.json` matches `package.json`, and whether the docs match the CLI | Linux, Node 22 |
 | `test`: build, boundaries, all tests, including the real trash | Public repository: Windows, Linux and macOS, each on Node 22, 24 and the current release. Private repository: Linux and Windows on Node 22 |
 
 A private repository has limited CI minutes, and macOS minutes cost about ten times Linux
@@ -81,4 +98,4 @@ ones, so there the full matrix runs only when started by hand from the Actions t
 `full` checked. Do that before merging anything that touches an adapter, paths, or processes.
 
 `.github/workflows/release.yml` publishes to npm when a GitHub release is published, through
-trusted publishing and with provenance; [docs/releasing.md](./docs/releasing.md) has the steps.
+trusted publishing and with provenance; [Releasing](docs/development/releasing.md) has the steps.

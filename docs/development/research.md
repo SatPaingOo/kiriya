@@ -1,6 +1,6 @@
-# kiriya — Research
+# Research
 
-Prior art, guidelines and constraints that shaped [BLUEPRINT.md](./BLUEPRINT.md).
+Prior art, guidelines and constraints that shaped kiriya's [design](design.md).
 
 > Desk research collected on 2026-09-13 from the sources listed at the end.
 > GitHub stars are from the GitHub search API that day; npm figures are weekly

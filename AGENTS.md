@@ -1,7 +1,7 @@
 # AGENTS.md
 
 Instructions for AI coding agents working in this repository. The rules are the same ones
-people follow in [CONTRIBUTING.md](./CONTRIBUTING.md) and [ARCHITECTURE.md](./ARCHITECTURE.md);
+people follow in [CONTRIBUTING.md](CONTRIBUTING.md) and [the architecture](docs/development/architecture.md);
 this file puts them in one place.
 
 ## The project
@@ -19,6 +19,7 @@ modules, with no runtime dependencies.
 | Build, check import boundaries, run all tests | `npm test` |
 | Lint, format, types | `npm run lint`, `npm run format:check`, `npm run typecheck` |
 | Try the CLI | `node dist/src/main.js files find --ext .ts` |
+| Write the generated parts of the docs | `npm run docs` |
 
 A change is done only when all of these pass. Report failures as they are; do not skip,
 weaken or delete a test to make it pass.
@@ -48,8 +49,9 @@ weaken or delete a test to make it pass.
    for CLI behaviour. Never touch real user folders. The real trash is used only when
    `KIRIYA_TEST_REAL_TRASH=1`.
 9. **No new dependencies**, runtime or development, unless a maintainer asks for one.
-10. **Docs follow code.** Update `ARCHITECTURE.md` when the structure changes and
-    `BLUEPRINT.md` when a decision changes.
+10. **Docs follow code.** A change to a command updates its guide in `docs/modules/` and runs
+    `npm run docs`. Update `docs/development/architecture.md` when the structure changes and
+    `docs/development/design.md` when a decision changes.
 11. **Commits** follow Conventional Commits and carry the human author only, with no
     co-author or "generated with" trailers. Commit or push only when a maintainer asks.
 12. **Never commit** `dist/`, `node_modules/`, local test output, secrets, or folders of
@@ -59,4 +61,5 @@ weaken or delete a test to make it pass.
 
 Catalog keys in `en.ts` → `modules/<m>/application/<verb>-<noun>.use-case.ts` with its
 spec → `modules/<m>/presentation/<verb>.view.ts` → register both in `<m>.module.ts` →
-tests. [ARCHITECTURE.md](./ARCHITECTURE.md#extending-kiriya) has the details.
+tests → `npm run docs`. [The architecture](docs/development/architecture.md#extending-kiriya)
+has the details.

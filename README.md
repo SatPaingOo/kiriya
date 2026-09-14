@@ -1,18 +1,22 @@
 # kiriya
 
-**One command-line toolbox for everyday developer work that behaves the same on Windows, Linux and macOS.**
+**One command-line toolbox for everyday developer work that behaves the same on Windows,
+Linux and macOS.**
 
-**Status:** phase 3 in progress · every v1 module built · release files in place · MCP server with read, write and destroy tools · not on npm yet · private repository · last reviewed 2026-09-14
+kiriya (ကိရိယာ, Burmese for "tool") saves remembering `del` and `rm`, `netstat -ano` and
+`lsof -i`, `clip` and `pbcopy`, or writing a one-off script for each. It is one Node.js
+program with no runtime dependencies. Every command answers `--json`, changes to many files
+show a plan first, deletions go to the trash, and nothing that cannot be undone happens
+until you type a confirmation. AI agents can use the same commands over MCP, under the same
+rules.
 
-> kiriya (ကိရိယာ, Burmese for "tool") has every module planned for its first release
-> built and tested in CI on Windows, Linux and macOS, with Node.js 22, 24 and the current
-> release. Every command answers `--json`. It is not published to npm yet, so the steps
-> below build it from source.
+> **Status:** in development and not yet published to npm. Every module below is built and
+> tested in CI on Windows, Linux and macOS, with Node.js 22, 24 and the current release.
 
 ## Install
 
-kiriya needs [Node.js](https://nodejs.org/) 22.13 or later. Until the first npm
-release, build it from a clone:
+kiriya needs [Node.js](https://nodejs.org/) 22.13 or later. Until its first release, build
+it from source:
 
 ```bash
 git clone https://github.com/SatPaingOo/kiriya.git
@@ -22,78 +26,61 @@ npm run build
 npm link
 ```
 
-`npm link` puts `kiriya` on your PATH, and `npm unlink --global kiriya` takes it off
-again. Then see what your machine gives kiriya:
+[Getting started](docs/getting-started.md) takes it from there.
+
+## Quick start
 
 ```bash
-kiriya doctor
+kiriya doctor                                   # what this machine offers kiriya
+kiriya --help                                   # every module
+kiriya help port                                # one module, with examples
+kiriya port who 3000                            # which process holds port 3000
+kiriya files find --name "*.log" --older 30d    # the same search in every shell
+kiriya files delete dist --dry-run              # the plan, before anything changes
+kiriya git status ~/code --json                 # every repository under a folder, as JSON
 ```
 
-After the first release, `npm install --global kiriya` replaces these steps. To turn
-on tab completion, see [docs/completion.md](./docs/completion.md).
+## Modules
 
-## What it does
+<!-- kiriya:modules -->
+<!-- Written by `npm run docs` from the command specs. Change the specs, not this part. -->
 
-| Module | For example | Does |
-|---|---|---|
-| `files` | `kiriya files delete dist` | Everyday file work: list, find, grep, copy, move, rename, delete to the trash, sync, size |
-| `archive` | `kiriya archive untar node.tar.gz` | zip and tar.gz, refusing entries that would escape their folder |
-| `git` | `kiriya git status ~/code` | Status, fetch, pull and switch across every repository under a folder |
-| `docker` | `kiriya docker up` | The compose project in the current folder |
-| `port` | `kiriya port who 3000` | Which process holds a port, ending it, finding a free one |
-| `proc` | `kiriya proc find vite` | List, find, end and show the tree of processes |
-| `env` | `kiriya env check` | Variables with secrets hidden, PATH problems, `.env` against `.env.example` |
-| `sys` | `kiriya sys report` | Machine facts and tool versions for a bug report |
-| `net` | `kiriya net check db:5432` | Local addresses, TCP reachability, DNS |
-| `convert` | `kiriya convert jwt < token.txt` | base64, hex, url, json, jwt, time and case, all offline |
-| `gen` | `kiriya gen uuid --v7` | UUIDs, ULIDs, passwords and tokens |
-| `clip` | `git log -1 \| kiriya clip copy` | The clipboard, with Unicode intact |
-| `open` | `kiriya open .` | A file, folder or web address in its default application |
-| `config` | `kiriya config list` | kiriya's own settings and plugins |
-| `doctor` | `kiriya doctor` | What this machine offers kiriya |
-| `completion` | `kiriya completion bash` | Tab completion for bash, zsh, fish and PowerShell |
-
-`kiriya help <module>` lists a module's commands, and `kiriya help <module> <command>`
-explains one. `kiriya mcp` serves kiriya's commands to AI agents over MCP, only
-the ones that change nothing unless you allow more; see [docs/mcp.md](./docs/mcp.md).
-
-## The problem
-
-Every operating system does the same everyday developer tasks with different
-commands: deleting to the trash, finding what holds a port, killing a process,
-copying to the clipboard, searching files, checking PATH. Developers who switch
-machines, teams that mix operating systems, and AI agents that run commands for
-them all pay for that difference, usually with one-off scripts.
-
-## The binding constraint
-
-No runtime dependencies, free to build and run, and identical behaviour on
-Windows, Linux and macOS, proven in CI rather than assumed.
-
-## The riskiest assumption
-
-Process, port, clipboard and trash operations can be made to behave identically
-on all three operating systems through thin OS adapters, without runtime
-dependencies, and stay reliable in CI.
-
-**Answer, 2026-09-13:** yes, for every case CI can reach, on Windows, Ubuntu and
-macOS with Node 22 and 24. Windows is the slow platform, at about 0.6 s per
-operation. Details in [BLUEPRINT.md](./BLUEPRINT.md) section 3.
-
-## Documents
-
-| File | Holds |
+| Module | What it does |
 |---|---|
-| [BLUEPRINT.md](./BLUEPRINT.md) | What kiriya is, the tool catalog, architecture, code standards, decisions, plan |
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | How the code is organised today, and how to add a command, module or adapter |
-| [CONTRIBUTING.md](./CONTRIBUTING.md) | Setup, scripts, the checks every change passes, branches, commits and CI |
-| [AGENTS.md](./AGENTS.md) | The same rules, gathered for AI coding agents |
-| [docs/plugins.md](./docs/plugins.md) | How to write, install and check a plugin |
-| [docs/completion.md](./docs/completion.md) | How to turn on tab completion in bash, zsh, fish and PowerShell |
-| [docs/mcp.md](./docs/mcp.md) | How to serve kiriya to AI agents over MCP, and what it offers them |
-| [docs/releasing.md](./docs/releasing.md) | How a release is prepared, published from CI and checked |
-| [RESEARCH.md](./RESEARCH.md) | Prior art, CLI and MCP guidelines, distribution options, sources |
-| [CHANGELOG.md](./CHANGELOG.md) | What each release adds and changes |
-| [SECURITY.md](./SECURITY.md) | How to report a vulnerability privately |
-| [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) | How contributors treat each other |
-| [LICENSE](./LICENSE) | MIT |
+| [`archive`](docs/modules/archive.md) | ZIP and tar.gz archives, made and opened the same way on every OS with no zip, tar or 7-Zip installed. |
+| [`clip`](docs/modules/clip.md) | Copy text to the clipboard and paste it back, with Unicode intact on every OS. |
+| [`completion`](docs/modules/completion.md) | Tab completion for kiriya's modules, commands, options and values in bash, zsh, fish and PowerShell. |
+| [`config`](docs/modules/config.md) | kiriya's own settings, such as the plugins to load, in one file per user. |
+| [`convert`](docs/modules/convert.md) | Convert text between base64, hex, URL encoding, JSON, JWT, times and cases, entirely on this machine. |
+| [`docker`](docs/modules/docker.md) | docker compose for the project in the current folder, and a previewed clean-up of the engine. |
+| [`doctor`](docs/modules/doctor.md) | Check what this machine gives kiriya: runtime, configuration, trash, clipboard, git, docker and plugins. |
+| [`env`](docs/modules/env.md) | Environment variables, PATH and .env files, read the same way on every OS. |
+| [`files`](docs/modules/files.md) | Files and folders: create, find, read, search, compare, copy, move, rename and delete, the same on every OS. |
+| [`gen`](docs/modules/gen.md) | Random identifiers, passwords and tokens from the operating system's secure random source. |
+| [`git`](docs/modules/git.md) | Git across every repository under a folder: status, fetch, pull and switch. |
+| [`net`](docs/modules/net.md) | Local addresses, TCP reachability and DNS lookups, the same on every OS. |
+| [`open`](docs/modules/open.md) | Open a file or folder in its default application, or a web address in the browser. |
+| [`port`](docs/modules/port.md) | See which process listens on a TCP port, end it, or find a free port, the same on every OS. |
+| [`proc`](docs/modules/proc.md) | List, find and end processes, and show them as a tree, the same on every OS. |
+| [`sys`](docs/modules/sys.md) | This machine and the developer tools on it, described the same way on every OS. |
+<!-- /kiriya:modules -->
+
+## AI agents
+
+`kiriya mcp` serves these commands to AI agents over the Model Context Protocol. It offers
+only commands that change nothing until you allow more, and asks you before any work that
+cannot be undone. [MCP server](docs/guides/mcp.md) shows how to add it to a client.
+
+## Documentation
+
+| For | Read |
+|---|---|
+| Using kiriya | [Getting started](docs/getting-started.md) · [Usage](docs/usage.md) · [Modules](docs/modules/README.md) |
+| Guides | [MCP server](docs/guides/mcp.md) · [Tab completion](docs/guides/completion.md) · [Plugins](docs/guides/plugins.md) |
+| Contributing | [CONTRIBUTING.md](CONTRIBUTING.md) · [Architecture](docs/development/architecture.md) · [Design](docs/development/design.md) |
+| Everything | [Documentation index](docs/README.md) |
+
+## Project
+
+[Changelog](CHANGELOG.md) · [Security policy](SECURITY.md) · [Code of conduct](CODE_OF_CONDUCT.md) ·
+[MIT licence](LICENSE)
