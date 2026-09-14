@@ -11,6 +11,13 @@ import { zipView } from "./presentation/zip.view.js";
 export const archiveModule: KiriyaModule = {
   id: "archive",
   summary: "archive.summary",
+  about: "archive.about",
+  examples: [
+    "kiriya archive zip my-project --to my-project.zip --lean",
+    "kiriya archive unzip release.zip --list",
+    "kiriya archive untar node.tar.gz --to vendor/node",
+  ],
+  guide: "https://github.com/SatPaingOo/kiriya/blob/main/docs/modules/archive.md",
   register(registrar, ports) {
     const { fileSystem, fileContent, compression } = ports;
     registrar.add(new CreateZip(fileSystem, fileContent, compression), zipView);

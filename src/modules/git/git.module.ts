@@ -8,6 +8,14 @@ import { fetchView, pullView, statusView, switchView } from "./presentation/git.
 export const gitModule: KiriyaModule = {
   id: "git",
   summary: "git.summary",
+  about: "git.about",
+  examples: [
+    "kiriya git status ~/code",
+    "kiriya git fetch ~/code",
+    "kiriya git pull ~/code",
+    "kiriya git switch main ~/code",
+  ],
+  guide: "https://github.com/SatPaingOo/kiriya/blob/main/docs/modules/git.md",
   register(registrar, ports) {
     const { fileSystem, processRunner } = ports;
     registrar.add(new ShowStatus(fileSystem, processRunner), statusView);

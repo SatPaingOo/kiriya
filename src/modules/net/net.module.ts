@@ -7,6 +7,9 @@ import { addressesView, checkView, dnsView } from "./presentation/net.views.js";
 export const netModule: KiriyaModule = {
   id: "net",
   summary: "net.summary",
+  about: "net.about",
+  examples: ["kiriya net ip", "kiriya net check localhost:5432", "kiriya net dns example.com --type mx"],
+  guide: "https://github.com/SatPaingOo/kiriya/blob/main/docs/modules/net.md",
   register(registrar, ports) {
     registrar.add(new ListAddresses(ports.network), addressesView);
     registrar.add(new CheckConnection(ports.network), checkView);

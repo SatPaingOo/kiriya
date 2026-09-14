@@ -96,3 +96,15 @@ test("--no-color wins over FORCE_COLOR", async (t) => {
   assert.equal(kiriya(root, ["files"], { FORCE_COLOR: "1" }).stdout.includes("["), true);
   assert.equal(kiriya(root, ["files", "--no-color"], { FORCE_COLOR: "1" }).stdout.includes("["), false);
 });
+
+test("help explains a module, shows its examples and points to its guide", async (t) => {
+  const root = await temporaryFolder(t);
+  const port = kiriya(root, ["help", "port"]);
+  assert.equal(port.code, 0);
+  assert.match(port.stdout, /^kiriya port — /);
+  assert.match(port.stdout, /^Examples\r?\n {2}kiriya port who 3000$/m);
+  assert.match(port.stdout, /^Guide: https:\/\/github\.com\/SatPaingOo\/kiriya\/blob\/main\/docs\/modules\/port\.md$/m);
+  assert.equal(kiriya(root, ["port"]).stdout, port.stdout);
+  assert.match(kiriya(root, ["help", "doctor"]).stdout, /^Guide: \S+\/docs\/modules\/doctor\.md$/m);
+  assert.match(kiriya(root, ["--help"]).stdout, /^Guides to every module: \S+\/docs\/modules\/README\.md$/m);
+});

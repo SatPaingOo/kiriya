@@ -12,6 +12,9 @@ const valuesView: TextView<GeneratedOutput> = (output) => output.values;
 export const genModule: KiriyaModule = {
   id: "gen",
   summary: "gen.summary",
+  about: "gen.about",
+  examples: ["kiriya gen uuid --v7", "kiriya gen password --length 32", "kiriya gen token --format hex"],
+  guide: "https://github.com/SatPaingOo/kiriya/blob/main/docs/modules/gen.md",
   register(registrar, ports) {
     registrar.add(new GenerateUuids(ports.random, ports.clock), valuesView);
     registrar.add(new GenerateUlids(ports.random, ports.clock), valuesView);

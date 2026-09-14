@@ -7,6 +7,9 @@ import { checkView, pathView, showView } from "./presentation/env.views.js";
 export const envModule: KiriyaModule = {
   id: "env",
   summary: "env.summary",
+  about: "env.about",
+  examples: ["kiriya env show node", "kiriya env path", "kiriya env check"],
+  guide: "https://github.com/SatPaingOo/kiriya/blob/main/docs/modules/env.md",
   register(registrar, ports) {
     registrar.add(new ShowVariables(ports.environment), showView);
     registrar.add(new InspectPath(ports.environment, ports.fileSystem), pathView);

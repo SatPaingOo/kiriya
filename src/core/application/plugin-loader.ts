@@ -13,7 +13,7 @@ interface PluginModule extends KiriyaModule {
   readonly messages: Readonly<Record<string, string>>;
 }
 
-/** The exported module, or why it is not one: the contract in docs/plugins.md. */
+/** The exported module, or why it is not one: the contract in docs/guides/plugins.md. */
 function checkShape(exports: unknown): { readonly plugin: PluginModule } | { readonly problem: Message } {
   const exported =
     typeof exports === "object" && exports !== null && "default" in exports
@@ -33,6 +33,17 @@ function checkShape(exports: unknown): { readonly plugin: PluginModule } | { rea
   }
   if (typeof summary !== "string" || !(summary in messages)) {
     return { problem: message("core.plugin.no-summary", { id }) };
+  }
+  // Help reads these optional fields as it prints, so a wrong shape is refused here rather than failing there.
+  const { about, examples, guide } = exported as Record<string, unknown>;
+  if (about !== undefined && (typeof about !== "string" || !(about in messages))) {
+    return { problem: message("core.plugin.bad-about", { id }) };
+  }
+  if (examples !== undefined && !(Array.isArray(examples) && examples.every((line) => typeof line === "string"))) {
+    return { problem: message("core.plugin.bad-examples", { id }) };
+  }
+  if (guide !== undefined && (typeof guide !== "string" || !guide.startsWith("https://"))) {
+    return { problem: message("core.plugin.bad-guide", { id }) };
   }
   return { plugin: exported as PluginModule };
 }
