@@ -54,7 +54,16 @@ export class CliApplication {
       this.deps.environment.variable("TERM") !== "dumb";
     const out = createStyle(colour, this.deps.stdout);
     const err = createStyle(colour, this.deps.stderr);
-    const help: HelpContext = { translator: this.translator, style: out, version: this.deps.version };
+    // Help wraps to the terminal's width, and shows the wordmark, only when writing to one.
+    const terminal = this.deps.stdout.isTTY === true;
+    const columns = this.deps.stdout.columns;
+    const help: HelpContext = {
+      translator: this.translator,
+      style: out,
+      version: this.deps.version,
+      ...(terminal && typeof columns === "number" && columns > 0 ? { width: columns } : {}),
+      logo: terminal && colour,
+    };
 
     try {
       if (flags.version) return this.print(this.deps.stdout, [this.deps.version]);
