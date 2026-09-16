@@ -14,7 +14,7 @@ import { en } from "../../../src/i18n/locales/en.js";
 const ports = {} as CorePorts;
 const translator = new Translator(en);
 const plain = (text: string): string => text;
-const style: Style = { bold: plain, dim: plain, red: plain, green: plain, yellow: plain };
+const style: Style = { bold: plain, dim: plain, red: plain, green: plain, yellow: plain, cyan: plain };
 const context: HelpContext = { translator, style, version: "1.0.0" };
 
 function builtIns(): CommandRegistry {

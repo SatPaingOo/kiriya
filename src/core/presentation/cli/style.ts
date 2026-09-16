@@ -6,6 +6,7 @@ export interface Style {
   red(text: string): string;
   green(text: string): string;
   yellow(text: string): string;
+  cyan(text: string): string;
 }
 
 const plain = (text: string): string => text;
@@ -16,10 +17,17 @@ const plain = (text: string): string => text;
  * `enabled` adds kiriya's own switches: --no-color, KIRIYA_NO_COLOR and TERM=dumb.
  */
 export function createStyle(enabled: boolean, stream: NodeJS.WriteStream): Style {
-  if (!enabled) return { bold: plain, dim: plain, red: plain, green: plain, yellow: plain };
+  if (!enabled) return { bold: plain, dim: plain, red: plain, green: plain, yellow: plain, cyan: plain };
   const paint =
-    (format: "bold" | "dim" | "red" | "green" | "yellow") =>
+    (format: "bold" | "dim" | "red" | "green" | "yellow" | "cyan") =>
     (text: string): string =>
       styleText(format, text, { stream });
-  return { bold: paint("bold"), dim: paint("dim"), red: paint("red"), green: paint("green"), yellow: paint("yellow") };
+  return {
+    bold: paint("bold"),
+    dim: paint("dim"),
+    red: paint("red"),
+    green: paint("green"),
+    yellow: paint("yellow"),
+    cyan: paint("cyan"),
+  };
 }
