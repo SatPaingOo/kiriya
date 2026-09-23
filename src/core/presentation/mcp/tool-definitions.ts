@@ -108,10 +108,13 @@ export function inputSchemaOf(
   }
   for (const [name, option] of toolOptions(input, access)) {
     const text = translator.text(message(option.description));
+    // Choices belong in the enum, where a client can act on them, rather than in prose it must read.
     const description = option.valueName === undefined ? text : `${text} ${option.valueName}`;
+    const choices = option.choices === undefined ? {} : { enum: [...option.choices] };
     if (option.type === "boolean") claim(name, { type: "boolean", description });
-    else if (option.multiple === true) claim(name, { type: "array", items: { type: "string" }, description });
-    else claim(name, { type: "string", description });
+    else if (option.multiple === true)
+      claim(name, { type: "array", items: { type: "string", ...choices }, description });
+    else claim(name, { type: "string", ...choices, description });
   }
   return { type: "object", properties, ...(required.length > 0 ? { required } : {}), additionalProperties: false };
 }

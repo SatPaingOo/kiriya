@@ -9,10 +9,14 @@ export interface Suggestion {
   readonly description: MessageKey | null;
 }
 
-/** The values an option lists in its value name, such as `<hex|base64|base64url>`. */
+/**
+ * The values an option takes, when it takes only a list of them. It reads the list the
+ * command declares, rather than parsing the value name it is displayed under, so an option
+ * whose value name merely looks like a list — `--tail <n|all>`, a number or a word — offers
+ * nothing instead of offering `n`.
+ */
 export function optionChoices(option: OptionSpec): string[] {
-  const match = /^<([a-z0-9-]+(?:\|[a-z0-9-]+)+)>$/.exec(option.valueName ?? "");
-  return match?.[1]?.split("|") ?? [];
+  return option.choices === undefined ? [] : [...option.choices];
 }
 
 function ownCommand(module: CatalogModule): CatalogCommand | undefined {

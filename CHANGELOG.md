@@ -7,6 +7,18 @@ output shapes are kiriya's public API.
 
 ## [Unreleased]
 
+### Changed
+
+- An option that takes one of a list of values now declares that list, so an MCP tool
+  offers it as a JSON Schema `enum` instead of naming it only in prose an agent would have
+  to read. Eleven options gained one: `files list --sort`, `files find --type`,
+  `files hash --algo`, `files info --hash`, `files rename --case` and `--only`,
+  `convert case --to`, `convert time --unit`, `gen token --format` and `net dns --type`.
+  Help and the generated reference are unchanged, since a declared list names itself.
+- Tab completion reads the same list, rather than parsing the value name it was displayed
+  under. `docker logs --tail <n|all>` therefore offers nothing instead of offering `n`,
+  which was never a value it took.
+
 ## [0.1.1] - 2026-09-24
 
 ### Changed

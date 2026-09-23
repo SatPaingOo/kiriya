@@ -69,7 +69,7 @@ const CATALOG: readonly CatalogModule[] = [
           "files.list",
           {
             all: { type: "boolean", description: "files.list.summary" },
-            sort: { type: "string", description: "files.list.summary", valueName: "<name|size|time>" },
+            sort: { type: "string", description: "files.list.summary", choices: ["name", "size", "time"] },
           },
           [paths],
         ),

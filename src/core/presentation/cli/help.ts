@@ -124,7 +124,8 @@ function wordmark(context: HelpContext): string[] {
 
 /** `-i, --ignore-case` or `--to <file>`, as help and the generated docs show an option. */
 export function optionLabel(name: string, spec: OptionSpec): string {
-  const value = spec.type === "string" ? ` ${spec.valueName ?? "<value>"}` : "";
+  const named = spec.valueName ?? (spec.choices === undefined ? "<value>" : `<${spec.choices.join("|")}>`);
+  const value = spec.type === "string" ? ` ${named}` : "";
   const short = spec.short === undefined ? "" : `-${spec.short}, `;
   return `${short}--${name}${value}`;
 }

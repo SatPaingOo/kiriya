@@ -39,7 +39,7 @@ export const dnsSpec: CommandSpec<DnsInput> = {
   input: {
     positionals: [{ name: "name", description: "net.dns.arg.name", required: true, variadic: false }],
     options: {
-      type: { type: "string", description: "net.dns.option.type", valueName: `<${LOOKUP_TYPES.join("|")}>` },
+      type: { type: "string", description: "net.dns.option.type", choices: LOOKUP_TYPES },
     },
     parse(raw) {
       const reader = new RawReader(raw);

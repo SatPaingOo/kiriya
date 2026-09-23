@@ -60,7 +60,7 @@ export const infoSpec: CommandSpec<InfoInput> = {
   input: {
     positionals: [{ name: "paths", description: "files.info.arg.paths", required: true, variadic: true, path: true }],
     options: {
-      hash: { type: "string", description: "files.info.option.hash", valueName: `<${HASH_ALGORITHMS.join("|")}>` },
+      hash: { type: "string", description: "files.info.option.hash", choices: HASH_ALGORITHMS },
     },
     parse(raw) {
       const reader = new RawReader(raw);
