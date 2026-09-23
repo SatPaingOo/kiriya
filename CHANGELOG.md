@@ -12,6 +12,10 @@ output shapes are kiriya's public API.
 - A usage error inside a command that was found now points at that command's help, so
   `Missing argument: sources` is followed by `Run kiriya files copy --help to see what it
   takes.` A spelling suggestion, being the more useful hint, still takes precedence.
+- `kiriya help <module>` lists each command's option names under it, so a module's whole
+  surface can be read at once instead of one command at a time. The short forms, the
+  values and the descriptions stay in the command's own help. The readme now shows the
+  three steps help goes through, which nothing pointed out before.
 
 ## [0.1.0] - 2026-09-23
 

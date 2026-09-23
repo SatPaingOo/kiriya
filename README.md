@@ -35,13 +35,35 @@ below is tested on Windows, Linux and macOS with Node.js 22, 24 and the current 
 
 ```bash
 kiriya doctor                                   # what this machine offers kiriya
-kiriya --help                                   # every module
-kiriya help port                                # one module, with examples
 kiriya port who 3000                            # which process holds port 3000
 kiriya files find --name "*.log" --older 30d    # the same search in every shell
 kiriya files delete dist --dry-run              # the plan, before anything changes
 kiriya git status ~/code --json                 # every repository under a folder, as JSON
 ```
+
+## Finding your way
+
+Help goes three steps deep, and each step names the next, so nothing has to be guessed.
+
+```bash
+kiriya --help              # the modules, and the options every command accepts
+kiriya help files          # one module: its commands, and what each one takes
+kiriya help files delete   # one command: its arguments, options and examples
+```
+
+`kiriya files delete --help` says the same as that third line. The middle step lists each
+command's option names underneath it, so a module's whole surface fits on one screen:
+
+```text
+Commands
+  delete   Send files and folders to the trash, or remove them for good with --permanent
+           --permanent --dry-run --yes --confirm --all
+  find     Find files and folders by name, extension, type, size, age or emptiness
+           --name --ext --type --larger --smaller --newer --older --empty --all --limit
+```
+
+Every module also has a guide below with a full reference: every command, argument and
+option, what each does, and whether it can be undone.
 
 ## Modules
 
