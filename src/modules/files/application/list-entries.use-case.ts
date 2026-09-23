@@ -44,7 +44,7 @@ export const listSpec: CommandSpec<ListInput> = {
     positionals: [{ name: "path", description: "files.list.arg.path", required: false, variadic: false, path: true }],
     options: {
       all: { type: "boolean", description: "files.option.all" },
-      sort: { type: "string", description: "files.list.option.sort", valueName: "<name|size|time>" },
+      sort: { type: "string", description: "files.list.option.sort", choices: LIST_SORTS },
       reverse: { type: "boolean", description: "files.list.option.reverse" },
     },
     parse(raw) {

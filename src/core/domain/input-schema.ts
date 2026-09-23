@@ -7,7 +7,13 @@ export interface OptionSpec {
   /** One letter, only for very common options. */
   readonly short?: string;
   readonly multiple?: boolean;
-  /** Shown in help after the flag, such as `<size>`. */
+  /**
+   * The only values it takes. Help and the generated reference show them in place of a value
+   * name, and an MCP tool offers them as an enum, so a client can refuse the rest before it
+   * calls. `RawReader.choice` checks the same list, which is why both read one constant.
+   */
+  readonly choices?: readonly string[];
+  /** Shown in help after the flag, such as `<size>`. A list of choices names itself. */
   readonly valueName?: string;
   /** Holds a file or folder path, or a glob of them. Over MCP it must stay inside the server's roots. */
   readonly path?: boolean;

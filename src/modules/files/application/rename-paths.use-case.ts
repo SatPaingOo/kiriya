@@ -59,11 +59,11 @@ export const renameSpec: CommandSpec<RenameInput> = {
       { name: "paths", description: "files.rename.arg.paths", required: false, variadic: true, path: true },
     ],
     options: {
-      case: { type: "string", description: "files.rename.option.case", valueName: `<${CASE_STYLES.join("|")}>` },
+      case: { type: "string", description: "files.rename.option.case", choices: CASE_STYLES },
       find: { type: "string", description: "files.rename.option.find", valueName: "<text>" },
       with: { type: "string", description: "files.rename.option.with", valueName: "<text>" },
       recursive: { type: "boolean", description: "files.rename.option.recursive" },
-      only: { type: "string", description: "files.rename.option.only", valueName: "<files|dirs>" },
+      only: { type: "string", description: "files.rename.option.only", choices: ONLY },
       apply: { type: "boolean", description: "files.rename.option.apply" },
       yes: { type: "boolean", description: "files.rename.option.yes", short: "y", terminalOnly: true },
     },

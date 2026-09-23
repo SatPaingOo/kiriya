@@ -60,7 +60,7 @@ export const findSpec: CommandSpec<FindInput> = {
     options: {
       name: { type: "string", description: "files.find.option.name", valueName: "<glob>" },
       ext: { type: "string", description: "files.find.option.ext", valueName: "<extensions>", multiple: true },
-      type: { type: "string", description: "files.find.option.type", valueName: "<file|dir>" },
+      type: { type: "string", description: "files.find.option.type", choices: FIND_TYPES },
       larger: { type: "string", description: "files.find.option.larger", valueName: "<size>" },
       smaller: { type: "string", description: "files.find.option.smaller", valueName: "<size>" },
       newer: { type: "string", description: "files.find.option.newer", valueName: "<time>" },

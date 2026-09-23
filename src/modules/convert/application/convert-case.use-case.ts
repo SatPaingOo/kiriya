@@ -23,7 +23,7 @@ export const caseSpec: CommandSpec<CaseInput> = {
   input: {
     positionals: [valuePositional],
     options: {
-      to: { type: "string", description: "convert.case.option.to", valueName: `<${TEXT_CASES.join("|")}>` },
+      to: { type: "string", description: "convert.case.option.to", choices: TEXT_CASES },
       file: fileOption,
     },
     parse(raw) {

@@ -30,7 +30,7 @@ export const timeSpec: CommandSpec<TimeInput> = {
   idempotent: false,
   input: {
     positionals: [{ name: "value", description: "convert.time.arg.value", required: false, variadic: false }],
-    options: { unit: { type: "string", description: "convert.time.option.unit", valueName: "<auto|seconds|ms>" } },
+    options: { unit: { type: "string", description: "convert.time.option.unit", choices: EPOCH_UNITS } },
     parse(raw) {
       const reader = new RawReader(raw);
       return { value: reader.positional(0), unit: reader.choice("unit", EPOCH_UNITS, "auto") };

@@ -47,7 +47,7 @@ export const hashSpec: CommandSpec<HashInput> = {
   input: {
     positionals: [{ name: "paths", description: "files.hash.arg.paths", required: true, variadic: true, path: true }],
     options: {
-      algo: { type: "string", description: "files.hash.option.algo", valueName: `<${HASH_ALGORITHMS.join("|")}>` },
+      algo: { type: "string", description: "files.hash.option.algo", choices: HASH_ALGORITHMS },
       check: { type: "string", description: "files.hash.option.check", valueName: "<hex>" },
     },
     parse(raw) {

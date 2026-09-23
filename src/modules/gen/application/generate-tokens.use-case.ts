@@ -20,7 +20,7 @@ export const tokenSpec: CommandSpec<TokenInput> = {
     positionals: [],
     options: {
       bytes: { type: "string", description: "gen.token.option.bytes", valueName: "<n>" },
-      format: { type: "string", description: "gen.token.option.format", valueName: "<hex|base64|base64url>" },
+      format: { type: "string", description: "gen.token.option.format", choices: TOKEN_FORMATS },
       count: countOption,
     },
     parse(raw) {
