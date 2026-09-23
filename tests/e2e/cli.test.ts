@@ -33,6 +33,32 @@ test("usage errors exit 2 with a suggestion on stderr and nothing on stdout", as
   assert.match(option.stderr, /Unknown option: --al\r?\nDid you mean --all\?/);
 });
 
+test("a usage error inside a command points at that command's help", async (t) => {
+  const root = await temporaryFolder(t);
+
+  const missing = kiriya(root, ["files", "copy"]);
+  assert.equal(missing.code, 2);
+  assert.equal(missing.stdout, "");
+  assert.match(missing.stderr, /Missing argument: sources\r?\nRun kiriya files copy --help to see what it takes\./);
+
+  const extra = kiriya(root, ["convert", "base64", "encode", "hello"]);
+  assert.equal(extra.code, 2);
+  assert.match(extra.stderr, /Too many arguments: hello\r?\nRun kiriya convert base64 --help to see what it takes\./);
+
+  const unknownOption = kiriya(root, ["files", "list", "--nosuchflag"]);
+  assert.equal(unknownOption.code, 2);
+  assert.match(unknownOption.stderr, /Run kiriya files list --help to see what it takes\./);
+
+  // A module that is one command names just the module.
+  const single = kiriya(root, ["doctor", "extra", "words"]);
+  assert.equal(single.code, 2);
+  assert.match(single.stderr, /Run kiriya doctor --help to see what it takes\./);
+
+  // A spelling suggestion is more useful than the help, so it keeps its place.
+  const suggested = kiriya(root, ["files", "list", "--al"]);
+  assert.doesNotMatch(suggested.stderr, /to see what it takes/);
+});
+
 test("create, list as JSON, and delete for good", async (t) => {
   const root = await temporaryFolder(t);
   assert.equal(kiriya(root, ["files", "new", "notes.md", "--content", "hi"]).code, 0);

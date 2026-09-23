@@ -7,27 +7,27 @@ commands most people try first. It takes about five minutes.
 
 - [Node.js](https://nodejs.org/) 22.13 or later. `node --version` shows yours.
 - Windows, Linux or macOS.
-- git, to install from source.
 
 ## Install
 
-kiriya is not published to npm yet. Until its first release, build it from source:
-
 ```bash
-git clone https://github.com/SatPaingOo/kiriya.git
-cd kiriya
-npm ci
-npm run build
-npm link
+npm install --global kiriya
 ```
 
-`npm link` puts the `kiriya` command on your PATH. Check that it answers:
+Check that it answers:
 
 ```bash
 kiriya --version
 ```
 
-After the first release, `npm install --global kiriya` replaces these steps.
+kiriya is published from CI with [provenance](https://docs.npmjs.com/generating-provenance-statements),
+so you can see which workflow built what you installed:
+
+```bash
+npm audit signatures
+```
+
+To build from source instead, see [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ## Check your machine
 

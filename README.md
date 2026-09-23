@@ -10,23 +10,26 @@ show a plan first, deletions go to the trash, and nothing that cannot be undone 
 until you type a confirmation. AI agents can use the same commands over MCP, under the same
 rules.
 
-> **Status:** in development and not yet published to npm. Every module below is built and
-> tested in CI on Windows, Linux and macOS, with Node.js 22, 24 and the current release.
-
 ## Install
 
-kiriya needs [Node.js](https://nodejs.org/) 22.13 or later. Until its first release, build
-it from source:
+kiriya needs [Node.js](https://nodejs.org/) 22.13 or later.
 
 ```bash
-git clone https://github.com/SatPaingOo/kiriya.git
-cd kiriya
-npm ci
-npm run build
-npm link
+npm install --global kiriya
 ```
 
-[Getting started](docs/getting-started.md) takes it from there.
+Then check what this machine gives it:
+
+```bash
+kiriya doctor
+```
+
+Every release is published from CI with [provenance](https://docs.npmjs.com/generating-provenance-statements),
+so `npm audit signatures` can show which workflow built the copy you installed. Every module
+below is tested on Windows, Linux and macOS with Node.js 22, 24 and the current release.
+
+[Getting started](docs/getting-started.md) takes it from there, and
+[CONTRIBUTING.md](CONTRIBUTING.md) covers building from source.
 
 ## Quick start
 
