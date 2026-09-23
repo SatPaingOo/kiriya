@@ -1,0 +1,108 @@
+name: verify the published package
+
+# Installs kiriya from npm on a clean machine of each operating system and checks it the
+# way docs/development/releasing.md says to after publishing. Nothing here builds from the
+# repository: the point is to test what people actually receive.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: The version to verify, such as 0.1.1. The latest when left out.
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  install:
+    name: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    env:
+      WANTED: ${{ inputs.version }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install from npm, as anyone would
+        run: |
+          # The registry can take a few minutes to serve a version that was just published.
+          for attempt in 1 2 3 4 5 6; do
+            if npm install --global "kiriya${WANTED:+@$WANTED}"; then exit 0; fi
+            echo "attempt $attempt failed; waiting"
+            sleep 30
+          done
+          exit 1
+
+      - name: It runs, and is the version that was asked for
+        run: |
+          installed=$(kiriya --version)
+          echo "installed: $installed"
+          if [ -n "$WANTED" ] && [ "$installed" != "$WANTED" ]; then
+            echo "expected $WANTED"
+            exit 1
+          fi
+
+      - name: doctor reports what this machine gives it
+        run: kiriya doctor
+
+      - name: The signature and the provenance attestation verify
+        run: |
+          mkdir -p ~/verify && cd ~/verify
+          npm init -y > /dev/null
+          npm install "kiriya${WANTED:+@$WANTED}"
+          npm audit signatures
+
+      - name: A read-only command works and answers --json
+        run: |
+          kiriya gen uuid
+          kiriya files list . --json > list.json
+          node -e "const j=require('./list.json'); if (j.ok !== true) { throw new Error('not ok'); }"
+
+      - name: Deleting without a terminal refuses and changes nothing
+        run: |
+          printf 'keep me' > victim.txt
+          if kiriya files delete victim.txt; then
+            echo "it deleted without asking, which it must never do"
+            exit 1
+          fi
+          test -f victim.txt
+
+      - name: Deleting to the trash works on this operating system
+        run: |
+          printf 'bin me' > trash-me.txt
+          kiriya files delete trash-me.txt --yes
+          test ! -f trash-me.txt
+
+  registry:
+    name: the MCP Registry lists it
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Search the registry for the server
+        env:
+          WANTED: ${{ inputs.version }}
+        run: |
+          url="https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.SatPaingOo/kiriya"
+          curl -fsSL "$url" -o servers.json
+          node -e "
+            const body = require('./servers.json');
+            const list = body.servers ?? body.data ?? [];
+            const found = list.map((entry) => entry.server ?? entry);
+            console.log('listed:', found.map((s) => s.version).join(', ') || '(none)');
+            if (found.length === 0) throw new Error('the registry lists no version');
+            const wanted = process.env.WANTED;
+            if (wanted && !found.some((s) => s.version === wanted)) {
+              throw new Error('the registry does not list ' + wanted);
+            }
+          "

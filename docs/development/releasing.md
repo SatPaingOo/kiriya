@@ -58,27 +58,27 @@ works either way.
 
 ## After publishing
 
-On a clean machine with each operating system:
+Run the **verify the published package** workflow, giving it the version:
 
 ```bash
-npm install --global kiriya
-kiriya doctor
+gh workflow run verify.yml -f version=0.1.1
 ```
 
-Then confirm the signatures and provenance in any project:
+It installs kiriya from npm on a clean Windows, Linux and macOS runner — none of them
+building from this repository — and checks what people actually receive: that the command
+runs and is the version asked for, that `doctor` reports the machine, that the signature
+and the provenance attestation verify, that a read-only command answers `--json`, that
+deleting without a terminal refuses and changes nothing, that deleting to the trash works
+on that operating system, and that the MCP Registry lists the version.
 
-```bash
-npm install kiriya
-npm audit signatures
-```
+The registry can take a few minutes to serve a version that was just published, so the
+install step retries for three minutes before giving up.
 
-And that the MCP Registry lists the new version:
+Two things the workflow cannot do, and a person still has to:
 
-```bash
-curl "https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.SatPaingOo/kiriya"
-```
+- Open the release's `.mcpb` file in Claude's desktop app, pick a folder, and ask the agent
+  to list it.
+- Try the clipboard and `open`, which need a desktop session that a runner does not have.
 
-Finally, on each operating system, open the release's `.mcpb` file in Claude's desktop app,
-pick a folder, and ask the agent to list it.
-
-The first release is done when all of this passes on Windows, Linux and macOS.
+A release is done when the workflow is green on all three operating systems and the `.mcpb`
+bundle has been opened once.
