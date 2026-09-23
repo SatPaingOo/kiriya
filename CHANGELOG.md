@@ -7,7 +7,9 @@ output shapes are kiriya's public API.
 
 ## [Unreleased]
 
-Nothing is published yet. The first release, 0.1.0, will contain everything below.
+## [0.1.0] - 2026-09-23
+
+The first release.
 
 ### Added
 
