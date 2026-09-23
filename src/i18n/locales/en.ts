@@ -28,6 +28,7 @@ export const en = {
   "core.usage.unknown-module": "Unknown module: {name}",
   "core.usage.unknown-command": "Unknown command: {module} {name}",
   "core.usage.did-you-mean": "Did you mean {suggestion}?",
+  "core.usage.see-help": "Run {command} to see what it takes.",
   "core.usage.bad-arguments": "{detail}",
   "core.usage.unknown-option": "Unknown option: {option}",
   "core.usage.takes-no-value": "--{option} does not take a value",

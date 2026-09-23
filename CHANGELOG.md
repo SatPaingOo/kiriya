@@ -7,6 +7,12 @@ output shapes are kiriya's public API.
 
 ## [Unreleased]
 
+### Changed
+
+- A usage error inside a command that was found now points at that command's help, so
+  `Missing argument: sources` is followed by `Run kiriya files copy --help to see what it
+  takes.` A spelling suggestion, being the more useful hint, still takes precedence.
+
 ## [0.1.0] - 2026-09-23
 
 The first release.

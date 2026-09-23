@@ -38,6 +38,23 @@ const EXIT_CODES: Readonly<Record<ErrorKind, number>> = {
 
 const verbsOf = (module: RegisteredModule): string[] => [...module.commands.keys()].filter((verb) => verb !== "");
 
+/**
+ * A usage error raised inside a command that was found says what is wrong with the arguments
+ * but not what the command takes, so point at its help. An error that already carries a hint,
+ * such as a spelling suggestion, keeps the one it has.
+ */
+function withCommandHint<T>(id: string, parse: () => T): T {
+  try {
+    return parse();
+  } catch (error) {
+    if (!(error instanceof UsageError) || error.detail.params["hint"] !== undefined) throw error;
+    throw new UsageError(error.detail.key, {
+      ...error.detail.params,
+      hint: message("core.usage.see-help", { command: `kiriya ${id.split(".").join(" ")} --help` }),
+    });
+  }
+}
+
 /** The command line: finds the command, runs it, prints its result, and maps errors to exit codes once. */
 export class CliApplication {
   private readonly translator: Translator;
@@ -78,7 +95,7 @@ export class CliApplication {
       if (flags.help) return this.print(this.deps.stdout, commandHelp(module, entry, help));
 
       const { spec } = entry.command;
-      const input = spec.input.parse(parseCommandArguments(spec.input, args));
+      const input = withCommandHint(spec.id, () => spec.input.parse(parseCommandArguments(spec.input, args)));
       const controller = new AbortController();
       const interrupt = (): void => controller.abort();
       process.once("SIGINT", interrupt);
