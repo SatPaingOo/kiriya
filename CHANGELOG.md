@@ -7,6 +7,8 @@ output shapes are kiriya's public API.
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-09-24
+
 ### Changed
 
 - A usage error inside a command that was found now points at that command's help, so
@@ -16,6 +18,13 @@ output shapes are kiriya's public API.
   surface can be read at once instead of one command at a time. The short forms, the
   values and the descriptions stay in the command's own help. The readme now shows the
   three steps help goes through, which nothing pointed out before.
+
+### Fixed
+
+- The readme and the getting started page said kiriya was not on npm and walked people
+  through building it from source. Both now install it with `npm install --global kiriya`.
+  Since npm keeps the readme it was given at publish time, 0.1.0's page carried the wrong
+  instructions until this release replaced them.
 
 ## [0.1.0] - 2026-09-23
 
