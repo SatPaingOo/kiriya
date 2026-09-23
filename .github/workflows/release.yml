@@ -51,7 +51,16 @@ jobs:
           npm pack --dry-run --json > pack.json
           node dist/tools/check-package.js pack.json
 
+      # TEMPORARY, for the first publish only. npm configures a trusted publisher in a
+      # package's settings, and a package that has never been published has no settings,
+      # so the very first version cannot use OIDC. NODE_AUTH_TOKEN, which the .npmrc that
+      # setup-node wrote reads, carries a short-lived granular token instead. Provenance
+      # is unaffected: it is signed with the workflow's own OIDC identity either way.
+      # Once kiriya is on the registry: add the trusted publisher, delete the npm
+      # environment's NPM_TOKEN secret, revoke the token, and take this env block away.
       - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   mcp-registry:
     name: publish to the MCP Registry
