@@ -54,6 +54,27 @@ test("module help: the summary, its paragraph wrapped at 80 columns, commands, e
   ]);
 });
 
+test("module help lists each command's option names under it, and nothing for a command with none", () => {
+  const port = builtIns().module("port");
+  assert.ok(port);
+  const lines = moduleHelp(port, context);
+  const commands = lines.slice(lines.indexOf("Commands") + 1, lines.indexOf("Examples") - 1);
+
+  // `free` takes options, so they follow its summary on their own line, indented to the description.
+  const freeAt = commands.findIndex((line) => /^ {2}free\b/.test(line));
+  assert.ok(freeAt >= 0, commands.join("\n"));
+  const names = (commands[freeAt + 1] ?? "").trim().split(" ");
+  assert.ok(names.length > 0 && names.every((name) => name.startsWith("--")), commands[freeAt + 1]);
+  assert.equal(commands[freeAt + 1]?.startsWith("  "), true);
+
+  // Only long forms belong here: a short form or a value would make the line hard to scan.
+  assert.ok(!commands.some((line) => /^\s+-{1}[a-z],/.test(line)), "no short forms");
+  assert.ok(!commands.some((line) => /^\s+--\S+ </.test(line)), "no option values");
+
+  // Every line is either a command row, a wrapped description, or a row of option names.
+  for (const line of commands) assert.ok(line === "" || line.startsWith("  "), line);
+});
+
 test("a module without a paragraph, examples or guide, as a plugin may be, shows only its commands", () => {
   const run: Command<undefined, undefined> = {
     spec: {

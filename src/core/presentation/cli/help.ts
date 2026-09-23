@@ -51,6 +51,10 @@ interface TableOptions {
   readonly width?: number | undefined;
   /** Colour the left column's name. The padding stays plain, so columns still line up. */
   readonly paint?: ((name: string) => string) | undefined;
+  /** A further line under a row, indented to the description, such as a command's option names. */
+  readonly note?: ((name: string) => string | undefined) | undefined;
+  /** Colour a note. It is applied after wrapping, so escape codes never count towards the width. */
+  readonly paintNote?: ((line: string) => string) | undefined;
 }
 
 function table(rows: ReadonlyArray<readonly [string, string]>, options: TableOptions = {}): string[] {
@@ -63,6 +67,13 @@ function table(rows: ReadonlyArray<readonly [string, string]>, options: TableOpt
     const wrapped = options.width === undefined ? [right] : wrap(right, Math.max(20, options.width - start));
     lines.push(`  ${name}${padding}  ${wrapped[0] ?? ""}`);
     for (const line of wrapped.slice(1)) lines.push(`${" ".repeat(start)}${line}`);
+    const note = options.note?.(left);
+    if (note !== undefined && note !== "") {
+      const noteLines = options.width === undefined ? [note] : wrap(note, Math.max(20, options.width - start));
+      for (const line of noteLines) {
+        lines.push(`${" ".repeat(start)}${options.paintNote === undefined ? line : options.paintNote(line)}`);
+      }
+    }
   }
   return lines;
 }
@@ -219,6 +230,14 @@ export function moduleHelp(module: RegisteredModule, context: HelpContext): stri
   const commands = [...module.commands.values()]
     .filter((entry) => entry.verb !== "")
     .sort((a, b) => (a.verb < b.verb ? -1 : a.verb > b.verb ? 1 : 0));
+  // What each command takes, so its options can be seen here rather than one command at a time.
+  // Long forms only: the short ones, the values and the descriptions belong in the command's own help.
+  const options = new Map(
+    commands.map((entry) => {
+      const names = Object.keys(entry.command.spec.input.options);
+      return [entry.verb, names.length === 0 ? undefined : names.map((name) => `--${name}`).join(" ")];
+    }),
+  );
   return [
     `${style.bold(`kiriya ${module.id}`)} — ${translator.text(message(module.summary))}`,
     ...aboutLines(module, context),
@@ -226,7 +245,12 @@ export function moduleHelp(module: RegisteredModule, context: HelpContext): stri
     style.bold(translator.text(message("core.help.commands"))),
     ...table(
       commands.map((entry) => [entry.verb, translator.text(message(entry.command.spec.summary))]),
-      { width: context.width, paint: (verb) => style.green(verb) },
+      {
+        width: context.width,
+        paint: (verb) => style.green(verb),
+        note: (verb) => options.get(verb),
+        paintNote: (line) => style.dim(line),
+      },
     ),
     ...exampleLines(module.examples, context),
     "",
