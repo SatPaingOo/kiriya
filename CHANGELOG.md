@@ -7,6 +7,8 @@ output shapes are kiriya's public API.
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-09-24
+
 ### Changed
 
 - An option that takes one of a list of values now declares that list, so an MCP tool
