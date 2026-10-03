@@ -7,6 +7,8 @@ output shapes are kiriya's public API.
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-10-03
+
 ### Added
 
 - `self-update` asks npm's registry whether a newer kiriya exists, and installs it with
