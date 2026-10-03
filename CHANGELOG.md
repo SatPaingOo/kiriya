@@ -7,6 +7,8 @@ output shapes are kiriya's public API.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-04
+
 ### Added
 
 - `secrets scan` finds secrets committed into a folder's files: a token whose issuer gives it
