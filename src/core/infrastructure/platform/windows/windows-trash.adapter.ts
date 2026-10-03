@@ -49,6 +49,42 @@ for ($i = 0; $i -lt $paths.Length; $i++) {
 }
 `;
 
+/**
+ * What the script's output means, separate from running it. Constrained Language Mode needs a
+ * WDAC or AppLocker policy to reproduce, which no test machine has, so that branch is reached
+ * here instead of being left to a machine nobody has.
+ */
+export function readTrashResult(stdout: string, stderr: string, paths: readonly string[]): readonly TrashOutcome[] {
+  const lines = stdout
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line !== "");
+  const mode = lines.find((line) => line.startsWith("mode|"))?.slice(5) ?? "unknown";
+  if (mode !== "FullLanguage") throw new CapabilityUnavailableError("core.trash.windows.language-mode", { mode });
+
+  const byIndex = new Map<number, TrashOutcome>();
+  for (const line of lines) {
+    const [status, indexText, ...rest] = line.split("|");
+    if (indexText === undefined || !/^[0-9]+$/.test(indexText)) continue;
+    const index = Number(indexText);
+    const path = paths[index] ?? "";
+    if (status === "ok") byIndex.set(index, { path, ok: true });
+    else if (status === "network")
+      byIndex.set(index, { path, ok: false, reason: message("core.trash.windows.network") });
+    else if (status === "drive") {
+      byIndex.set(index, { path, ok: false, reason: message("core.trash.windows.drive", { drive: rest.join("|") }) });
+    } else byIndex.set(index, { path, ok: false, reason: message("core.trash.failed", { detail: rest.join("|") }) });
+  }
+  return paths.map(
+    (path, index) =>
+      byIndex.get(index) ?? {
+        path,
+        ok: false,
+        reason: message("core.trash.failed", { detail: stderr.trim().split(/\r?\n/)[0] ?? "no result" }),
+      },
+  );
+}
+
 export class WindowsTrashAdapter implements Trash {
   readonly location = "core.trash.location.recycle-bin";
 
@@ -57,33 +93,6 @@ export class WindowsTrashAdapter implements Trash {
       env: { KIRIYA_TRASH_PATHS: paths.join(NEWLINE) },
       timeoutMs: 10 * 60_000,
     });
-    const lines = result.stdout
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter((line) => line !== "");
-    const mode = lines.find((line) => line.startsWith("mode|"))?.slice(5) ?? "unknown";
-    if (mode !== "FullLanguage") throw new CapabilityUnavailableError("core.trash.windows.language-mode", { mode });
-
-    const byIndex = new Map<number, TrashOutcome>();
-    for (const line of lines) {
-      const [status, indexText, ...rest] = line.split("|");
-      if (indexText === undefined || !/^[0-9]+$/.test(indexText)) continue;
-      const index = Number(indexText);
-      const path = paths[index] ?? "";
-      if (status === "ok") byIndex.set(index, { path, ok: true });
-      else if (status === "network")
-        byIndex.set(index, { path, ok: false, reason: message("core.trash.windows.network") });
-      else if (status === "drive") {
-        byIndex.set(index, { path, ok: false, reason: message("core.trash.windows.drive", { drive: rest.join("|") }) });
-      } else byIndex.set(index, { path, ok: false, reason: message("core.trash.failed", { detail: rest.join("|") }) });
-    }
-    return paths.map(
-      (path, index) =>
-        byIndex.get(index) ?? {
-          path,
-          ok: false,
-          reason: message("core.trash.failed", { detail: result.stderr.trim().split(/\r?\n/)[0] ?? "no result" }),
-        },
-    );
+    return readTrashResult(result.stdout, result.stderr, paths);
   }
 }
