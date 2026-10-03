@@ -40,7 +40,7 @@ async function statuses(checks: RunChecks): Promise<{ statuses: Record<string, s
 }
 
 test("a healthy machine passes every check", async () => {
-  const runtime = { kiriyaVersion: "1.2.3", nodeVersion: "v24.1.0" };
+  const runtime = { kiriyaVersion: "1.2.3", nodeVersion: "v24.1.0", installDirectory: "/opt/kiriya/" };
   const outcome = await statuses(
     new RunChecks(toolsRunning, environment, new MemoryConfigStore(), trash, clipboard, inventory(), runtime),
   );
@@ -59,7 +59,7 @@ test("a healthy machine passes every check", async () => {
 });
 
 test("missing tools, a stopped engine and an old Node.js are warnings, not failures", async () => {
-  const runtime = { kiriyaVersion: "1.2.3", nodeVersion: "v22.12.0" };
+  const runtime = { kiriyaVersion: "1.2.3", nodeVersion: "v22.12.0", installDirectory: "/opt/kiriya/" };
   const bare = await statuses(
     new RunChecks(
       new FakeProcessRunner({}),
@@ -92,7 +92,7 @@ test("a configuration file kiriya cannot read, and a plugin that did not load, f
     write: () => Promise.resolve(),
   };
   const problems = [{ entry: "./gone", reason: message("core.plugin.not-found", { entry: "./gone" }) }];
-  const runtime = { kiriyaVersion: "1.2.3", nodeVersion: "v24.1.0" };
+  const runtime = { kiriyaVersion: "1.2.3", nodeVersion: "v24.1.0", installDirectory: "/opt/kiriya/" };
   const outcome = await statuses(
     new RunChecks(toolsRunning, environment, broken, trash, clipboard, inventory(problems), runtime),
   );
@@ -113,7 +113,7 @@ test("a session without a clipboard is a warning that names why", async () => {
     write: () => Promise.resolve(),
     read: () => Promise.resolve(""),
   };
-  const runtime = { kiriyaVersion: "1.2.3", nodeVersion: "v24.1.0" };
+  const runtime = { kiriyaVersion: "1.2.3", nodeVersion: "v24.1.0", installDirectory: "/opt/kiriya/" };
   const checks = new RunChecks(toolsRunning, environment, new MemoryConfigStore(), trash, none, inventory(), runtime);
   const result = expectDone(await checks.execute({}, commandContext("/")));
   const check = result.data.checks.find((entry) => entry.name === "clipboard");

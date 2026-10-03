@@ -7,6 +7,17 @@ output shapes are kiriya's public API.
 
 ## [Unreleased]
 
+### Added
+
+- `self-update` asks npm's registry whether a newer kiriya exists, and installs it with
+  `--apply`. Without `--apply` nothing changes, so it is safe to run just to find out.
+  It names the exact version the registry answered with rather than `latest`, never offers
+  a prerelease, and refuses to run npm over an install npm did not make, such as a source
+  checkout or a future Homebrew tap. It is never offered to AI agents: an agent must not
+  upgrade, mid-session, the tool it is calling.
+- `doctor` ends with a line naming `self-update`. It still reaches no network itself —
+  until now nothing told anyone that a newer version existed at all.
+
 ## [0.1.2] - 2026-09-24
 
 ### Changed

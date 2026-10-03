@@ -441,6 +441,7 @@ export const en = {
   "doctor.status.warn": "warn",
   "doctor.status.fail": "fail",
   "doctor.check.kiriya": "{version}",
+  "doctor.newer": "doctor asks no network. Run kiriya self-update to see whether a newer version is out.",
   "doctor.check.node": "{version}",
   "doctor.check.node-old": "Node.js {version} is older than {minimum}, the oldest release kiriya supports",
   "doctor.check.os": "{os}",
@@ -744,6 +745,26 @@ export const en = {
   "wait.file.gone": "{path} is gone, after {seconds} s",
   "wait.file.timed-out": "{path} did not appear within {seconds} s",
   "wait.file.still-there": "{path} was still there after {seconds} s",
+
+  "self-update.summary": "Ask the registry whether a newer kiriya exists, and install it with --apply",
+  "self-update.about":
+    "Asks npm's registry which version it serves as latest and compares it with this one. " +
+    "Without --apply it changes nothing, so it is safe to run just to find out. With --apply " +
+    "it installs the newer version with npm, and refuses when npm was not what installed " +
+    "kiriya in the first place. This is the only command that reaches the network for a " +
+    "reason other than the one you asked for, which is why it has to be run on purpose: " +
+    "nothing in kiriya checks for updates by itself. A prerelease is never offered.",
+  "self-update.option.apply": "Install the newer version; without it nothing changes",
+  "self-update.current": "kiriya {version} is the newest version",
+  "self-update.available": "kiriya {latest} is out; this is {installed}",
+  "self-update.how-apply": "Run kiriya self-update --apply to install it.",
+  "self-update.how-elsewhere": "npm did not install this kiriya, so update it the way you installed it, to {latest}.",
+  "self-update.applied": "Updated to kiriya {version}",
+  "self-update.unreachable": "The registry could not be reached ({failure}), so the newest version is unknown",
+  "self-update.unreadable": "The registry answered {status}, which does not say which version is latest",
+  "self-update.not-npm": "kiriya {latest} is out, but npm did not install this one, so npm will not replace it",
+  "self-update.no-npm": "npm is not on PATH, so the newer version cannot be installed",
+  "self-update.failed": "npm could not install the newer version (exit code {code}): {detail}",
 
   "core.processes.failed": "{program} could not list processes (exit code {code}): {detail}",
   "core.processes.unreadable": "Processes could not be read from {source}: {detail}",

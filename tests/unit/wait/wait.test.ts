@@ -43,6 +43,10 @@ class ScriptedNetwork implements Network {
     return this.answer(this.requests, timeoutMs);
   }
 
+  fetchText(): Promise<never> {
+    return Promise.reject(new Error("wait does not read bodies"));
+  }
+
   lookup(): Promise<LookupOutcome> {
     return Promise.reject(new Error("not used"));
   }

@@ -14,6 +14,7 @@ import { netModule } from "../modules/net/net.module.js";
 import { openModule } from "../modules/open/open.module.js";
 import { portModule } from "../modules/port/port.module.js";
 import { procModule } from "../modules/proc/proc.module.js";
+import { selfUpdateModule } from "../modules/self-update/self-update.module.js";
 import { sysModule } from "../modules/sys/sys.module.js";
 import { waitModule } from "../modules/wait/wait.module.js";
 
@@ -36,4 +37,5 @@ export const BUILT_IN_MODULES: readonly KiriyaModule[] = [
   openModule,
   completionModule,
   waitModule,
+  selfUpdateModule,
 ];

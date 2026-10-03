@@ -21,6 +21,9 @@ export const doctorView: TextView<DoctorOutput> = (output, format) => {
     const status = format.text(message(STATUS_KEYS[check.status])).padEnd(statusWidth);
     return `  ${paint(check.status, status, format)}  ${check.name.padEnd(nameWidth)}  ${format.text(check.detail)}`;
   });
+  // doctor reaches no network, so it cannot know whether this version is behind. It says where
+  // to find out instead, because nothing else told anyone that a newer kiriya exists.
+  lines.push("", format.dim(format.text(message("doctor.newer"))));
   if (output.plugins.length > 0) {
     lines.push("", format.bold(format.text(message("doctor.plugins"))));
     const idWidth = Math.max(...output.plugins.map((plugin) => plugin.id.length));

@@ -25,6 +25,11 @@ import type { TextView } from "./view.js";
 export interface RuntimeInfo {
   readonly kiriyaVersion: string;
   readonly nodeVersion: string;
+  /**
+   * Where kiriya's own files are, so `self-update` can tell how it was installed and refuse
+   * to run a package manager that did not put it there.
+   */
+  readonly installDirectory: string;
 }
 
 /** The ports every module may use. A command's constructor takes only the ones it calls. */
