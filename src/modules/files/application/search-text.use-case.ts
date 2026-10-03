@@ -6,8 +6,8 @@ import { RawReader } from "../../../core/domain/input-schema.js";
 import type { FileContent } from "../../../core/domain/ports/file-content.js";
 import type { FileSystem } from "../../../core/domain/ports/file-system.js";
 import { parseExtensions } from "../domain/filters.js";
-import { escapeRegExp } from "../domain/text-encoding.js";
-import { readTextFile, selectFiles } from "./text-files.js";
+import { escapeRegExp } from "../../../core/domain/text-encoding.js";
+import { readTextFile, selectFiles } from "../../../core/application/text-files.js";
 
 /** Longer matching lines are cut here, so one minified file cannot flood the terminal. */
 const LINE_LIMIT = 240;

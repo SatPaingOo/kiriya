@@ -6,7 +6,7 @@ import {
   escapeRegExp,
   splitLines,
   TEXT_ENCODINGS,
-} from "../../../src/modules/files/domain/text-encoding.js";
+} from "../../../src/core/domain/text-encoding.js";
 
 const SAMPLE = "line one\r\nမင်္ဂလာပါ\n";
 

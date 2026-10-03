@@ -6,8 +6,8 @@ import { RawReader } from "../../../core/domain/input-schema.js";
 import type { FileContent } from "../../../core/domain/ports/file-content.js";
 import type { FileSystem } from "../../../core/domain/ports/file-system.js";
 import { formatBytes } from "../../../core/domain/values/bytes.js";
-import { MAX_TEXT_BYTES, splitLines, type TextEncoding } from "../domain/text-encoding.js";
-import { readTextFile } from "./text-files.js";
+import { MAX_TEXT_BYTES, splitLines, type TextEncoding } from "../../../core/domain/text-encoding.js";
+import { readTextFile } from "../../../core/application/text-files.js";
 
 export interface ReadInput {
   readonly path: string;

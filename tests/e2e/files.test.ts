@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { access, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { test, type TestContext } from "node:test";
-import { decodeText } from "../../src/modules/files/domain/text-encoding.js";
+import { decodeText } from "../../src/core/domain/text-encoding.js";
 import { runKiriya, type CliRun } from "../support/cli.js";
 import { layout, temporaryFolder } from "../support/fakes.js";
 

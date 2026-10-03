@@ -47,7 +47,9 @@ results with `isError: true`. [MCP server](../guides/mcp.md) describes it from a
 The layers exist once in `src/core` and again inside each module. Three more rules:
 
 - A module never imports another module, and core never imports a module. What two
-  modules share, such as walking a folder or expanding a glob, lives in core.
+  modules share, such as walking a folder, expanding a glob, or reading a file as text
+  with its encoding, lives in core. A second module needing something is the moment to
+  move it there, not the moment to copy it.
 - Only `src/main.ts` constructs adapters and imports the message catalog as a value.
 - There are no runtime dependencies: every import is a relative file or a `node:` built-in.
 
@@ -62,8 +64,9 @@ src/
 ├── i18n/locales/en.ts            the message catalog; MessageKey is derived from it
 ├── core/
 │   ├── domain/                   command, module, errors, message, input-schema, view, glob, names,
-│   │                             text-case, encodings, secrets, global-options, ports/, values/
-│   ├── application/              command-registry, plugin-loader, config-values, path-guard, walk, paths, safety, process-ending, text-input, root-scope
+│   │                             text-case, encodings, text-encoding, secrets, global-options, ports/, values/
+│   ├── application/              command-registry, plugin-loader, config-values, path-guard, walk, text-files,
+│   │                             paths, safety, process-ending, text-input, root-scope
 │   ├── infrastructure/
 │   │   ├── node/                 file system and content, hasher, compression, process runner,
 │   │   │                         config file and location, plugin source, environment, clock,
@@ -95,7 +98,8 @@ src/
 examples/plugins/hello/           a complete plugin in one file
 docs/                             user docs, module guides with generated references, guides, and these notes
 tests/
-├── unit/                         pure logic and use cases with fakes: core/, files/, archive/, git/, docker/, config/, doctor/, gen/, convert/, env/, sys/, net/, port/, proc/, clip/, open/, completion/
+├── unit/                         pure logic and use cases with fakes: one folder per module,
+│                                 plus core/, i18n/ and tools/
 ├── integration/                  use cases with real adapters: a real file system, real git repositories
 ├── contract/                     one suite per port, run against its adapters
 ├── e2e/                          the built CLI and its MCP server as black boxes
