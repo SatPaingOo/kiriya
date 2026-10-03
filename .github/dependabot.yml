@@ -20,8 +20,16 @@ updates:
       development:
         patterns: ["*"]
         update-types: [minor, patch]
-    # A major version of TypeScript or @types/node changes what compiles, so it arrives on
-    # its own and is read on its own.
+    # A major version of the compiler changes what compiles, so it arrives on its own and is
+    # read on its own.
+    ignore:
+      # @types/node must describe the oldest Node kiriya supports, which `engines` puts at
+      # 22.13. On a newer major, code calling an API that exists only in Node 24 or 26
+      # compiles and then fails on the Node 22 the readme promises, and CI catches that only
+      # where a test happens to exercise the path. This ignore comes off in the same change
+      # that raises the floor.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
