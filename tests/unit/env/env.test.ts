@@ -59,7 +59,7 @@ test("env show lists variables by name and hides values that look secret unless 
   const environment = new FakeEnvironment("linux", "/home/dev", {
     PATH: "/usr/bin",
     GITHUB_TOKEN: "ghp_example",
-    DATABASE_URL: "postgres://app:example@db/app",
+    DATABASE_URL: "postgres://app:example@db/app", // kiriya:allow-secret
     home: "/home/dev",
     EDITOR: "vim",
   });

@@ -5,7 +5,7 @@ import { UsageError } from "../../../core/domain/errors.js";
 import { RawReader } from "../../../core/domain/input-schema.js";
 import type { FileContent } from "../../../core/domain/ports/file-content.js";
 import type { FileSystem } from "../../../core/domain/ports/file-system.js";
-import { parseExtensions } from "../domain/filters.js";
+import { parseExtensions } from "../../../core/domain/filters.js";
 import { escapeRegExp } from "../../../core/domain/text-encoding.js";
 import { readTextFile, selectFiles } from "../../../core/application/text-files.js";
 
