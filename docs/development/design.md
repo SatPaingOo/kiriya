@@ -49,9 +49,17 @@ platform: its PowerShell-based operations took about 0.6 s warm and up to 5 s on
 call, against under 100 ms on Linux and macOS. The results are in `spike/README.md` on the
 `spike/phase-0` branch.
 
-Still unverified, because CI cannot reach them ([research](research.md#7-os-adapters)): trash
-on a Mac without Full Disk Access, Finder's Put Back, and a real AppLocker or WDAC policy,
-which blocks the Windows trash path.
+Still unverified, because CI cannot reach them ([research](research.md#7-os-adapters)), and
+worth stating as what each would take rather than as a list that looks forgotten:
+
+| Unverified | What verifying it needs |
+|---|---|
+| The Windows trash under a real AppLocker or WDAC policy | A machine with such a policy installed. `__PSLockdownPolicy=4` does not do it — PowerShell still reports `FullLanguage` and `Add-Type` still works, so that shortcut proves nothing. **The handling is tested** by `tests/unit/core/windows-trash-result.test.ts`, which feeds `readTrashResult` the output such a policy produces; only the trigger is unverified. |
+| Trash on a Mac without Full Disk Access, and Finder's Put Back | A real Mac with that permission withheld. GitHub's macOS image pre-grants it, so a runner cannot show the refusal. |
+| The `.mcpb` bundle opening in Claude's desktop app | A desktop with that app. The bundle is built and attached to every release and its manifest is tested, but nobody has yet opened one. |
+
+A claim nothing has exercised is worth less than the sentence describing it, so each of these
+says plainly which part is tested and which part is not.
 
 ## Product rules
 
@@ -453,7 +461,7 @@ A change is done when all of these hold:
 
 | Stage | Work | State |
 |---|---|---|
-| Spike | Port lookup, process lookup, clipboard and trash, run in CI on Windows, Linux and macOS | CI part done 2026-09-13. Manual checks remain: trash on a Mac without Full Disk Access with Finder's Put Back, and Windows under Constrained Language Mode or AppLocker |
+| Spike | Port lookup, process lookup, clipboard and trash, run in CI on Windows, Linux and macOS | CI part done 2026-09-13. Three checks still need a machine CI has not got; [The riskiest assumption](#the-riskiest-assumption) says which part of each is tested and which is not |
 | Core and files | The kernel, `files` and `archive` on async ports, contract and boundary tests, CI matrix | Done 2026-09-13 |
 | Prototype modules | `git`, `docker`, `config`, and the plugin loader with an example plugin | Done 2026-09-13 |
 | v1 modules | `port`, `proc`, `env`, `sys`, `net`, `convert`, `gen`, `clip`, `open`, `doctor`, `completion`; licence, changelog, security policy, code of conduct, release workflow | Done 2026-09-14 |
