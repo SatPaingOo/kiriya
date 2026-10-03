@@ -1,9 +1,9 @@
 import path from "node:path";
-import { walk } from "../../../core/application/walk.js";
-import { KiriyaError } from "../../../core/domain/errors.js";
-import { globToRegExp } from "../../../core/domain/glob.js";
-import type { FileContent } from "../../../core/domain/ports/file-content.js";
-import type { FileSystem } from "../../../core/domain/ports/file-system.js";
+import { walk } from "./walk.js";
+import { KiriyaError } from "../domain/errors.js";
+import { globToRegExp } from "../domain/glob.js";
+import type { FileContent } from "../domain/ports/file-content.js";
+import type { FileSystem } from "../domain/ports/file-system.js";
 import { decodeText, MAX_TEXT_BYTES, type TextFile } from "../domain/text-encoding.js";
 
 /** A text file, or null when it is binary, larger than MAX_TEXT_BYTES, or unreadable. */

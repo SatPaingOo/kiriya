@@ -9,8 +9,8 @@ import { byCodePoint } from "../../../core/domain/names.js";
 import type { FileContent } from "../../../core/domain/ports/file-content.js";
 import type { FileSystem } from "../../../core/domain/ports/file-system.js";
 import type { Hasher } from "../../../core/domain/ports/hasher.js";
-import type { TextEncoding } from "../domain/text-encoding.js";
-import { readTextFile } from "./text-files.js";
+import type { TextEncoding } from "../../../core/domain/text-encoding.js";
+import { readTextFile } from "../../../core/application/text-files.js";
 
 export interface CompareInput {
   readonly a: string;

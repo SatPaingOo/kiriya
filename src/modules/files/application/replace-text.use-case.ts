@@ -8,8 +8,8 @@ import { message, type Message } from "../../../core/domain/message.js";
 import type { FileContent } from "../../../core/domain/ports/file-content.js";
 import type { FileSystem } from "../../../core/domain/ports/file-system.js";
 import { parseExtensions } from "../domain/filters.js";
-import { encodeText, escapeRegExp, type TextFile } from "../domain/text-encoding.js";
-import { readTextFile, selectFiles } from "./text-files.js";
+import { encodeText, escapeRegExp, type TextFile } from "../../../core/domain/text-encoding.js";
+import { readTextFile, selectFiles } from "../../../core/application/text-files.js";
 
 /** Changed lines shown per file. */
 const SAMPLE_LINES = 3;
