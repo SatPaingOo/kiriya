@@ -6,7 +6,7 @@ import { RawReader } from "../../../core/domain/input-schema.js";
 import type { Clock } from "../../../core/domain/ports/clock.js";
 import type { EntryKind, FileSystem } from "../../../core/domain/ports/file-system.js";
 import { globToRegExp } from "../../../core/domain/glob.js";
-import { parseExtensions } from "../domain/filters.js";
+import { parseExtensions } from "../../../core/domain/filters.js";
 import { parseSize, parseTime } from "../domain/values.js";
 import { walk } from "../../../core/application/walk.js";
 

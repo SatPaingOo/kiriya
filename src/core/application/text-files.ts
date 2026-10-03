@@ -27,6 +27,12 @@ export interface FileSelection {
   /** Lower case with dots; empty means every extension. */
   readonly extensions: readonly string[];
   readonly name: string | undefined;
+  /**
+   * Folder names never entered, even with `all`. A command that wants hidden files but not
+   * dependency folders — `secrets scan`, where `.env` is the point and `node_modules` is not —
+   * passes `all` with these.
+   */
+  readonly skipDirectories?: ReadonlySet<string>;
 }
 
 /**
@@ -52,7 +58,11 @@ export async function selectFiles(
     if (stat?.kind === "file") {
       files.push(target);
     } else if (stat?.kind === "directory") {
-      for await (const entry of walk(fileSystem, target, { all: selection.all })) {
+      const options =
+        selection.skipDirectories === undefined
+          ? { all: selection.all }
+          : { all: selection.all, skipDirectories: selection.skipDirectories };
+      for await (const entry of walk(fileSystem, target, options)) {
         if (entry.kind === "file" && keep(entry.name, entry.rel)) files.push(entry.path);
       }
     }

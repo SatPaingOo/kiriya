@@ -35,11 +35,11 @@ test("ordinary names, including the working folder's PWD, are not", () => {
 test("values that carry a secret are recognised whatever their name", () => {
   const secret = [
     "Server=db;User Id=app;Password=example",
-    "postgres://app:example@db:5432/app",
+    "postgres://app:example@db:5432/app", // kiriya:allow-secret
     `ghp_${"a".repeat(36)}`,
     `AKIA${"A".repeat(16)}`,
-    "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0MiJ9.signature",
-    "-----BEGIN OPENSSH PRIVATE KEY-----",
+    "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0MiJ9.signature", // kiriya:allow-secret
+    "-----BEGIN OPENSSH PRIVATE KEY-----", // kiriya:allow-secret
   ];
   for (const value of secret) assert.equal(looksSecret(value), true, value);
   const plain = ["https://example.com/path", "https://user@example.com", "kiriya-plugin-desk-tools", "/usr/local/bin"];

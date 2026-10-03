@@ -85,6 +85,7 @@ test("list shows every known setting, set or not, and marks settings kiriya does
 
 test("secrets are recognised in the common spellings, and plain values are not", () => {
   for (const secret of ["Password=x", "pwd: x", "api_key=x", "TOKEN = x", "-----BEGIN RSA PRIVATE KEY-----"]) {
+    // kiriya:allow-secret
     assert.equal(looksSecret(secret), true, secret);
   }
   for (const plain of ["kiriya-plugin-example", "./team/plugin", "password-manager-plugin"]) {

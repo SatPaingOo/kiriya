@@ -24,6 +24,7 @@ commands themselves so it always matches the CLI.
 | [`open`](open.md) | Open a file or folder in its default application, or a web address in the browser. | `kiriya open` |
 | [`port`](port.md) | See which process listens on a TCP port, end it, or find a free port, the same on every OS. | `free` `kill` `who` |
 | [`proc`](proc.md) | List, find and end processes, and show them as a tree, the same on every OS. | `find` `kill` `list` `tree` |
+| [`secrets`](secrets.md) | Find secrets committed into a folder's files: tokens, private keys and passwords in plain sight. | `scan` |
 | [`self-update`](self-update.md) | Ask the registry whether a newer kiriya exists, and install it with --apply. | `kiriya self-update` |
 | [`sys`](sys.md) | This machine and the developer tools on it, described the same way on every OS. | `info` `report` `tools` |
 | [`wait`](wait.md) | Wait until a port listens, a web address answers or a file appears, the same way on every OS. | `file` `port` `url` |

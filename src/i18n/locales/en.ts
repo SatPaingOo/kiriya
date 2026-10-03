@@ -746,6 +746,28 @@ export const en = {
   "wait.file.timed-out": "{path} did not appear within {seconds} s",
   "wait.file.still-there": "{path} was still there after {seconds} s",
 
+  "secrets.summary": "Find secrets committed into a folder's files: tokens, private keys and passwords in plain sight",
+  "secrets.about":
+    "Reads the files under a folder and reports anything that looks like a secret: a token " +
+    "whose issuer gives it a recognisable prefix, a private key, a password in a URL, a JWT, " +
+    "or a line that assigns one. It uses the same judgement as the rest of kiriya, so what " +
+    "env show hides and config set refuses is what this finds. Nothing is sent anywhere and " +
+    "nothing changes. A finding never carries the secret itself, only enough to recognise it, " +
+    "because a report that quoted it would copy it into scrollback and CI logs. Exits 1 when " +
+    "anything is found, so a hook or a CI step needs no output parsing. A line saying " +
+    "kiriya:allow-secret, on it or above it, declares that one deliberate.",
+  "secrets.scan.summary": "Scan a folder's files for tokens, private keys and passwords, without printing them",
+  "secrets.scan.arg.paths": "Folders or files to scan; the current folder by default",
+  "secrets.scan.option.all":
+    "Also look inside dependency folders such as node_modules; hidden files are read either way",
+  "secrets.scan.option.limit": "Stop after this many findings; 500 by default",
+  "secrets.scan.clean": "No secrets found in {checked} file(s)",
+  "secrets.scan.counted": "{count} finding(s) in {checked} file(s)",
+  "secrets.scan.found": "{count} possible secret(s) found",
+  "secrets.scan.allowed": "{count} marked deliberate with kiriya:allow-secret",
+  "secrets.scan.truncated": "The list stopped at --limit; there may be more.",
+  "secrets.scan.how-allow": "A line with kiriya:allow-secret on it, or above it, is left alone.",
+
   "self-update.summary": "Ask the registry whether a newer kiriya exists, and install it with --apply",
   "self-update.about":
     "Asks npm's registry which version it serves as latest and compares it with this one. " +

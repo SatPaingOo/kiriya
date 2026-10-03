@@ -7,6 +7,23 @@ output shapes are kiriya's public API.
 
 ## [Unreleased]
 
+### Added
+
+- `secrets scan` finds secrets committed into a folder's files: a token whose issuer gives it
+  a recognisable prefix, a PEM private key, a password inside a URL, or a JWT. It exits 1 when
+  anything is found, so a git hook or a CI step needs no output parsing. **A finding never
+  carries the secret** — `ghp_****`, `postgres://me:****@` — because a report that quoted the
+  value would copy it into scrollback and CI logs. Unlike every other command it reads hidden
+  files by default, since `.env` and `.npmrc` are where secrets sit, and it skips dependency
+  folders instead; `--all` scans those too. A line saying `kiriya:allow-secret`, on it or above
+  it, declares one deliberate, which is how test fixtures and documentation stay quiet.
+  Over MCP it needs `mcp.allowWrite`, as `clip paste` does.
+
+  It deliberately does not flag a line that merely assigns something named like a secret.
+  That rule serves `env show`, where the name and the value are already separate, and over
+  source code it is useless: against kiriya itself it matched 42 lines and every one was
+  syntax, such as `if (token === "--")` in the argv parser.
+
 ## [0.1.3] - 2026-10-03
 
 ### Added
