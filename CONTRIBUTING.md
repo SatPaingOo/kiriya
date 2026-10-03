@@ -64,6 +64,9 @@ them. No test reads your own kiriya configuration: the end-to-end runner points
   published. kiriya ships no runtime dependency, so an advisory in one of them cannot reach
   anyone who installed it — which is a reason to read such a pull request calmly, not a
   reason to leave it.
+- `@types/node` stays on the major matching the oldest Node `engines` supports. On a newer
+  one, code calling an API that arrived after that floor compiles and then fails on the Node
+  the readme promises. Raising the floor and raising these types is one change, not two.
 - Docs change with behaviour: the module's guide in `docs/modules/`, and `npm run docs` for its
   reference. `docs/development/architecture.md` changes with the structure, and
   `docs/development/design.md` with a decision.
