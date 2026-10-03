@@ -57,6 +57,10 @@ class FakeNetwork implements Network {
     return Promise.resolve({ ok: true, status: 200, ms: 3 });
   }
 
+  fetchText(): Promise<never> {
+    return Promise.reject(new Error("net does not read bodies"));
+  }
+
   lookup(name: string): Promise<LookupOutcome> {
     this.calls.push(`lookup ${name}`);
     return Promise.resolve(this.found);

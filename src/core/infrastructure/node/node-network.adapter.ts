@@ -9,6 +9,7 @@ import type {
   ConnectOutcome,
   DnsRecord,
   DnsRecordType,
+  FetchOutcome,
   HttpFailure,
   HttpOutcome,
   LookupFailure,
@@ -150,6 +151,63 @@ export class NodeNetworkAdapter implements Network {
       outgoing.on("error", (error) => {
         const code = errorCode(error);
         settle({ ok: false, failure: httpFailure(code), code, ms: elapsed() });
+      });
+      outgoing.end();
+    });
+  }
+
+  fetchText(url: string, timeoutMs: number, maxBytes: number, signal: AbortSignal): Promise<FetchOutcome> {
+    if (signal.aborted) return Promise.reject(new InterruptedError("core.error.interrupted"));
+    return new Promise((resolve, reject) => {
+      const started = performance.now();
+      const elapsed = (): number => Math.round(performance.now() - started);
+      const target = new URL(url);
+      const send = target.protocol === "https:" ? httpsRequest : httpRequest;
+      const outgoing = send(target, {
+        method: "GET",
+        headers: { "user-agent": "kiriya", accept: "application/json" },
+      });
+      let settled = false;
+      const settle = (outcome: FetchOutcome | null): void => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        signal.removeEventListener("abort", onAbort);
+        outgoing.destroy();
+        if (outcome === null) reject(new InterruptedError("core.error.interrupted"));
+        else resolve(outcome);
+      };
+      const onAbort = (): void => settle(null);
+      const timer = setTimeout(
+        () => settle({ ok: false, failure: "timeout", status: null, code: null, ms: elapsed() }),
+        timeoutMs,
+      );
+      signal.addEventListener("abort", onAbort, { once: true });
+      outgoing.once("response", (response) => {
+        const status = response.statusCode ?? 0;
+        const chunks: Buffer[] = [];
+        let size = 0;
+        response.on("data", (chunk: Buffer) => {
+          size += chunk.length;
+          // Stop at the limit instead of holding whatever the other end decides to send.
+          if (size > maxBytes) {
+            response.destroy();
+            settle({ ok: false, failure: "too-large", status, code: null, ms: elapsed() });
+            return;
+          }
+          chunks.push(chunk);
+        });
+        response.once("end", () =>
+          settle({ ok: true, status, body: Buffer.concat(chunks).toString("utf8"), ms: elapsed() }),
+        );
+        response.once("error", (error) => {
+          const code = errorCode(error);
+          settle({ ok: false, failure: httpFailure(code), status, code, ms: elapsed() });
+        });
+      });
+      outgoing.on("error", (error) => {
+        const code = errorCode(error);
+        settle({ ok: false, failure: httpFailure(code), status: null, code, ms: elapsed() });
       });
       outgoing.end();
     });

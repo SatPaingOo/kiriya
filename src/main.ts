@@ -5,6 +5,7 @@
  */
 import { readFileSync } from "node:fs";
 import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { BUILT_IN_MODULES } from "./config/modules.js";
 import { CommandRegistry } from "./core/application/command-registry.js";
 import { pluginEntries } from "./core/application/config-values.js";
@@ -140,7 +141,12 @@ const ports: CorePorts = {
   protectedPaths: new PathGuard(environment),
   config,
   plugins,
-  runtime: { kiriyaVersion: version, nodeVersion: process.version },
+  runtime: {
+    kiriyaVersion: version,
+    nodeVersion: process.version,
+    // dist/src/main.js, so two levels up is the folder holding package.json.
+    installDirectory: fileURLToPath(new URL("../../", import.meta.url)),
+  },
 };
 
 for (const module of BUILT_IN_MODULES) registry.register(module, ports);

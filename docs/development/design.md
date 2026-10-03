@@ -33,7 +33,7 @@ already uses, with the same safety model for people and agents.
 | **Zero runtime dependencies** | Argument parsing, input schemas, archives and the MCP protocol are written in-house. The supply chain of a tool that deletes files is Node.js itself. Development dependencies are allowed. |
 | **Identical behaviour on three operating systems** | No shell. Every OS difference sits behind a port with one adapter per OS. Every test runs on all three in CI. |
 | **Safe by default** | Preview before bulk changes, trash instead of delete, typed confirmation for anything permanent, protected paths. |
-| **Offline** | No network access except in commands whose purpose is the network. No telemetry. |
+| **Offline** | No network access except in commands whose purpose is the network. Nothing checks for updates by itself: `self-update` asks the registry only when it is run, and `doctor` names it rather than asking. No telemetry. |
 | **A small maintainer team** | Rules are enforced by tests and CI, not by reviewers remembering them. |
 
 ## The riskiest assumption
@@ -90,7 +90,6 @@ Each item needs an issue with a design before work starts.
 | `files diff` | Line diff of two text files |
 | `files tail` | Follow a growing file |
 | `task` | List and run scripts from `package.json`, `Makefile`, `justfile`, `*.csproj` and `pyproject.toml` through one command |
-| `self-update` | Check the registry for a newer version and update |
 
 ### Candidates from research
 

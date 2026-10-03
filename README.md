@@ -87,6 +87,7 @@ option, what each does, and whether it can be undone.
 | [`open`](docs/modules/open.md) | Open a file or folder in its default application, or a web address in the browser. |
 | [`port`](docs/modules/port.md) | See which process listens on a TCP port, end it, or find a free port, the same on every OS. |
 | [`proc`](docs/modules/proc.md) | List, find and end processes, and show them as a tree, the same on every OS. |
+| [`self-update`](docs/modules/self-update.md) | Ask the registry whether a newer kiriya exists, and install it with --apply. |
 | [`sys`](docs/modules/sys.md) | This machine and the developer tools on it, described the same way on every OS. |
 | [`wait`](docs/modules/wait.md) | Wait until a port listens, a web address answers or a file appears, the same way on every OS. |
 <!-- /kiriya:modules -->
