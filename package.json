@@ -1,6 +1,6 @@
 {
   "name": "kiriya",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "One command-line toolbox for everyday developer work that behaves the same on Windows, Linux and macOS.",
   "mcpName": "io.github.SatPaingOo/kiriya",
   "license": "MIT",
