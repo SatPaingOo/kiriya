@@ -58,7 +58,12 @@ them. No test reads your own kiriya configuration: the end-to-end runner points
   folders, a contract test for a new adapter, an end-to-end test for a CLI change.
 - Every refusal has a negative test: protected paths, declined confirmations, conflicts.
 - Every new user-facing string is a key in `src/i18n/locales/en.ts`.
-- No new dependency, runtime or development, without agreement in an issue first.
+- No new dependency, runtime or development, without agreement in an issue first. Dependabot
+  keeps the ones already agreed up to date: minor and patch moves arrive as one pull request
+  a week, a major version of its own, and anything with an advisory as soon as it is
+  published. kiriya ships no runtime dependency, so an advisory in one of them cannot reach
+  anyone who installed it — which is a reason to read such a pull request calmly, not a
+  reason to leave it.
 - Docs change with behaviour: the module's guide in `docs/modules/`, and `npm run docs` for its
   reference. `docs/development/architecture.md` changes with the structure, and
   `docs/development/design.md` with a decision.
