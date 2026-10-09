@@ -78,7 +78,10 @@ kiriya files compare dist backup/dist
   publishes, it exits with 1 when the file does not match.
 - `compare` compares two files, or two folders, by content. For files it shows the first
   line that differs; for folders, the entries only on one side and those that differ. It
-  exits with 1 when they differ.
+  exits with 1 when they differ. With `--json`, `kind` is `files` or `folders` to say which
+  it did, and for two files `text.sameText` is the useful one: it is true when the lines
+  themselves match and only the line endings or the encoding differ, which is the difference
+  a diff tool will not show you.
 
 ## Create, copy, move and rename
 

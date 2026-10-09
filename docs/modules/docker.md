@@ -21,6 +21,10 @@ kiriya docker ps --projects
 `ps` lists the project's containers with their state and published ports, such as
 `localhost:8080 -> api:80`. `--projects` lists every compose project on the machine instead.
 
+The two answer in different shapes, and `--json` says which: without `--projects`, `mode` is
+`project` and `containers` holds this project's; with it, `mode` is `projects` and `projects`
+holds one entry per project on the machine.
+
 ### Start, stop and rebuild
 
 ```bash

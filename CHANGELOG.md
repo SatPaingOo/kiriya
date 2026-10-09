@@ -37,6 +37,14 @@ output shapes are kiriya's public API.
   into one record would have claimed every field is always present, which is the one thing a
   schema must not do now that the MCP SDK checks real output against it.
 
+  Their guides also say the thing a generated table cannot: **which situation gives which
+  shape.** `--list` answers with `mode` as `list` and extracting with `extract`; `docker ps`
+  without `--projects` is `mode` `project` and with it `projects`; `files compare` sets `kind`
+  to `files` or `folders` by what it was given. `archive.md` adds that a non-empty `unsafe`
+  means nothing was extracted at all, which is what a script should read first, and `files.md`
+  that `text.sameText` is true when only the line endings or the encoding differ — the
+  difference a diff tool will not show you.
+
 ## [0.2.1] - 2026-10-10
 
 ### Added
