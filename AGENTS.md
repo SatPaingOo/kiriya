@@ -20,6 +20,7 @@ modules, with no runtime dependencies.
 | Lint, format, types | `npm run lint`, `npm run format:check`, `npm run typecheck` |
 | Try the CLI | `node dist/src/main.js files find --ext .ts` |
 | Write the generated parts of the docs | `npm run docs` |
+| Write the output shapes, from the output types | `npm run shapes` (`npm run docs` runs it too) |
 
 A change is done only when all of these pass. Report failures as they are; do not skip,
 weaken or delete a test to make it pass.
@@ -37,7 +38,9 @@ weaken or delete a test to make it pass.
    `src/i18n/locales/en.ts`. Pass `message(key, params)`, never finished text, because
    JSON output and future translations depend on keys.
 5. **Every command works with `--json`.** Return data in the `CommandResult`; only
-   presentation writes to stdout and stderr.
+   presentation writes to stdout and stderr. The output type's shape is public API: changing
+   one means running `npm run shapes`, and its fields' JSDoc is what readers and AI agents
+   are shown, so write it for them.
 6. **Safety.** Declare `spec.safety` honestly. `destroy` needs a typed confirmation, and
    `--yes` never counts for it. Check targets of a delete or move with `ProtectedPaths`.
    Never replace something that exists without an explicit flag.

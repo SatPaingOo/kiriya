@@ -1,8 +1,10 @@
+import { OUTPUT_SHAPES } from "../../../config/output-shapes.js";
 import type { CommandSpec } from "../../domain/command.js";
 import { UsageError } from "../../domain/errors.js";
 import type { InputSchema, OptionSpec, RawInput } from "../../domain/input-schema.js";
 import { message } from "../../domain/message.js";
 import type { Translator } from "../i18n/translator.js";
+import { dataSchema } from "./output-schema.js";
 import { isObject, type JsonObject } from "./protocol.js";
 
 export type ToolAnnotations = {
@@ -43,6 +45,17 @@ export const OUTPUT_SCHEMA: JsonObject = {
   },
   required: ["ok"],
 };
+
+/**
+ * The same document, with `data` described for the command that returns it. A plugin's command,
+ * or any other the catalog does not hold, keeps `data` unspecified rather than claiming a shape.
+ */
+export function outputSchemaOf(id: string): JsonObject {
+  const shape = OUTPUT_SHAPES.commands[id];
+  if (shape === undefined) return OUTPUT_SCHEMA;
+  const properties = isObject(OUTPUT_SCHEMA["properties"]) ? OUTPUT_SCHEMA["properties"] : {};
+  return { ...OUTPUT_SCHEMA, properties: { ...properties, data: dataSchema(OUTPUT_SHAPES, shape) } };
+}
 
 /** What decides which options a tool offers besides the ordinary ones. */
 export type ToolAccess = {
@@ -128,7 +141,7 @@ export function toolDefinition(
     name: spec.id,
     description: translator.text(message(spec.summary)),
     inputSchema: inputSchemaOf(spec.id, spec.input, translator, toolAccess(spec, allowWrite)),
-    outputSchema: OUTPUT_SCHEMA,
+    outputSchema: outputSchemaOf(spec.id),
     annotations: annotationsOf(spec),
   };
 }

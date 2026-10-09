@@ -38,12 +38,13 @@
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
     "build": "npm run clean && tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
-    "docs": "npm run build && node dist/tools/docs.js",
+    "docs": "npm run build && node dist/tools/shapes.js && node dist/tools/docs.js",
     "test": "npm run build && node dist/tools/check-boundaries.js && node --test \"dist/tests/**/*.test.js\"",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "shapes": "npm run build && node dist/tools/shapes.js"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

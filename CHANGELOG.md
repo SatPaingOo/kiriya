@@ -7,6 +7,22 @@ output shapes are kiriya's public API.
 
 ## [Unreleased]
 
+### Added
+
+- Every MCP tool now declares the shape of the `data` it returns, instead of all 76 sharing
+  one schema that said nothing about it. An agent can read that `port who` answers with
+  `listeners`, each carrying an `address`, a `port`, a `pid` that may be null and a `name`
+  that may be null, and **why** each may be null — without calling the tool to find out.
+
+  Nothing is written down twice to make this work. `npm run shapes` reads each command's
+  TypeScript output type and writes the catalog, so the type stays the only source and a shape
+  cannot drift from the code; the JSDoc already on those fields is what an agent is shown. CI
+  fails when the catalog is stale, and the build fails when a command has no shape at all, so
+  it cannot quietly fall behind. `docs/development/architecture.md` describes the mechanism.
+
+  The shape of `data` was already declared to be kiriya's public API at the top of this file.
+  Until now it was written down nowhere, so nothing could have noticed it changing.
+
 ## [0.2.1] - 2026-10-10
 
 ### Added
