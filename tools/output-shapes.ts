@@ -148,7 +148,12 @@ export function extractShapes(root: string, commandIds: readonly string[]): Extr
       const of = choices.flatMap((part) => part.of);
       return of.length > MAX_CHOICES ? { kind: "string", ...note } : { kind: "choice", of, ...note };
     }
-    // Anything else — a union of records, say — is more than a shape can say honestly.
+    // A union of records is the shape of a command that answers differently in two modes,
+    // such as `archive unzip` listing or extracting. Each is kept whole, because merging them
+    // would claim every field is always present.
+    if (parts.every((part) => part.kind === "record" || part.kind === "ref")) {
+      return { kind: "variants", of: parts, ...note };
+    }
     return { kind: "unknown", ...note };
   }
 
@@ -230,6 +235,7 @@ export function extractShapes(root: string, commandIds: readonly string[]): Extr
 function danglingRefs(shape: Shape, records: Readonly<Record<string, Shape>>): readonly string[] {
   if (shape.kind === "ref") return records[shape.named] === undefined ? [shape.named] : [];
   if (shape.kind === "list") return danglingRefs(shape.of, records);
+  if (shape.kind === "variants") return shape.of.flatMap((part) => danglingRefs(part, records));
   if (shape.kind === "record") {
     return Object.values(shape.fields).flatMap((field) => danglingRefs(field, records));
   }

@@ -131,6 +131,21 @@ kiriya secrets scan [paths...] [options]
 | `--all` | Also look inside dependency folders such as node_modules; hidden files are read either way. |
 | `--limit <n>` | Stop after this many findings; 500 by default. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `findings` | list |  |
+| `findings[].path` | string |  |
+| `findings[].line` | number |  |
+| `findings[].column` | number |  |
+| `findings[].kind` | one of `private-key`, `url-credentials`, `jwt`, `token` |  |
+| `findings[].sample` | string | Enough to tell whose secret it is, never enough to use it. |
+| `checked` | number |  |
+| `skipped` | number | Binary files and files over the text limit. |
+| `allowed` | number | Secrets a `kiriya:allow-secret` marker declared deliberate. |
+| `truncated` | boolean | Whether `--limit` cut the list short. |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents when `mcp.allowWrite` is `true`
 

@@ -31,7 +31,13 @@ export type Shape =
    */
   | (ShapeNote & { readonly kind: "ref"; readonly named: string })
   /** A record written inline, which is every object type without a name of its own. */
-  | (ShapeNote & { readonly kind: "record"; readonly fields: ShapeFields });
+  | (ShapeNote & { readonly kind: "record"; readonly fields: ShapeFields })
+  /**
+   * One of several records, from a union such as `{ mode: "list"; … } | { mode: "extract"; … }`.
+   * Merging them instead would claim every field is always there, which is the one thing a
+   * schema must not say now that the MCP SDK checks real output against it.
+   */
+  | (ShapeNote & { readonly kind: "variants"; readonly of: readonly Shape[] });
 
 export type ShapeFields = Readonly<Record<string, Shape>>;
 

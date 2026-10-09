@@ -87,6 +87,12 @@ kiriya port free [options]
 |---|---|
 | `--from <port>` | The first port to try; 3000 by default. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `port` | number |  |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
 
@@ -113,6 +119,16 @@ kiriya port kill <port> [options]
 | `--force` | End them at once instead of asking them to exit. |
 | `--confirm <port>` | For scripts: the port number, as the prompt would ask. Only at a terminal. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `port` | number |  |
+| `processes` | list |  |
+| `processes[].pid` | number |  |
+| `processes[].name` | string or null |  |
+| `processes[].outcome` | one of `failed`, `not-found`, `ended`, `still-running`, `denied` |  |
+
 - **Safety:** `destroy`, can do work that cannot be undone, and asks for a typed confirmation first
 - **MCP:** offered to AI agents with elicitation when `mcp.allowDestroy` is `true`
 
@@ -132,6 +148,17 @@ kiriya port who [port]
 | Argument | Description |
 |---|---|
 | `port` | The port; every listening port when left out. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `port` | number or null |  |
+| `listeners` | list |  |
+| `listeners[].name` | string or null | The owner's program name; null when the owner is hidden or ended meanwhile. |
+| `listeners[].address` | string | The local address, such as 0.0.0.0, ::, 127.0.0.1 or ::1. |
+| `listeners[].port` | number |  |
+| `listeners[].pid` | number or null | null when the owner is hidden, as another user's process is on Linux and macOS without elevation. |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default

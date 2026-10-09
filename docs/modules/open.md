@@ -53,6 +53,13 @@ kiriya open <target>
 |---|---|
 | `target` | A file, a folder, or an http, https or mailto address. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `target` | string | The web address, or the absolute path. |
+| `kind` | one of `file`, `folder`, `url` |  |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents when `mcp.allowWrite` is `true`
 

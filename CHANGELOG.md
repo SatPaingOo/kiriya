@@ -23,6 +23,20 @@ output shapes are kiriya's public API.
   The shape of `data` was already declared to be kiriya's public API at the top of this file.
   Until now it was written down nowhere, so nothing could have noticed it changing.
 
+- Every command's guide now lists what its own `data` holds, under **With `--json`, `data`
+  holds**, from the same types the MCP schemas come from. A list is marked `[]`, so
+  `listeners[].pid` reads the way `convert json --get data.listeners.0.pid` is written;
+  `docs/usage.md` says so and links the two. 840 lines of reference across the 19 guides, and
+  CI fails when any of it stops matching the code.
+
+- A command that answers in more than one shape now says so rather than saying nothing.
+  `archive unzip` lists or extracts, `archive untar` likewise, `docker ps` reads one project
+  or every project, and `files compare` compares two files or two folders. Each declared the
+  one schema that described nothing; now each shape is kept whole, as `oneOf` for an agent and
+  as a table per shape in the guide, labelled by the field that tells them apart. Merging them
+  into one record would have claimed every field is always present, which is the one thing a
+  schema must not do now that the MCP SDK checks real output against it.
+
 ## [0.2.1] - 2026-10-10
 
 ### Added

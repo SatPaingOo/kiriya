@@ -33,6 +33,11 @@ function schemaOf(shapes: OutputShapes, shape: Shape, seen: readonly string[]): 
       return { type: typeOf("array", nullable), items: schemaOf(shapes, shape.of, seen), ...note };
     case "record":
       return { ...objectOf(shapes, shape.fields, seen, nullable), ...note };
+    // oneOf, not a merge: a client that validates must be able to tell which answer it got.
+    case "variants": {
+      const of = shape.of.map((part) => schemaOf(shapes, part, seen));
+      return { oneOf: nullable ? [...of, { type: "null" }] : of, ...note };
+    }
     case "ref": {
       const record = shapes.records[shape.named];
       if (record === undefined || seen.includes(shape.named)) {

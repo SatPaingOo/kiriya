@@ -97,6 +97,16 @@ kiriya self-update [options]
 |---|---|
 | `--apply` | Install the newer version; without it nothing changes. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `installed` | string |  |
+| `latest` | string or null | What the registry calls latest; null when it could not be read. |
+| `newer` | boolean |  |
+| `source` | one of `npm`, `elsewhere` |  |
+| `applied` | boolean | Whether an update was actually run, which only `--apply` does. |
+
 - **Safety:** `write`, can change things, in ways that can be undone
 - **Network:** uses the network
 - **MCP:** never offered to AI agents, because it is only for a person at a terminal

@@ -153,6 +153,12 @@ kiriya convert base64 [value] [options]
 | `--file <path>` | Read a file's exact bytes instead. |
 | `--url` | Use the URL-safe alphabet, without padding. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `output` | string |  |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
 
@@ -179,6 +185,12 @@ kiriya convert case [value] [options]
 | `--to <kebab\|snake\|camel\|pascal\|constant\|title\|lower\|upper>` | The case to change to. |
 | `--file <path>` | Read a file's exact bytes instead. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `output` | string |  |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
 
@@ -203,6 +215,12 @@ kiriya convert hex [value] [options]
 |---|---|
 | `-d, --decode` | Decode instead of encode. |
 | `--file <path>` | Read a file's exact bytes instead. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `output` | string |  |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
@@ -231,6 +249,18 @@ kiriya convert json [value] [options]
 | `--get <path>` | Print what is at a dotted path, such as data.listeners.0.pid. |
 | `--file <path>` | Read a file's exact bytes instead. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `valid` | boolean |  |
+| `output` | string or null | The formatted or minified JSON, or what --get asked for; null with --check, when the JSON is invalid, and when the path was not there. |
+| `line` | number or null | Where the first error is, from 1; null when it is valid. |
+| `column` | number or null |  |
+| `path` | string or null | The path --get asked for; null when none was. |
+| `found` | boolean or null | Whether that path was there; null when none was asked for. |
+| `value` | anything | What was at the path, as JSON rather than as text; null when there was nothing to take. |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
 
@@ -258,6 +288,17 @@ kiriya convert jwt [value] [options]
 |---|---|
 | `--file <path>` | Read a file's exact bytes instead. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `header` | anything |  |
+| `payload` | anything |  |
+| `issuedAt` | string or null | ISO 8601 times from the iat, nbf and exp claims; null when a claim is absent. |
+| `notBefore` | string or null |  |
+| `expiresAt` | string or null |  |
+| `expired` | boolean or null | Measured against this machine's clock; null without an exp claim. |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
 
@@ -281,6 +322,14 @@ kiriya convert time [value] [options]
 | Option | Description |
 |---|---|
 | `--unit <auto\|seconds\|ms>` | How to read a number: auto, seconds or ms; auto reads numbers below 100000000000 as seconds. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `iso` | string |  |
+| `epochSeconds` | number |  |
+| `epochMs` | number |  |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
@@ -307,6 +356,12 @@ kiriya convert url [value] [options]
 |---|---|
 | `-d, --decode` | Decode instead of encode. |
 | `--file <path>` | Read a file's exact bytes instead. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `output` | string |  |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default

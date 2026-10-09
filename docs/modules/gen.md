@@ -75,6 +75,12 @@ kiriya gen password [options]
 | `--no-symbols` | Leave symbols out, for systems that refuse them. |
 | `--count <n>` | How many to make; 1 by default. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `values` | list of string |  |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
 
@@ -97,6 +103,12 @@ kiriya gen token [options]
 | `--format <hex\|base64\|base64url>` | hex, base64 or base64url; base64url by default. |
 | `--count <n>` | How many to make; 1 by default. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `values` | list of string |  |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
 
@@ -116,6 +128,12 @@ kiriya gen ulid [options]
 | Option | Description |
 |---|---|
 | `--count <n>` | How many to make; 1 by default. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `values` | list of string |  |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
@@ -137,6 +155,12 @@ kiriya gen uuid [options]
 |---|---|
 | `--v7` | Make version 7 UUIDs, which sort by the time they were made. |
 | `--count <n>` | How many to make; 1 by default. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `values` | list of string |  |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default

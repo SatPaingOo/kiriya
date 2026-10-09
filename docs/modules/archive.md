@@ -90,6 +90,17 @@ kiriya archive tar <paths...> [options]
 | `--lean` | Leave out .git, node_modules and other dependency or build folders. |
 | `--all` | Let globs match hidden entries and dependency folders. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `archive` | string |  |
+| `entries` | number |  |
+| `bytesIn` | number |  |
+| `bytesOut` | number |  |
+| `skippedLinks` | number |  |
+| `compressed` | boolean |  |
+
 - **Safety:** `write`, can change things, in ways that can be undone
 - **MCP:** offered to AI agents when `mcp.allowWrite` is `true`
 
@@ -117,6 +128,36 @@ kiriya archive untar <archive> [options]
 | `--list` | List the entries and extract nothing. |
 | `--overwrite` | Replace existing files, after a typed confirmation. |
 | `--confirm <count>` | For --overwrite in scripts: the number of files replaced, as the prompt would ask. Only at a terminal. |
+
+With `--json`, `data` holds one of these:
+
+When `mode` is `list`:
+
+| Field | Type | Description |
+|---|---|---|
+| `mode` | always `list` |  |
+| `archive` | string |  |
+| `entries` | list |  |
+| `entries[].name` | string |  |
+| `entries[].type` | one of `file`, `directory`, `link`, `other` |  |
+| `entries[].size` | number |  |
+| `entries[].modifiedMs` | number |  |
+| `bytes` | number |  |
+
+When `mode` is `extract`:
+
+| Field | Type | Description |
+|---|---|---|
+| `mode` | always `extract` |  |
+| `archive` | string |  |
+| `target` | string |  |
+| `extracted` | boolean |  |
+| `files` | number |  |
+| `bytes` | number |  |
+| `unsafe` | list of string | Names that would land outside the target; any of them stops the extraction. |
+| `skipped` | list of string | Names no OS could create, such as `what?.txt`; skipped. |
+| `conflicts` | list of string | Existing files that --overwrite would replace. |
+| `skippedLinks` | number | Symbolic and hard links, devices and pipes, which are never created. |
 
 - **Safety:** `destroy`, can do work that cannot be undone, and asks for a typed confirmation first
 - **MCP:** offered to AI agents with elicitation when `mcp.allowDestroy` is `true`
@@ -146,6 +187,36 @@ kiriya archive unzip <archive> [options]
 | `--overwrite` | Replace existing files, after a typed confirmation. |
 | `--confirm <count>` | For --overwrite in scripts: the number of files replaced, as the prompt would ask. Only at a terminal. |
 
+With `--json`, `data` holds one of these:
+
+When `mode` is `list`:
+
+| Field | Type | Description |
+|---|---|---|
+| `mode` | always `list` |  |
+| `archive` | string |  |
+| `entries` | list |  |
+| `entries[].name` | string |  |
+| `entries[].isDirectory` | boolean |  |
+| `entries[].size` | number |  |
+| `entries[].compressedSize` | number |  |
+| `entries[].modifiedMs` | number |  |
+| `bytes` | number |  |
+
+When `mode` is `extract`:
+
+| Field | Type | Description |
+|---|---|---|
+| `mode` | always `extract` |  |
+| `archive` | string |  |
+| `target` | string |  |
+| `extracted` | boolean |  |
+| `files` | number |  |
+| `bytes` | number |  |
+| `unsafe` | list of string | Names that would land outside the target; any of them stops the extraction. |
+| `skipped` | list of string | Names no OS could create, such as `what?.txt`; skipped. |
+| `conflicts` | list of string | Existing files that --overwrite would replace. |
+
 - **Safety:** `destroy`, can do work that cannot be undone, and asks for a typed confirmation first
 - **MCP:** offered to AI agents with elicitation when `mcp.allowDestroy` is `true`
 
@@ -172,6 +243,16 @@ kiriya archive zip <paths...> [options]
 | `--to <file.zip>` | The archive to create; it must not exist yet. |
 | `--lean` | Leave out .git, node_modules and other dependency or build folders. |
 | `--all` | Let globs match hidden entries and dependency folders. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `archive` | string |  |
+| `entries` | number |  |
+| `bytesIn` | number |  |
+| `bytesOut` | number |  |
+| `skippedLinks` | number |  |
 
 - **Safety:** `write`, can change things, in ways that can be undone
 - **MCP:** offered to AI agents when `mcp.allowWrite` is `true`

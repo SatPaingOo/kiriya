@@ -84,6 +84,18 @@ kiriya proc find <text>
 |---|---|
 | `text` | The text to look for, in any case. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `processes` | list |  |
+| `processes[].pid` | number |  |
+| `processes[].ppid` | number or null | null when the listing did not include parent ids. |
+| `processes[].name` | string | The program's file name, such as node or node.exe. |
+| `processes[].command` | string or null | null when the listing did not include command lines, or the OS hides this one. |
+| `processes[].memoryBytes` | number or null | Resident memory; null when unknown. |
+| `detailed` | boolean | Parent ids and command lines are included. |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
 
@@ -109,6 +121,16 @@ kiriya proc kill <target> [options]
 | `--force` | End them at once instead of asking them to exit. |
 | `--confirm <id-or-name>` | For scripts: the id or name exactly as given, as the prompt would ask. Only at a terminal. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `target` | string |  |
+| `processes` | list |  |
+| `processes[].pid` | number |  |
+| `processes[].name` | string or null |  |
+| `processes[].outcome` | one of `failed`, `not-found`, `ended`, `still-running`, `denied` |  |
+
 - **Safety:** `destroy`, can do work that cannot be undone, and asks for a typed confirmation first
 - **MCP:** offered to AI agents with elicitation when `mcp.allowDestroy` is `true`
 
@@ -131,6 +153,18 @@ kiriya proc list [options]
 | `--name <text>` | Only processes whose name contains this text, in any case. |
 | `--full` | Add parent ids and command lines; slower on Windows. Can show secrets. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `processes` | list |  |
+| `processes[].pid` | number |  |
+| `processes[].ppid` | number or null | null when the listing did not include parent ids. |
+| `processes[].name` | string | The program's file name, such as node or node.exe. |
+| `processes[].command` | string or null | null when the listing did not include command lines, or the OS hides this one. |
+| `processes[].memoryBytes` | number or null | Resident memory; null when unknown. |
+| `detailed` | boolean | Parent ids and command lines are included. |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
 
@@ -151,6 +185,16 @@ kiriya proc tree [pid]
 | Argument | Description |
 |---|---|
 | `pid` | The process whose tree to show; every process when left out. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `rows` | list |  |
+| `rows[].pid` | number |  |
+| `rows[].ppid` | number or null |  |
+| `rows[].name` | string |  |
+| `rows[].depth` | number | 0 for a root. |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default

@@ -45,6 +45,13 @@ kiriya completion <shell>
 |---|---|
 | `shell` | bash, zsh, fish or powershell. One of `bash`, `zsh`, `fish`, `powershell`. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `shell` | one of `bash`, `zsh`, `fish`, `powershell` |  |
+| `script` | string |  |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
 
@@ -66,6 +73,14 @@ kiriya completion suggest [options]
 |---|---|
 | `--current <word>` | The word being completed, which may be empty. |
 | `--word <word>` | A word before it on the command line, once for each word. Can be given more than once. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `suggestions` | list |  |
+| `suggestions[].value` | string |  |
+| `suggestions[].description` | string or null | null for a value that explains itself, such as one of an option's choices. |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default

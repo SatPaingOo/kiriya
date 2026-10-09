@@ -99,6 +99,22 @@ kiriya docker clean [options]
 | `--apply` | Remove them; without it kiriya only shows the space they take. |
 | `--confirm prune` | For --apply in scripts: the word prune, as the prompt would ask. Only at a terminal. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `usage` | list |  |
+| `usage[].type` | string |  |
+| `usage[].total` | string |  |
+| `usage[].active` | string |  |
+| `usage[].size` | string |  |
+| `usage[].reclaimable` | string |  |
+| `volumes` | boolean |  |
+| `results` | list |  |
+| `results[].target` | string | container, image, network, builder or volume. |
+| `results[].succeeded` | boolean |  |
+| `results[].reclaimed` | string or null |  |
+
 - **Safety:** `destroy`, can do work that cannot be undone, and asks for a typed confirmation first
 - **MCP:** offered to AI agents with elicitation when `mcp.allowDestroy` is `true`
 
@@ -121,6 +137,14 @@ kiriya docker down [options]
 | `--file <compose.yaml>` | The compose file; by default compose.yaml, compose.yml, docker-compose.yaml or docker-compose.yml here. |
 | `--volumes` | Also delete the project's volumes and all data in them, after a typed confirmation. |
 | `--confirm <project>` | For --volumes in scripts: the project name, as the prompt would ask. Only at a terminal. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `project` | string |  |
+| `volumes` | boolean |  |
+| `succeeded` | boolean |  |
 
 - **Safety:** `destroy`, can do work that cannot be undone, and asks for a typed confirmation first
 - **MCP:** offered to AI agents with elicitation when `mcp.allowDestroy` is `true`
@@ -149,6 +173,13 @@ kiriya docker logs [services...] [options]
 | `-f, --follow` | Keep printing new lines until Ctrl+C. Only at a terminal. |
 | `--tail <n\|all>` | How many lines to show from the end of each log, or all; 200 by default. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `project` | string |  |
+| `succeeded` | boolean |  |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
 
@@ -170,6 +201,32 @@ kiriya docker ps [options]
 |---|---|
 | `--file <compose.yaml>` | The compose file; by default compose.yaml, compose.yml, docker-compose.yaml or docker-compose.yml here. |
 | `--projects` | List every compose project on this machine instead. |
+
+With `--json`, `data` holds one of these:
+
+When `mode` is `project`:
+
+| Field | Type | Description |
+|---|---|---|
+| `mode` | always `project` |  |
+| `project` | string |  |
+| `file` | string |  |
+| `containers` | list |  |
+| `containers[].name` | string |  |
+| `containers[].service` | string |  |
+| `containers[].state` | string |  |
+| `containers[].status` | string |  |
+| `containers[].ports` | string |  |
+
+When `mode` is `projects`:
+
+| Field | Type | Description |
+|---|---|---|
+| `mode` | always `projects` |  |
+| `projects` | list |  |
+| `projects[].name` | string |  |
+| `projects[].status` | string |  |
+| `projects[].configFiles` | string |  |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
@@ -196,6 +253,19 @@ kiriya docker rebuild [services...] [options]
 |---|---|
 | `--file <compose.yaml>` | The compose file; by default compose.yaml, compose.yml, docker-compose.yaml or docker-compose.yml here. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `project` | string |  |
+| `file` | string |  |
+| `services` | list of string |  |
+| `succeeded` | boolean |  |
+| `ports` | list | Ports the compose file publishes, for the services started. |
+| `ports[].host` | string |  |
+| `ports[].service` | string |  |
+| `ports[].target` | string |  |
+
 - **Safety:** `write`, can change things, in ways that can be undone
 - **Programs:** runs programs the user names
 - **MCP:** never offered to AI agents, because it runs programs the user names
@@ -221,6 +291,19 @@ kiriya docker up [services...] [options]
 |---|---|
 | `--file <compose.yaml>` | The compose file; by default compose.yaml, compose.yml, docker-compose.yaml or docker-compose.yml here. |
 | `--build` | Build the images before starting. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `project` | string |  |
+| `file` | string |  |
+| `services` | list of string |  |
+| `succeeded` | boolean |  |
+| `ports` | list | Ports the compose file publishes, for the services started. |
+| `ports[].host` | string |  |
+| `ports[].service` | string |  |
+| `ports[].target` | string |  |
 
 - **Safety:** `write`, can change things, in ways that can be undone
 - **Programs:** runs programs the user names

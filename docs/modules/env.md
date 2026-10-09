@@ -75,6 +75,22 @@ kiriya env check [options]
 | `--file <path>` | The file to check; .env by default. |
 | `--example <path>` | The file listing the variables expected; .env.example by default. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `file` | string |  |
+| `example` | string |  |
+| `fileExists` | boolean |  |
+| `expected` | number |  |
+| `missing` | list of string |  |
+| `empty` | list of string |  |
+| `extra` | list of string |  |
+| `duplicates` | list of string |  |
+| `malformed` | list |  |
+| `malformed[].path` | string |  |
+| `malformed[].line` | number |  |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
 
@@ -94,6 +110,19 @@ kiriya env path [variable]
 | Argument | Description |
 |---|---|
 | `variable` | The variable to check; PATH by default. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `variable` | string |  |
+| `separator` | string |  |
+| `entries` | list |  |
+| `entries[].index` | number | From 1, in the order the OS searches. |
+| `entries[].entry` | string |  |
+| `entries[].folder` | string | The folder the entry names, after quotes and `%NAME%` on Windows. |
+| `entries[].status` | one of `ok`, `missing`, `duplicate`, `empty`, `relative`, `not-a-folder` |  |
+| `entries[].duplicateOf` | number or null | The earlier entry this one repeats. |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
@@ -118,6 +147,16 @@ kiriya env show [filter] [options]
 | Option | Description |
 |---|---|
 | `--reveal` | Show secret-looking values too. Only at a terminal. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `variables` | list |  |
+| `variables[].name` | string |  |
+| `variables[].value` | string or null | null when the value is hidden. |
+| `variables[].secret` | boolean | The name or the value looks like a secret. |
+| `hidden` | number |  |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default

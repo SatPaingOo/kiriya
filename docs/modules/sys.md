@@ -56,6 +56,25 @@ Show the operating system, processor, memory, uptime, locale and runtime.
 kiriya sys info
 ```
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `uptimeSeconds` | number |  |
+| `hostname` | string |  |
+| `os` | one of `windows`, `linux`, `macos` |  |
+| `osName` | string |  |
+| `kernel` | string |  |
+| `arch` | string |  |
+| `cpuModel` | string |  |
+| `cpuCount` | number |  |
+| `memoryTotalBytes` | number |  |
+| `memoryFreeBytes` | number |  |
+| `locale` | string |  |
+| `timeZone` | string |  |
+| `node` | string |  |
+| `kiriya` | string |  |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
 
@@ -72,6 +91,28 @@ Print machine facts and tool versions as Markdown for a bug report, without the 
 kiriya sys report
 ```
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `machine` | object |  |
+| `machine.os` | one of `windows`, `linux`, `macos` |  |
+| `machine.osName` | string |  |
+| `machine.kernel` | string |  |
+| `machine.arch` | string |  |
+| `machine.cpuModel` | string |  |
+| `machine.cpuCount` | number |  |
+| `machine.memoryTotalBytes` | number |  |
+| `machine.memoryFreeBytes` | number |  |
+| `machine.locale` | string |  |
+| `machine.timeZone` | string |  |
+| `machine.node` | string |  |
+| `machine.kiriya` | string |  |
+| `tools` | list |  |
+| `tools[].name` | string |  |
+| `tools[].version` | string or null | null when the tool is not installed. |
+| `tools[].path` | string or null |  |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
 
@@ -87,6 +128,15 @@ Find node, python, dotnet, java, go, git and docker, and their versions.
 ```text
 kiriya sys tools
 ```
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `tools` | list |  |
+| `tools[].name` | string |  |
+| `tools[].version` | string or null | null when the tool is not installed. |
+| `tools[].path` | string or null |  |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default

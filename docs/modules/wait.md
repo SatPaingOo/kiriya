@@ -104,6 +104,16 @@ kiriya wait file <path> [options]
 | `--gone` | Wait until it no longer exists instead. |
 | `--timeout <seconds>` | Seconds to wait before giving up, from 1 to 3600; 60 by default. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `path` | string | Absolute. |
+| `gone` | boolean | Waiting until the path no longer exists, rather than until it does. |
+| `ready` | boolean |  |
+| `attempts` | number |  |
+| `waitedMs` | number |  |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
 
@@ -128,6 +138,20 @@ kiriya wait port <target> [options]
 |---|---|
 | `--gone` | Wait until nothing listens there instead. |
 | `--timeout <seconds>` | Seconds to wait before giving up, from 1 to 3600; 60 by default. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `host` | string |  |
+| `port` | number |  |
+| `gone` | boolean | Waiting until nothing listens, rather than until something does. |
+| `ready` | boolean |  |
+| `attempts` | number |  |
+| `waitedMs` | number |  |
+| `address` | string or null | From the last attempt: the address that answered, or why nothing did. |
+| `failure` | one of `failed`, `refused`, `timeout`, `not-found`, `unreachable` or null |  |
+| `code` | string or null | The operating system's error code, such as ECONNREFUSED. |
 
 - **Safety:** `read`, changes nothing
 - **Network:** uses the network
@@ -155,6 +179,18 @@ kiriya wait url <url> [options]
 |---|---|
 | `--status <code>` | A status that counts as ready, such as 200 or 401; any 2xx by default. Can be given more than once. |
 | `--timeout <seconds>` | Seconds to wait before giving up, from 1 to 3600; 60 by default. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `url` | string |  |
+| `ready` | boolean |  |
+| `attempts` | number |  |
+| `waitedMs` | number |  |
+| `status` | number or null | From the last attempt: the status it answered with, or why it did not answer. |
+| `failure` | one of `failed`, `refused`, `timeout`, `not-found`, `unreachable`, `tls` or null |  |
+| `code` | string or null |  |
 
 - **Safety:** `read`, changes nothing
 - **Network:** uses the network
