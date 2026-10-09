@@ -13,6 +13,8 @@ export const outputView: TextView<CodecOutput | CaseOutput> = (output) => output
 /** Invalid JSON prints nothing here: the failure names the line and column. */
 export const jsonView: TextView<JsonOutput> = (output, format) => {
   if (!output.valid) return [];
+  // A path that was not there prints nothing either; its failure says where it stopped.
+  if (output.found === false) return [];
   if (output.output === null) return [format.green(format.text(message("convert.json.valid")))];
   return output.output.split("\n");
 };

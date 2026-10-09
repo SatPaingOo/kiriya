@@ -84,17 +84,58 @@ test("json formats, minifies and checks, and names the line and column of an err
   assert.equal(pretty.data.output, '{\n  "b": 1,\n  "a": [\n    1,\n    2\n  ]\n}');
   const minified = await run(new ConvertJson(sources()), raw(['{ "a" : [ 1 , 2 ] }'], { minify: true }));
   assert.equal(minified.data.output, '{"a":[1,2]}');
+  const nothingAsked = { path: null, found: null, value: null };
   const checked = await run(new ConvertJson(sources()), raw(['{"a":1}'], { check: true }));
-  assert.deepEqual(checked.data, { valid: true, output: null, line: null, column: null });
+  assert.deepEqual(checked.data, { valid: true, output: null, line: null, column: null, ...nothingAsked });
 
   const broken = await run(new ConvertJson(sources()), raw(['{\n  "a": 1,\n}']));
-  assert.deepEqual(broken.data, { valid: false, output: null, line: 3, column: 1 });
+  assert.deepEqual(broken.data, { valid: false, output: null, line: 3, column: 1, ...nothingAsked });
   assert.deepEqual(broken.failures, [{ key: "convert.json.invalid", params: { line: 3, column: 1 } }]);
 
   const folder = await temporaryFolder(t);
   await writeFile(path.join(folder, "bom.json"), '\uFEFF{"a":true}');
   const withBom = await run(new ConvertJson(sources()), raw([], { file: "bom.json", minify: true }), folder);
   assert.equal(withBom.data.output, '{"a":true}');
+});
+
+const BODY = '{"data":{"listeners":[{"pid":7,"name":"node"}],"on":false,"none":null}}';
+
+test("--get takes one value out, raw when it is text so a shell can use it", async () => {
+  const at = async (path: string, options: RawInput["options"] = {}) =>
+    run(new ConvertJson(sources(BODY)), raw([], { get: path, ...options }));
+
+  // Text prints as itself: no quotes for a shell to strip afterwards.
+  assert.equal((await at("data.listeners.0.name")).data.output, "node");
+  assert.equal((await at("data.listeners.0.pid")).data.output, "7");
+  assert.equal((await at("data.on")).data.output, "false");
+  assert.equal((await at("data.none")).data.output, "null");
+  // Anything else prints as JSON, and --minify applies to that too.
+  assert.equal((await at("data.listeners.0")).data.output, '{\n  "pid": 7,\n  "name": "node"\n}');
+  assert.equal((await at("data.listeners.0", { minify: true })).data.output, '{"pid":7,"name":"node"}');
+
+  const found = await at("data.on");
+  assert.deepEqual(
+    { path: found.data.path, found: found.data.found, value: found.data.value },
+    { path: "data.on", found: true, value: false },
+    "--json carries the value itself, not only the text it printed",
+  );
+  assert.deepEqual(found.failures, []);
+});
+
+test("a path that is not there fails, says where it stopped, and prints nothing", async () => {
+  const miss = await run(new ConvertJson(sources(BODY)), raw([], { get: "data.ports.0" }));
+  assert.equal(miss.data.valid, true, "the JSON was fine; only the path was not");
+  assert.equal(miss.data.output, null);
+  assert.deepEqual([miss.data.path, miss.data.found, miss.data.value], ["data.ports.0", false, null]);
+  assert.deepEqual(miss.failures, [{ key: "convert.json.not-there", params: { at: "data.ports" } }]);
+});
+
+test("--get is refused alongside --check, and refused a path that names nothing", async () => {
+  const parse = (options: RawInput["options"]) => () => new ConvertJson(sources()).spec.input.parse(raw([], options));
+  assert.throws(parse({ get: "a", check: true }), isKey("convert.json.get-with-check"));
+  for (const path of [".", "", "a..b"]) {
+    assert.throws(parse({ get: path }), isKey("convert.json.get-invalid"), path);
+  }
 });
 
 function jwt(payload: object): string {

@@ -41,6 +41,29 @@ test("convert json --check fails with the line and column of the error", () => {
   assert.deepEqual([parsed.ok, parsed.data.line, parsed.data.column], [false, 1, 8]);
 });
 
+/** The point of --get: every kiriya command answers --json, and nothing could read it back. */
+test("--get reads a value out of another command's --json, and exits 1 when it is not there", () => {
+  const listed = runKiriya(CWD, ["gen", "uuid", "--json"]);
+  assert.equal(listed.code, 0, listed.stderr);
+
+  const got = runKiriya(CWD, ["convert", "json", "--get", "data.values.0"], PLAIN, listed.stdout);
+  assert.equal(got.code, 0, got.stderr);
+  assert.match(got.stdout.trimEnd(), /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+
+  const missing = runKiriya(CWD, ["convert", "json", "--get", "data.nope"], PLAIN, listed.stdout);
+  assert.equal(missing.code, 1);
+  assert.equal(missing.stdout, "", "nothing may be printed for a value that was not there");
+  assert.match(missing.stderr, /Nothing is at data\.nope/);
+
+  assert.equal(runKiriya(CWD, ["convert", "json", "--get", "a", "--check"], PLAIN, "{}").code, 2);
+
+  // A key named after one of JavaScript's own members: reachable when the document has it,
+  // missing when it does not. Needs argv to deliver the token and the lookup to be own-key.
+  const real = runKiriya(CWD, ["convert", "json", "--get", "constructor"], PLAIN, '{"constructor":"mine"}');
+  assert.deepEqual([real.code, real.stdout.trimEnd()], [0, "mine"]);
+  assert.equal(runKiriya(CWD, ["convert", "json", "--get", "constructor"], PLAIN, '{"a":1}').code, 1);
+});
+
 test("convert jwt decodes a piped token and says the signature was not checked", () => {
   const segment = (value: object): string => Buffer.from(JSON.stringify(value)).toString("base64url");
   const run = runKiriya(CWD, ["convert", "jwt"], PLAIN, `${segment({ alg: "none" })}.${segment({ sub: "42" })}.`);

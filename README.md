@@ -5,9 +5,10 @@ Linux and macOS.**
 
 kiriya (ကိရိယာ, Burmese for "tool") saves remembering `del` and `rm`, `netstat -ano` and
 `lsof -i`, `clip` and `pbcopy`, or writing a one-off script for each. It is one Node.js
-program with no runtime dependencies. Every command answers `--json`, changes to many files
-show a plan first, deletions go to the trash, and nothing that cannot be undone happens
-until you type a confirmation. AI agents can use the same commands over MCP, under the same
+program with no runtime dependencies. Every command answers `--json`, and
+`convert json --get` reads a value back out of that answer without a second tool. Changes to
+many files show a plan first, deletions go to the trash, and nothing that cannot be undone
+happens until you type a confirmation. AI agents can use the same commands over MCP, under the same
 rules.
 
 ## Install
