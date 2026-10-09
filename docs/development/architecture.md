@@ -306,3 +306,39 @@ fills each block between `<!-- kiriya:<name> -->` and `<!-- /kiriya:<name> -->`:
 `node dist/tools/docs.js --check`, which fails when a block is out of date, a built-in module
 lacks its `about`, `examples` or `guide`, or a relative link in the docs leads to a missing
 file or heading.
+
+## Output shapes
+
+The shape of a command's `--json` `data` is part of kiriya's public API, so it is written down
+— but never twice. `npm run shapes` reads each command's TypeScript output type with the
+compiler API and writes `src/config/output-shapes.ts`, which the MCP server uses for each
+tool's `outputSchema`. **The type is the only source**, so a shape cannot drift from the code,
+and the JSDoc already on those fields becomes each field's description rather than needing a
+catalog key.
+
+| Piece | Does |
+|---|---|
+| `tools/output-shapes.ts` | Reads the types and builds the catalog |
+| `tools/shapes.ts` | Writes `src/config/output-shapes.ts`, or with `--check` fails when it is stale |
+| `src/core/domain/output-shape.ts` | The `Shape` kinds, and `recordOf` for following a ref |
+| `src/core/presentation/mcp/output-schema.ts` | Turns a shape into the JSON Schema a tool declares |
+
+A command class already says which output it has — `implements Command<Input, Output>` — and
+its `spec` already carries the id, so both ends of the link are in the code: 71 of the 73
+command classes need nothing. The exceptions are the two whose one class serves several
+commands and builds its spec in the constructor, `ConvertCodec` and `StartProject`; those are
+named in `BY_CLASS`. **A command that reaches neither route fails the build**, so the catalog
+cannot quietly fall behind the commands.
+
+Two rules the catalog keeps, both learned the hard way:
+
+- **Every named type is a `ref` into one catalog**, keyed by its module and name, as
+  `files.ListOutput`. A bare name is not unique — `ListOutput` is both `config.list`'s output
+  and `files.list`'s — and keying by it gave twelve commands another command's shape, which the
+  MCP SDK's own output validation caught.
+- **A union of more than 24 string literals is reported as text.** `MessageKey` is a union of
+  every key in the catalog, and listing all eight hundred inside a schema told a reader nothing
+  and cost 20 KB each time a `Message` appeared in an output.
+
+The file is committed rather than built at startup because the MCP server needs these shapes
+while running, and the TypeScript compiler is a development dependency it never ships.

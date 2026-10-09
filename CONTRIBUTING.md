@@ -29,7 +29,8 @@ node dist/src/main.js files list
 | `npm run format` | Formats with Prettier; `npm run format:check` only checks |
 | `npm run typecheck` | Type-checks without writing files |
 | `npm run dev` | Recompiles on every change |
-| `npm run docs` | Builds, then writes the parts of the docs generated from the command specs |
+| `npm run docs` | Builds, then writes the output shapes and the parts of the docs generated from the command specs |
+| `npm run shapes` | Builds, then writes `src/config/output-shapes.ts` from each command's output type |
 
 Run one test file after a build with `node --test dist/tests/unit/files/glob.test.js`.
 
