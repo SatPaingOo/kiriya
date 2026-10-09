@@ -42,6 +42,9 @@ works either way.
    - Set `version` in `package.json`. For the first release, also remove
      `"private": true`, which until then stops any publish.
    - Set the same version in [server.json](../../server.json), in both places it appears.
+   - Run `npm install --package-lock-only`, which writes the new version into
+     `package-lock.json`. Nothing fails without it — `npm ci` reads the lockfile's
+     dependencies, not its version — so it drifted silently from 0.1.2 until 0.2.1.
    - In [CHANGELOG.md](../../CHANGELOG.md), turn `## [Unreleased]` into
      `## [<version>] - <YYYY-MM-DD>`, and start a new empty `## [Unreleased]` above it.
 2. Merge it once CI passes on every operating system.
@@ -73,6 +76,18 @@ on that operating system, and that the MCP Registry lists the version.
 
 The registry can take a few minutes to serve a version that was just published, so the
 install step retries for three minutes before giving up.
+
+Give it `from` as well, naming the previous version, and it also installs that version and
+upgrades with `self-update --apply`, failing unless the version really changed:
+
+```bash
+gh workflow run verify.yml -f version=0.2.2 -f from=0.2.1
+```
+
+`from` must be 0.2.1 or newer. Before that, `--apply` could not find npm on Windows at all
+([the fix](https://github.com/SatPaingOo/kiriya/pull/48)), so an older version would fail the
+step for the bug rather than for a regression. 0.2.1's own release leaves `from` out, having
+no fixed predecessor to upgrade from.
 
 Two things the workflow cannot do, and a person still has to:
 

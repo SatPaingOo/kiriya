@@ -7,6 +7,8 @@ output shapes are kiriya's public API.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-10
+
 ### Added
 
 - `convert json --get <path>` prints what is at a dotted path, so the `--json` every command
