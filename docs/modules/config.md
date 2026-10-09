@@ -103,6 +103,13 @@ kiriya config get <key>
 |---|---|
 | `key` | The setting's name. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `key` | string |  |
+| `value` | anything |  |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
 
@@ -117,6 +124,19 @@ List every setting kiriya reads.
 ```text
 kiriya config keys
 ```
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `keys` | list |  |
+| `keys[].key` | string |  |
+| `keys[].type` | one of `string`, `list` |  |
+| `keys[].description` | object |  |
+| `keys[].description.key` | string |  |
+| `keys[].description.params` | anything |  |
+| `keys[].example` | string |  |
+| `keys[].choices` | list of string or null | The only values a setting takes; null when any value will do. |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
@@ -133,6 +153,16 @@ List the settings in the configuration file.
 kiriya config list
 ```
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `path` | string |  |
+| `settings` | list |  |
+| `settings[].key` | string |  |
+| `settings[].value` | anything or null | null when the setting is not in the file. |
+| `settings[].known` | boolean | false for a setting in the file that kiriya does not read. |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
 
@@ -148,6 +178,13 @@ Print where the configuration file is, whether or not it exists yet.
 ```text
 kiriya config path
 ```
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `path` | string |  |
+| `exists` | boolean |  |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
@@ -169,6 +206,14 @@ kiriya config set <key> <values...>
 | `key` | The setting's name; see kiriya config keys. |
 | `values...` | The value, or every value of a list. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `key` | string |  |
+| `value` | anything |  |
+| `previous` | anything or null | null when the setting was not in the file. |
+
 - **Safety:** `write`, can change things, in ways that can be undone
 - **MCP:** never offered to AI agents, because it is only for a person at a terminal
 
@@ -188,6 +233,13 @@ kiriya config unset <key>
 | Argument | Description |
 |---|---|
 | `key` | The setting's name. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `key` | string |  |
+| `removed` | boolean | false when the setting was not in the file. |
 
 - **Safety:** `write`, can change things, in ways that can be undone
 - **MCP:** never offered to AI agents, because it is only for a person at a terminal

@@ -75,6 +75,18 @@ kiriya net check <target> [options]
 |---|---|
 | `--timeout <seconds>` | Seconds to wait, from 1 to 120; 5 by default. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `host` | string |  |
+| `port` | number |  |
+| `reachable` | boolean |  |
+| `address` | string or null | The address that answered; null when none did. |
+| `ms` | number |  |
+| `failure` | one of `failed`, `refused`, `timeout`, `not-found`, `unreachable` or null |  |
+| `code` | string or null | The operating system's error code, such as ECONNREFUSED. |
+
 - **Safety:** `read`, changes nothing
 - **Network:** uses the network
 - **MCP:** offered to AI agents by default
@@ -101,6 +113,18 @@ kiriya net dns <name> [options]
 |---|---|
 | `--type <system\|a\|aaaa\|cname\|mx\|txt\|ns>` | system (the default: the hosts file, then DNS), a, aaaa, cname, mx, txt or ns. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | string |  |
+| `type` | one of `system`, `a`, `aaaa`, `cname`, `mx`, `txt`, `ns` |  |
+| `records` | list |  |
+| `records[].type` | string | A, AAAA, CNAME, MX, TXT or NS. |
+| `records[].value` | string |  |
+| `records[].priority` | number or null | An MX record's preference; null for every other record. |
+| `failure` | one of `failed`, `timeout`, `not-found` or null |  |
+
 - **Safety:** `read`, changes nothing
 - **Network:** uses the network
 - **MCP:** offered to AI agents by default
@@ -122,6 +146,18 @@ kiriya net ip [options]
 | Option | Description |
 |---|---|
 | `--all` | Include loopback addresses. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `addresses` | list |  |
+| `addresses[].interfaceName` | string |  |
+| `addresses[].family` | one of `IPv4`, `IPv6` |  |
+| `addresses[].address` | string |  |
+| `addresses[].cidr` | string or null | Such as 192.168.1.20/24; null when the OS does not say. |
+| `addresses[].mac` | string |  |
+| `addresses[].internal` | boolean | A loopback address, reachable only from this machine. |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default

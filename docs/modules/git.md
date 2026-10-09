@@ -85,6 +85,23 @@ kiriya git fetch [folder] [options]
 |---|---|
 | `--depth <1-10>` | How many folder levels to search for repositories; 3 by default. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `folder` | string |  |
+| `items` | list |  |
+| `items[].status` | object | After the fetch when it succeeded, before it otherwise. |
+| `items[].status.name` | string | Relative to the folder given, with `/`; the folder's own name when it is the repository. |
+| `items[].status.path` | string |  |
+| `items[].status.branch` | string | The branch, a short commit id for a detached HEAD, or `?`. |
+| `items[].status.commits` | number |  |
+| `items[].status.dirty` | number | Files with uncommitted changes, as `git status` counts them. |
+| `items[].status.ahead` | number or null | null when the branch has no upstream. |
+| `items[].status.behind` | number or null |  |
+| `items[].status.hasRemote` | boolean |  |
+| `items[].outcome` | one of `failed`, `fetched`, `no-remote` |  |
+
 - **Safety:** `write`, can change things, in ways that can be undone
 - **Network:** uses the network
 - **MCP:** offered to AI agents when `mcp.allowWrite` is `true`
@@ -110,6 +127,24 @@ kiriya git pull [folder] [options]
 |---|---|
 | `--depth <1-10>` | How many folder levels to search for repositories; 3 by default. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `folder` | string |  |
+| `items` | list |  |
+| `items[].status` | object |  |
+| `items[].status.name` | string | Relative to the folder given, with `/`; the folder's own name when it is the repository. |
+| `items[].status.path` | string |  |
+| `items[].status.branch` | string | The branch, a short commit id for a detached HEAD, or `?`. |
+| `items[].status.commits` | number |  |
+| `items[].status.dirty` | number | Files with uncommitted changes, as `git status` counts them. |
+| `items[].status.ahead` | number or null | null when the branch has no upstream. |
+| `items[].status.behind` | number or null |  |
+| `items[].status.hasRemote` | boolean |  |
+| `items[].outcome` | one of `failed`, `no-remote`, `pulled`, `up-to-date`, `no-upstream`, `dirty` |  |
+| `items[].newCommits` | number |  |
+
 - **Safety:** `write`, can change things, in ways that can be undone
 - **Network:** uses the network
 - **MCP:** offered to AI agents when `mcp.allowWrite` is `true`
@@ -134,6 +169,23 @@ kiriya git status [folder] [options]
 | Option | Description |
 |---|---|
 | `--depth <1-10>` | How many folder levels to search for repositories; 3 by default. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `folder` | string |  |
+| `isRepository` | boolean | The folder is one repository, not a workspace holding several. |
+| `repositories` | list |  |
+| `repositories[].name` | string | Relative to the folder given, with `/`; the folder's own name when it is the repository. |
+| `repositories[].path` | string |  |
+| `repositories[].branch` | string | The branch, a short commit id for a detached HEAD, or `?`. |
+| `repositories[].commits` | number |  |
+| `repositories[].dirty` | number | Files with uncommitted changes, as `git status` counts them. |
+| `repositories[].ahead` | number or null | null when the branch has no upstream. |
+| `repositories[].behind` | number or null |  |
+| `repositories[].hasRemote` | boolean |  |
+| `allGood` | boolean | Every repository has a remote, nothing is unpushed, and all are on one branch. |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
@@ -162,6 +214,20 @@ kiriya git switch <branch> [folder] [options]
 | `--create` | Create the branch from the current commit wherever it does not exist yet. |
 | `--depth <1-10>` | How many folder levels to search for repositories; 3 by default. |
 | `-y, --yes` | Switch without asking. Only at a terminal. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `branch` | string |  |
+| `folder` | string |  |
+| `steps` | list |  |
+| `steps[].name` | string |  |
+| `steps[].path` | string |  |
+| `steps[].from` | string |  |
+| `steps[].dirty` | number |  |
+| `steps[].action` | one of `create`, `local`, `missing`, `already`, `track` |  |
+| `steps[].outcome` | one of `planned`, `failed`, `unchanged`, `switched` |  |
 
 - **Safety:** `write`, can change things, in ways that can be undone
 - **MCP:** offered to AI agents when `mcp.allowWrite` is `true`

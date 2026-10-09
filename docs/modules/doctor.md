@@ -71,6 +71,29 @@ Check what this machine gives kiriya: runtime, configuration, trash, clipboard, 
 kiriya doctor
 ```
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `checks` | list |  |
+| `checks[].name` | string |  |
+| `checks[].status` | one of `ok`, `warn`, `fail` |  |
+| `checks[].detail` | object |  |
+| `checks[].detail.key` | string |  |
+| `checks[].detail.params` | anything |  |
+| `plugins` | list |  |
+| `plugins[].entry` | string | As written in the configuration. |
+| `plugins[].id` | string |  |
+| `plugins[].name` | string or null |  |
+| `plugins[].version` | string or null |  |
+| `plugins[].location` | string | The file kiriya imported. |
+| `plugins[].commands` | number |  |
+| `pluginProblems` | list |  |
+| `pluginProblems[].entry` | string |  |
+| `pluginProblems[].reason` | object |  |
+| `pluginProblems[].reason.key` | string |  |
+| `pluginProblems[].reason.params` | anything |  |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
 

@@ -195,6 +195,21 @@ kiriya files clean [folder] [options]
 | `--apply` | Remove the folders; without it kiriya only lists them. |
 | `--confirm <count>` | For --apply in scripts: the number of folders, as the prompt would ask. Only at a terminal. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `folder` | string |  |
+| `candidates` | list | Largest first. |
+| `candidates[].path` | string |  |
+| `candidates[].reason` | object | What recreates the folder. |
+| `candidates[].reason.key` | string |  |
+| `candidates[].reason.params` | anything |  |
+| `candidates[].bytes` | number |  |
+| `bytes` | number |  |
+| `tracked` | number | Matching folders left alone because git tracks files in them. |
+| `removed` | number |  |
+
 - **Safety:** `destroy`, can do work that cannot be undone, and asks for a typed confirmation first
 - **MCP:** offered to AI agents with elicitation when `mcp.allowDestroy` is `true`
 
@@ -220,6 +235,42 @@ kiriya files compare <a> <b> [options]
 | Option | Description |
 |---|---|
 | `--all` | In folders, include hidden entries and dependency folders. |
+
+With `--json`, `data` holds one of these:
+
+When `kind` is `files`:
+
+| Field | Type | Description |
+|---|---|---|
+| `kind` | always `files` |  |
+| `a` | string |  |
+| `b` | string |  |
+| `identical` | boolean |  |
+| `sizeA` | number |  |
+| `sizeB` | number |  |
+| `text` | object or null | null when identical, or when either file is not text. |
+| `text.sameText` | boolean | Equal once line endings are ignored: only line endings or the encoding differ. |
+| `text.encodingA` | one of `utf8`, `utf8-bom`, `utf16le`, `utf16be` |  |
+| `text.encodingB` | one of `utf8`, `utf8-bom`, `utf16le`, `utf16be` |  |
+| `text.line` | number | The first line that differs, from 1. |
+| `text.linesA` | number |  |
+| `text.linesB` | number |  |
+| `text.lineA` | string or null | null past the end of the file. |
+| `text.lineB` | string or null |  |
+
+When `kind` is `folders`:
+
+| Field | Type | Description |
+|---|---|---|
+| `kind` | always `folders` |  |
+| `a` | string |  |
+| `b` | string |  |
+| `entries` | number |  |
+| `onlyInA` | list of string |  |
+| `onlyInB` | list of string |  |
+| `different` | list |  |
+| `different[].path` | string | Relative, with `/`. |
+| `different[].reason` | one of `content`, `kind` | `kind`: a file on one side, a folder on the other. |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
@@ -248,6 +299,22 @@ kiriya files copy <sources...> <target> [options]
 | `--overwrite` | Replace what exists at a destination, after a typed confirmation. |
 | `--dry-run` | Show the plan and change nothing. |
 | `--confirm <count>` | For --overwrite in scripts: the number of conflicts, as the prompt would ask. Only at a terminal. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `items` | list |  |
+| `items[].source` | string |  |
+| `items[].destination` | string |  |
+| `items[].bytes` | number |  |
+| `items[].conflict` | boolean |  |
+| `items[].outcome` | one of `planned`, `copied`, `failed` |  |
+| `items[].reason` | object or null |  |
+| `items[].reason.key` | string |  |
+| `items[].reason.params` | anything |  |
+| `bytes` | number |  |
+| `conflicts` | number |  |
 
 - **Safety:** `destroy`, can do work that cannot be undone, and asks for a typed confirmation first
 - **MCP:** offered to AI agents with elicitation when `mcp.allowDestroy` is `true`
@@ -278,6 +345,23 @@ kiriya files delete <paths...> [options]
 | `--confirm <count>` | For --permanent in scripts: the number of items, as the prompt would ask. Only at a terminal. |
 | `--all` | Include hidden entries and dependency folders such as node_modules. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `mode` | one of `trash`, `permanent` |  |
+| `items` | list |  |
+| `items[].path` | string |  |
+| `items[].kind` | one of `file`, `directory`, `other`, `symlink` |  |
+| `items[].bytes` | number |  |
+| `items[].files` | number |  |
+| `items[].isRepository` | boolean |  |
+| `items[].outcome` | one of `planned`, `failed`, `trashed`, `deleted` |  |
+| `items[].reason` | object or null |  |
+| `items[].reason.key` | string |  |
+| `items[].reason.params` | anything |  |
+| `bytes` | number |  |
+
 - **Safety:** `destroy`, can do work that cannot be undone, and asks for a typed confirmation first
 - **MCP:** offered to AI agents with elicitation when `mcp.allowDestroy` is `true`
 
@@ -303,6 +387,17 @@ kiriya files dupes [folder] [options]
 |---|---|
 | `--min-size <size>` | Ignore files smaller than this, such as 1MB. |
 | `--all` | Include hidden entries and dependency folders such as node_modules. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `folder` | string |  |
+| `checked` | number |  |
+| `groups` | list | Largest waste first. |
+| `groups[].size` | number |  |
+| `groups[].paths` | list of string |  |
+| `extraBytes` | number |  |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
@@ -338,6 +433,19 @@ kiriya files find [folder] [options]
 | `--all` | Include hidden entries and dependency folders such as node_modules. |
 | `--limit <n>` | Show at most this many results. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `folder` | string |  |
+| `matches` | list | At most `limit` entries. |
+| `matches[].path` | string |  |
+| `matches[].kind` | one of `file`, `directory`, `other`, `symlink` |  |
+| `matches[].size` | number |  |
+| `matches[].modifiedMs` | number |  |
+| `total` | number |  |
+| `totalBytes` | number |  |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
 
@@ -371,6 +479,22 @@ kiriya files grep <pattern> [paths...] [options]
 | `--all` | Include hidden entries and dependency folders such as node_modules. |
 | `--limit <n>` | Show at most this many matching lines; 500 by default. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `mode` | one of `files`, `lines`, `count` |  |
+| `lines` | list | Matching lines, trimmed, at most `limit`; only in lines mode. |
+| `lines[].path` | string |  |
+| `lines[].line` | number |  |
+| `lines[].text` | string |  |
+| `files` | list | Every file with at least one match. |
+| `files[].path` | string |  |
+| `files[].count` | number |  |
+| `matches` | number |  |
+| `checked` | number |  |
+| `skipped` | number | Binary files and files over 50 MB. |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
 
@@ -397,6 +521,20 @@ kiriya files hash <paths...> [options]
 | `--algo <sha256\|sha1\|md5\|sha512>` | The algorithm; sha256 by default. |
 | `--check <hex>` | The checksum a single file should have; exits 1 when it does not. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `algorithm` | one of `sha256`, `sha1`, `md5`, `sha512` |  |
+| `files` | list |  |
+| `files[].path` | string |  |
+| `files[].hash` | string |  |
+| `check` | object or null |  |
+| `check.path` | string |  |
+| `check.expected` | string |  |
+| `check.actual` | string |  |
+| `check.matches` | boolean |  |
+
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
 
@@ -421,6 +559,30 @@ kiriya files info <paths...> [options]
 | Option | Description |
 |---|---|
 | `--hash <sha256\|sha1\|md5\|sha512>` | Also show a hash of each file. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `items` | list |  |
+| `items[].path` | string |  |
+| `items[].kind` | one of `file`, `directory`, `other`, `symlink` |  |
+| `items[].target` | string or null |  |
+| `items[].bytes` | number |  |
+| `items[].contents` | object or null | What a folder holds; null for anything else. |
+| `items[].contents.files` | number |  |
+| `items[].contents.directories` | number |  |
+| `items[].createdMs` | number |  |
+| `items[].modifiedMs` | number |  |
+| `items[].accessedMs` | number |  |
+| `items[].writable` | boolean | The owner may write. |
+| `items[].permissions` | object or null | As `rwxr-xr-x` and `755`; null on Windows, which keeps no such bits. |
+| `items[].permissions.symbolic` | string |  |
+| `items[].permissions.octal` | string |  |
+| `items[].hidden` | boolean |  |
+| `items[].hash` | object or null |  |
+| `items[].hash.algorithm` | one of `sha256`, `sha1`, `md5`, `sha512` |  |
+| `items[].hash.value` | string |  |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
@@ -448,6 +610,20 @@ kiriya files list [path] [options]
 | `--all` | Include hidden entries and dependency folders such as node_modules. |
 | `--sort <name\|size\|time>` | Sort by name, size or time. |
 | `--reverse` | Reverse the order. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `path` | string |  |
+| `entries` | list |  |
+| `entries[].name` | string |  |
+| `entries[].path` | string |  |
+| `entries[].kind` | one of `file`, `directory`, `other`, `symlink` |  |
+| `entries[].size` | number | Bytes for files; 0 for everything else. |
+| `entries[].modifiedMs` | number |  |
+| `entries[].target` | string or null | Where a symlink points; null for everything else. |
+| `hidden` | number |  |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
@@ -477,6 +653,20 @@ kiriya files move <sources...> <target> [options]
 | `--dry-run` | Show the plan and change nothing. |
 | `--confirm <count>` | For --overwrite in scripts: the number of conflicts, as the prompt would ask. Only at a terminal. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `items` | list |  |
+| `items[].source` | string |  |
+| `items[].destination` | string |  |
+| `items[].conflict` | boolean |  |
+| `items[].outcome` | one of `planned`, `failed`, `moved` |  |
+| `items[].reason` | object or null |  |
+| `items[].reason.key` | string |  |
+| `items[].reason.params` | anything |  |
+| `conflicts` | number |  |
+
 - **Safety:** `write`, can change things, in ways that can be undone
 - **MCP:** offered to AI agents when `mcp.allowWrite` is `true`
 
@@ -502,6 +692,18 @@ kiriya files new <paths...> [options]
 |---|---|
 | `--dir` | Create folders. |
 | `--content <text>` | Text to write into each new file. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `items` | list |  |
+| `items[].path` | string |  |
+| `items[].kind` | one of `file`, `directory` |  |
+| `items[].created` | boolean |  |
+| `items[].reason` | object or null |  |
+| `items[].reason.key` | string |  |
+| `items[].reason.params` | anything |  |
 
 - **Safety:** `write`, can change things, in ways that can be undone
 - **MCP:** offered to AI agents when `mcp.allowWrite` is `true`
@@ -530,6 +732,18 @@ kiriya files read <file> [options]
 | `--tail <n>` | Only the last n lines. |
 | `--lines <from>-<to>` | Only these lines, such as 10-20. |
 | `--number` | Put line numbers in front. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `path` | string |  |
+| `encoding` | one of `utf8`, `utf8-bom`, `utf16le`, `utf16be` |  |
+| `first` | number | Line numbers, from 1, of the first and the last line in `lines`. |
+| `last` | number |  |
+| `totalLines` | number |  |
+| `lines` | list of string |  |
+| `numbered` | boolean |  |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
@@ -561,6 +775,19 @@ kiriya files rename [paths...] [options]
 | `--only <files\|dirs>` | Rename only files or only folders. |
 | `--apply` | Rename; without it kiriya only shows the plan. |
 | `-y, --yes` | Rename without asking. Only at a terminal. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `mode` | one of `one`, `many` |  |
+| `renames` | list |  |
+| `renames[].from` | string |  |
+| `renames[].to` | string |  |
+| `problems` | list | Invalid names and clashes; any of them stops every rename. |
+| `problems[].key` | string |  |
+| `problems[].params` | anything |  |
+| `renamed` | number |  |
 
 - **Safety:** `write`, can change things, in ways that can be undone
 - **MCP:** offered to AI agents when `mcp.allowWrite` is `true`
@@ -595,6 +822,23 @@ kiriya files replace <find> <with> [paths...] [options]
 | `--apply` | Write the changes; without it kiriya only shows them. |
 | `-y, --yes` | Write without asking. Only at a terminal. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `files` | list |  |
+| `files[].path` | string |  |
+| `files[].count` | number |  |
+| `files[].lineCountChanges` | boolean | When the replacement adds or removes lines, no line samples are shown. |
+| `files[].samples` | list |  |
+| `files[].samples[].line` | number |  |
+| `files[].samples[].before` | string |  |
+| `files[].samples[].after` | string |  |
+| `replacements` | number |  |
+| `checked` | number |  |
+| `skipped` | number | Binary files and files over 50 MB. |
+| `written` | number |  |
+
 - **Safety:** `write`, can change things, in ways that can be undone
 - **MCP:** offered to AI agents when `mcp.allowWrite` is `true`
 
@@ -619,6 +863,21 @@ kiriya files size [folder] [options]
 | Option | Description |
 |---|---|
 | `--top <n>` | How many folders to show; 15 by default. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `folder` | string |  |
+| `bytes` | number |  |
+| `rebuildableBytes` | number |  |
+| `looseBytes` | number | Files directly in the folder. |
+| `top` | number | How many rows the text view shows; JSON has every row. |
+| `rows` | list | Every subfolder, largest first. |
+| `rows[].name` | string |  |
+| `rows[].path` | string |  |
+| `rows[].bytes` | number |  |
+| `rows[].rebuildableBytes` | number | Bytes inside dependency, build and cache folders. |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default
@@ -649,6 +908,18 @@ kiriya files sync <source> <target> [options]
 | `-y, --yes` | Copy without asking; never enough for --delete. Only at a terminal. |
 | `--confirm <name>` | For --delete in scripts: the target folder's name, as the prompt would ask. Only at a terminal. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `source` | string |  |
+| `target` | string |  |
+| `copy` | list of string | Relative paths with `/`. |
+| `update` | list of string |  |
+| `remove` | list of string |  |
+| `bytes` | number |  |
+| `applied` | boolean |  |
+
 - **Safety:** `destroy`, can do work that cannot be undone, and asks for a typed confirmation first
 - **MCP:** offered to AI agents with elicitation when `mcp.allowDestroy` is `true`
 
@@ -674,6 +945,22 @@ kiriya files tree [path] [options]
 |---|---|
 | `--depth <n>` | How many levels to open; 3 by default. |
 | `--all` | Show hidden entries and open dependency folders such as node_modules. |
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `root` | string |  |
+| `depth` | number |  |
+| `nodes` | list |  |
+| `nodes[].name` | string |  |
+| `nodes[].kind` | one of `file`, `directory`, `other`, `symlink` |  |
+| `nodes[].target` | string or null |  |
+| `nodes[].closed` | boolean | A dependency or build folder that is listed but not opened without --all. |
+| `nodes[].unreadable` | boolean |  |
+| `nodes[].children` | list of object |  |
+| `directories` | number |  |
+| `files` | number |  |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents by default

@@ -10,6 +10,7 @@ import type { RegisteredCommand, RegisteredModule } from "../src/core/applicatio
 import type { SafetyLevel } from "../src/core/domain/command.js";
 import { GLOBAL_OPTIONS } from "../src/core/domain/global-options.js";
 import { message } from "../src/core/domain/message.js";
+import type { OutputShapes, Shape } from "../src/core/domain/output-shape.js";
 import { optionLabel, usageLine } from "../src/core/presentation/cli/help.js";
 import type { Translator } from "../src/core/presentation/i18n/translator.js";
 import { offeredAsTool } from "../src/core/presentation/mcp/mcp-server.js";
@@ -52,7 +53,142 @@ function mcpNote(entry: RegisteredCommand): string {
     : "never offered to AI agents, because it is only for a person at a terminal";
 }
 
-function commandSection(module: RegisteredModule, entry: RegisteredCommand, translator: Translator): string[] {
+export interface ShapeRow {
+  /** Where the field sits inside `data`, with `[]` for a list, as `listeners[].pid`. */
+  readonly path: string;
+  readonly type: string;
+  readonly description: string;
+}
+
+/** What a shape is called in prose, where its own fields are not about to be listed below it. */
+function typeName(shapes: OutputShapes, shape: Shape, expanding: boolean): string {
+  const orNull = (text: string): string => (shape.nullable === true ? `${text} or null` : text);
+  switch (shape.kind) {
+    case "string":
+    case "number":
+    case "boolean":
+      return orNull(shape.kind);
+    case "unknown":
+      return orNull("anything");
+    case "choice": {
+      // A single value is a constant, which is what a discriminator such as `mode` is.
+      const [only] = shape.of;
+      if (shape.of.length === 1 && only !== undefined) return orNull(`always ${code(only)}`);
+      return orNull(`one of ${shape.of.map(code).join(", ")}`);
+    }
+    case "record":
+      return orNull("object");
+    case "ref":
+      return orNull("object");
+    // Only a nested union reaches here; a command whose whole data is one gets a table each.
+    case "variants":
+      return orNull("one of several shapes");
+    case "list": {
+      // The rows below carry an item's own fields, so the list itself only says it is one.
+      if (expanding) return orNull("list");
+      return orNull(`list of ${typeName(shapes, shape.of, false)}`);
+    }
+  }
+}
+
+/** Whether a shape's own fields are worth listing under it, rather than naming it and stopping. */
+function fieldsOf(shapes: OutputShapes, shape: Shape, seen: readonly string[]): ShapeFieldsOf | null {
+  if (shape.kind === "record") return { fields: shape.fields, seen };
+  if (shape.kind === "ref") {
+    if (seen.includes(shape.named)) return null;
+    const record = shapes.records[shape.named];
+    return record !== undefined && record.kind === "record"
+      ? { fields: record.fields, seen: [...seen, shape.named] }
+      : null;
+  }
+  return null;
+}
+
+interface ShapeFieldsOf {
+  readonly fields: Readonly<Record<string, Shape>>;
+  readonly seen: readonly string[];
+}
+
+/**
+ * Each field of a command's `data` as one row, in the order its type declares them. A list is
+ * marked `[]`, so `listeners[].pid` reads the way `convert json --get data.listeners.0.pid`
+ * is written. A type that contains itself is named and not opened again.
+ */
+export function shapeRows(shapes: OutputShapes, shape: Shape): readonly ShapeRow[] {
+  const rows: ShapeRow[] = [];
+  const walk = (at: Shape, prefix: string, seen: readonly string[]): void => {
+    // A list is opened at its item, which is where the fields are.
+    const item = at.kind === "list" ? at.of : at;
+    const inside = at.kind === "list" ? `${prefix}[]` : prefix;
+    const opened = fieldsOf(shapes, item, seen);
+    if (opened === null) return;
+    for (const [name, field] of Object.entries(opened.fields)) {
+      const path = inside === "" ? name : `${inside}.${name}`;
+      const expanding = fieldsOf(shapes, field.kind === "list" ? field.of : field, opened.seen) !== null;
+      rows.push({
+        path,
+        type: typeName(shapes, field, expanding),
+        description: field.description ?? "",
+      });
+      walk(field, path, opened.seen);
+    }
+  };
+  walk(shape, "", []);
+  return rows;
+}
+
+const rowTable = (rows: readonly ShapeRow[]): string[] => [
+  "| Field | Type | Description |",
+  "|---|---|---|",
+  ...rows.map((row) => `| ${code(row.path)} | ${cell(row.type)} | ${cell(row.description)} |`),
+];
+
+/**
+ * How to tell one variant from another: the field every one of them fixes to a single value,
+ * such as `mode` being `list` or `extract`. Null when they share no such field.
+ */
+function discriminator(shapes: OutputShapes, variants: readonly Shape[]): string | null {
+  const valuesOf = (variant: Shape): Readonly<Record<string, Shape>> => fieldsOf(shapes, variant, [])?.fields ?? {};
+  const first = valuesOf(variants[0] ?? { kind: "unknown" });
+  for (const name of Object.keys(first)) {
+    const fixed = variants.every((variant) => {
+      const field = valuesOf(variant)[name];
+      return field?.kind === "choice" && field.of.length === 1;
+    });
+    if (fixed) return name;
+  }
+  return null;
+}
+
+function dataTable(shapes: OutputShapes, id: string): string[] {
+  const shape = shapes.commands[id];
+  if (shape === undefined) return [];
+  if (shape.kind !== "variants") {
+    const rows = shapeRows(shapes, shape);
+    return rows.length === 0 ? [] : ["", "With `--json`, `data` holds:", "", ...rowTable(rows)];
+  }
+
+  const name = discriminator(shapes, shape.of);
+  const lines = ["", "With `--json`, `data` holds one of these:"];
+  shape.of.forEach((variant, index) => {
+    const rows = shapeRows(shapes, variant);
+    if (rows.length === 0) return;
+    const value = name === null ? null : fieldsOf(shapes, variant, [])?.fields[name];
+    const label =
+      value?.kind === "choice" && name !== null
+        ? `When ${code(name)} is ${code(value.of[0] ?? "")}:`
+        : `Shape ${index + 1}:`;
+    lines.push("", label, "", ...rowTable(rows));
+  });
+  return lines.length === 2 ? [] : lines;
+}
+
+function commandSection(
+  module: RegisteredModule,
+  entry: RegisteredCommand,
+  translator: Translator,
+  shapes: OutputShapes,
+): string[] {
   const { spec } = entry.command;
   const text = (key: MessageKey): string => sentence(translator.text(message(key)));
   const name = entry.verb === "" ? `kiriya ${module.id}` : `kiriya ${module.id} ${entry.verb}`;
@@ -82,6 +218,8 @@ function commandSection(module: RegisteredModule, entry: RegisteredCommand, tran
     }
   }
 
+  lines.push(...dataTable(shapes, spec.id));
+
   lines.push(
     "",
     `- **Safety:** ${code(spec.safety)}, ${SAFETY[spec.safety]}`,
@@ -93,10 +231,10 @@ function commandSection(module: RegisteredModule, entry: RegisteredCommand, tran
   return lines;
 }
 
-/** The `## Reference` part of a module's guide: every command with its arguments, options, safety and examples. */
-export function moduleReference(module: RegisteredModule, translator: Translator): string {
+/** The `## Reference` part of a module's guide: every command with its arguments, options, data, safety and examples. */
+export function moduleReference(module: RegisteredModule, translator: Translator, shapes: OutputShapes): string {
   const lines = [GENERATED_NOTE, "", "## Reference"];
-  for (const entry of commandsOf(module)) lines.push("", ...commandSection(module, entry, translator));
+  for (const entry of commandsOf(module)) lines.push("", ...commandSection(module, entry, translator, shapes));
   return lines.join("\n");
 }
 

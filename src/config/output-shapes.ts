@@ -2422,10 +2422,152 @@ export const OUTPUT_SHAPES: OutputShapes = {
       named: "archive.ZipOutput",
     },
     "archive.untar": {
-      kind: "unknown",
+      kind: "variants",
+      of: [
+        {
+          kind: "record",
+          fields: {
+            mode: {
+              kind: "choice",
+              of: ["list"],
+            },
+            archive: {
+              kind: "string",
+            },
+            entries: {
+              kind: "list",
+              of: {
+                kind: "ref",
+                named: "archive.ListedTarEntry",
+              },
+            },
+            bytes: {
+              kind: "number",
+            },
+          },
+        },
+        {
+          kind: "record",
+          fields: {
+            mode: {
+              kind: "choice",
+              of: ["extract"],
+            },
+            archive: {
+              kind: "string",
+            },
+            target: {
+              kind: "string",
+            },
+            extracted: {
+              kind: "boolean",
+            },
+            files: {
+              kind: "number",
+            },
+            bytes: {
+              kind: "number",
+            },
+            unsafe: {
+              kind: "list",
+              of: {
+                kind: "string",
+              },
+              description: "Names that would land outside the target; any of them stops the extraction.",
+            },
+            skipped: {
+              kind: "list",
+              of: {
+                kind: "string",
+              },
+              description: "Names no OS could create, such as `what?.txt`; skipped.",
+            },
+            conflicts: {
+              kind: "list",
+              of: {
+                kind: "string",
+              },
+              description: "Existing files that --overwrite would replace.",
+            },
+            skippedLinks: {
+              kind: "number",
+              description: "Symbolic and hard links, devices and pipes, which are never created.",
+            },
+          },
+        },
+      ],
     },
     "archive.unzip": {
-      kind: "unknown",
+      kind: "variants",
+      of: [
+        {
+          kind: "record",
+          fields: {
+            mode: {
+              kind: "choice",
+              of: ["list"],
+            },
+            archive: {
+              kind: "string",
+            },
+            entries: {
+              kind: "list",
+              of: {
+                kind: "ref",
+                named: "archive.ListedEntry",
+              },
+            },
+            bytes: {
+              kind: "number",
+            },
+          },
+        },
+        {
+          kind: "record",
+          fields: {
+            mode: {
+              kind: "choice",
+              of: ["extract"],
+            },
+            archive: {
+              kind: "string",
+            },
+            target: {
+              kind: "string",
+            },
+            extracted: {
+              kind: "boolean",
+            },
+            files: {
+              kind: "number",
+            },
+            bytes: {
+              kind: "number",
+            },
+            unsafe: {
+              kind: "list",
+              of: {
+                kind: "string",
+              },
+              description: "Names that would land outside the target; any of them stops the extraction.",
+            },
+            skipped: {
+              kind: "list",
+              of: {
+                kind: "string",
+              },
+              description: "Names no OS could create, such as `what?.txt`; skipped.",
+            },
+            conflicts: {
+              kind: "list",
+              of: {
+                kind: "string",
+              },
+              description: "Existing files that --overwrite would replace.",
+            },
+          },
+        },
+      ],
     },
     "clip.copy": {
       kind: "ref",
@@ -2500,7 +2642,47 @@ export const OUTPUT_SHAPES: OutputShapes = {
       named: "docker.CleanOutput",
     },
     "docker.ps": {
-      kind: "unknown",
+      kind: "variants",
+      of: [
+        {
+          kind: "record",
+          fields: {
+            mode: {
+              kind: "choice",
+              of: ["project"],
+            },
+            project: {
+              kind: "string",
+            },
+            file: {
+              kind: "string",
+            },
+            containers: {
+              kind: "list",
+              of: {
+                kind: "ref",
+                named: "docker.Container",
+              },
+            },
+          },
+        },
+        {
+          kind: "record",
+          fields: {
+            mode: {
+              kind: "choice",
+              of: ["projects"],
+            },
+            projects: {
+              kind: "list",
+              of: {
+                kind: "ref",
+                named: "docker.ComposeProjectState",
+              },
+            },
+          },
+        },
+      ],
     },
     "docker.up": {
       kind: "ref",
@@ -2539,7 +2721,17 @@ export const OUTPUT_SHAPES: OutputShapes = {
       named: "files.CleanOutput",
     },
     "files.compare": {
-      kind: "unknown",
+      kind: "variants",
+      of: [
+        {
+          kind: "ref",
+          named: "files.CompareFilesOutput",
+        },
+        {
+          kind: "ref",
+          named: "files.CompareFoldersOutput",
+        },
+      ],
     },
     "files.copy": {
       kind: "ref",

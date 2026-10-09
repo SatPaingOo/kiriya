@@ -67,6 +67,12 @@ kiriya clip copy [text] [options]
 |---|---|
 | `--file <path>` | Copy a text file's content instead. |
 
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `characters` | number | Unicode characters, not UTF-16 units. |
+
 - **Safety:** `write`, can change things, in ways that can be undone
 - **MCP:** offered to AI agents when `mcp.allowWrite` is `true`
 
@@ -83,6 +89,12 @@ Print the text on the clipboard.
 ```text
 kiriya clip paste
 ```
+
+With `--json`, `data` holds:
+
+| Field | Type | Description |
+|---|---|---|
+| `text` | string |  |
 
 - **Safety:** `read`, changes nothing
 - **MCP:** offered to AI agents when `mcp.allowWrite` is `true`

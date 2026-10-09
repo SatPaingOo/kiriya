@@ -80,6 +80,23 @@ With `--json`, every command prints exactly one JSON document on stdout:
 | `data` | The command's result. Its shape is part of kiriya's public API, so a field is never renamed or removed without a major version |
 | `warnings`, `failures` | Messages, each with a stable `key`, its `params`, and the English `text` |
 
+### Reading `data`
+
+Every command's guide lists what its own `data` holds, under **With `--json`, `data` holds**.
+Those tables are written from the code, so they cannot drift from it.
+
+In them, `[]` marks a list: `listeners[].pid` means each entry of `listeners` has a `pid`. A
+real path names the entry by its number, which is also how
+[`convert json --get`](modules/convert.md#read-one-value-out-of-json) writes it:
+
+```bash
+kiriya port who 3000 --json | kiriya convert json --get data.listeners.0.pid
+```
+
+A few commands answer in more than one shape — `archive unzip` lists or extracts, `files
+compare` compares two files or two folders — and their guides show a table for each, with the
+field that tells them apart.
+
 An error prints a document of its own:
 
 ```json

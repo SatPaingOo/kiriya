@@ -20,6 +20,7 @@ import {
   moduleTable,
   settingsTable,
 } from "./docs-reference.js";
+import { extractShapes } from "./output-shapes.js";
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const checking = process.argv.includes("--check");
@@ -31,13 +32,23 @@ for (const module of BUILT_IN_MODULES) registry.register(module, {} as CorePorts
 const translator = new Translator(en);
 const modules = registry.list();
 
+// Read from the types rather than from src/config/output-shapes.ts, which `npm run shapes`
+// writes after this tool was built: the source is the same, and this way it cannot be stale.
+const commandIds = modules.flatMap((module) => [...module.commands.values()].map((e) => e.command.spec.id));
+const shapes = extractShapes(ROOT, commandIds);
+if (shapes.problems.length > 0) {
+  for (const problem of shapes.problems) console.error(`  ${problem}`);
+  console.error("docs: the output shapes cannot be read; run npm run shapes to see why");
+  process.exit(1);
+}
+
 const pages: Record<string, Record<string, string>> = {
   "README.md": { modules: moduleTable(modules, translator, { folder: "docs/modules/", commands: false }) },
   "docs/modules/README.md": { modules: moduleTable(modules, translator, { folder: "", commands: true }) },
   "docs/usage.md": { "global-options": globalOptionsTable(translator), settings: settingsTable(translator) },
 };
 for (const module of modules)
-  pages[`docs/modules/${module.id}.md`] = { reference: moduleReference(module, translator) };
+  pages[`docs/modules/${module.id}.md`] = { reference: moduleReference(module, translator, shapes) };
 
 const problems = modules.flatMap(moduleProblems);
 for (const [page, blocks] of Object.entries(pages)) {
