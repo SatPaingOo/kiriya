@@ -43,6 +43,12 @@ By default an archive extracts into a new folder named after it, next to it. Fil
 already exist stay as they are, unless `--overwrite` is given and you type the number of
 files it replaces.
 
+`unzip` and `untar` therefore answer in two shapes, and `--json` says which: `--list` sets
+`mode` to `list` and carries the entries, while extracting sets it to `extract` and reports
+what happened. In a script, read `unsafe` before trusting anything else — when it names any
+entry, **nothing was extracted at all** — and `skipped` and `conflicts` say what was left
+alone and what `--overwrite` would replace.
+
 ## Safety
 
 - Before extracting anything, kiriya checks every entry. When one would land outside the
