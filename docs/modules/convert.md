@@ -45,6 +45,46 @@ kiriya convert json --check --file config.json
 Invalid JSON is reported with the line and column of the first error. `--check` only says
 whether the JSON is valid.
 
+### Read one value out of JSON
+
+Every kiriya command answers `--json`, and `--get` reads that answer back without a second
+tool having to be installed:
+
+```bash
+kiriya port who 3000 --json | kiriya convert json --get data.listeners.0.pid
+kiriya sys info --json | kiriya convert json --get data.timeZone
+kiriya convert json --file package.json --get version
+```
+
+A path is keys and indexes joined by dots. A leading dot is accepted too, so `.version` works
+as well as `version`.
+
+**Text prints as itself**, with no quotes for a shell to strip, which is what makes this work:
+
+```bash
+pid=$(kiriya port who 3000 --json | kiriya convert json --get data.listeners.0.pid)
+```
+
+Numbers, `true`, `false` and `null` print as they are written. An object or an array prints as
+JSON, and `--minify` puts it on one line.
+
+A path that is not there is a failure rather than an empty answer: nothing is printed, the
+message names the part of the path that stopped — `Nothing is at data.ports` for
+`data.ports.0` — and the exit code is 1, so a script can test it without reading any output.
+`--check` reports only whether the JSON is valid, so it cannot be combined with `--get`.
+
+#### What a path deliberately cannot do
+
+This is a path, not a query language, and it stays one on purpose: there is nothing to learn
+beyond dots and indexes, and no half of jq to be disappointed by.
+
+- **No filters, wildcards or expressions.** jq exists and is better at being jq.
+- **A key containing a dot cannot be reached.** Reaching it needs quoting, and quoting is the
+  first rule of the language this is not.
+- **Only an index reaches into an array.** `length` is JavaScript's, not your data's.
+- **Only keys the document really holds.** `constructor` and `__proto__` are reachable when
+  the JSON actually has such a key, and read as missing when it does not.
+
 ### Read a JWT
 
 ```bash
@@ -174,7 +214,7 @@ kiriya convert hex --decode 68656c6c6f
 
 ### `kiriya convert json`
 
-Format, minify or check JSON, pointing at the line and column of an error.
+Format, minify, check or read a value out of JSON, pointing at any error.
 
 ```text
 kiriya convert json [value] [options]
@@ -188,6 +228,7 @@ kiriya convert json [value] [options]
 |---|---|
 | `--minify` | Print it on one line. |
 | `--check` | Only check it. |
+| `--get <path>` | Print what is at a dotted path, such as data.listeners.0.pid. |
 | `--file <path>` | Read a file's exact bytes instead. |
 
 - **Safety:** `read`, changes nothing
@@ -197,6 +238,8 @@ kiriya convert json [value] [options]
 kiriya convert json --file package.json
 kiriya convert json --minify < data.json
 kiriya convert json --check --file config.json
+kiriya convert json --file package.json --get version
+kiriya convert json --get data.listeners.0.pid < who.json
 ```
 
 ### `kiriya convert jwt`

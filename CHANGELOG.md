@@ -7,6 +7,28 @@ output shapes are kiriya's public API.
 
 ## [Unreleased]
 
+### Added
+
+- `convert json --get <path>` prints what is at a dotted path, so the `--json` every command
+  already answers with can be read back without a second tool:
+  `kiriya port who 3000 --json | kiriya convert json --get data.listeners.0.pid`. On Windows
+  there is no `jq` to reach for, and kiriya was emitting JSON that nothing it shipped could
+  query.
+
+  A path is keys and indexes joined by dots, and a leading dot is accepted as jq writes it.
+  **Text prints as itself**, with no quotes for a shell to strip, which is the whole point of
+  the option; numbers, `true`, `false` and `null` print as written, and an object or an array
+  prints as JSON that `--minify` puts on one line. A path that is not there prints nothing,
+  names the part that stopped — `Nothing is at data.ports` for `data.ports.0` — and exits 1,
+  so a script can test it without reading any output. `--check` reports only whether the JSON
+  is valid, so it cannot be combined with `--get`.
+
+  It is deliberately a path and not a query language: no filters, wildcards or expressions,
+  and a key containing a dot cannot be reached, because reaching it needs quoting and quoting
+  is the first rule of the language this is not. Only an index reaches into an array, so
+  `length` stays out of reach, and only keys the document really holds are reachable, so a
+  `constructor` key is there when the JSON has one and missing when it does not.
+
 ### Fixed
 
 - An argument named after one of JavaScript's own members disappeared. `constructor`,
