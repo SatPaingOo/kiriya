@@ -13,16 +13,21 @@ export interface GlobalFlags {
   readonly version: boolean;
 }
 
-const GLOBAL_TOKENS: Readonly<Record<string, keyof GlobalFlags>> = {
-  "--json": "json",
-  "--no-color": "noColor",
-  "--no-input": "noInput",
-  "--debug": "debug",
-  "--help": "help",
-  "-h": "help",
-  "--version": "version",
-  "-V": "version",
-};
+/**
+ * A Map, not an object: this is looked up with whatever the user typed, and a plain object
+ * would answer `constructor`, `toString` and the rest of `Object.prototype` with JavaScript's
+ * own members. That made every argument of those names vanish from argv.
+ */
+const GLOBAL_TOKENS = new Map<string, keyof GlobalFlags>([
+  ["--json", "json"],
+  ["--no-color", "noColor"],
+  ["--no-input", "noInput"],
+  ["--debug", "debug"],
+  ["--help", "help"],
+  ["-h", "help"],
+  ["--version", "version"],
+  ["-V", "version"],
+]);
 
 /** Global flags may appear anywhere before `--`; they are taken out before the command parses the rest. */
 export function splitGlobalFlags(argv: readonly string[]): { flags: GlobalFlags; rest: string[] } {
@@ -37,7 +42,7 @@ export function splitGlobalFlags(argv: readonly string[]): { flags: GlobalFlags;
   const rest: string[] = [];
   let passthrough = false;
   for (const token of argv) {
-    const flag = passthrough ? undefined : GLOBAL_TOKENS[token];
+    const flag = passthrough ? undefined : GLOBAL_TOKENS.get(token);
     if (token === "--") passthrough = true;
     if (flag === undefined) rest.push(token);
     else flags[flag] = true;
@@ -51,9 +56,11 @@ function usageError(error: unknown, schema: InputSchema<unknown>): UsageError {
   const text = error instanceof Error ? error.message : String(error);
   const option = /'(?:-\w, )?(-{1,2}[^'\s=,]+)/.exec(text)?.[1];
   if (code === "ERR_PARSE_ARGS_UNKNOWN_OPTION" && option !== undefined) {
-    const known = [...Object.keys(schema.options), ...Object.keys(GLOBAL_TOKENS).map((token) => token.slice(2))].map(
-      (name) => `--${name}`,
-    );
+    const known = [
+      ...Object.keys(schema.options).map((name) => `--${name}`),
+      // Long forms only: `-h` and `-V` are no use as a suggestion for a mistyped `--name`.
+      ...[...GLOBAL_TOKENS.keys()].filter((token) => token.startsWith("--")),
+    ];
     const suggestion = option.startsWith("--") ? closest(option, known) : undefined;
     return new UsageError(
       "core.usage.unknown-option",

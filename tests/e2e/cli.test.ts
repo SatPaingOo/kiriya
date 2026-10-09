@@ -4,7 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { runKiriya as kiriya } from "../support/cli.js";
-import { temporaryFolder } from "../support/fakes.js";
+import { layout, temporaryFolder } from "../support/fakes.js";
 
 const PACKAGE = fileURLToPath(new URL("../../../package.json", import.meta.url));
 
@@ -31,6 +31,35 @@ test("usage errors exit 2 with a suggestion on stderr and nothing on stdout", as
   const option = kiriya(root, ["files", "list", "--al"]);
   assert.equal(option.code, 2);
   assert.match(option.stderr, /Unknown option: --al\r?\nDid you mean --all\?/);
+});
+
+/**
+ * `constructor`, `toString` and the rest of `Object.prototype`'s names were looked up in a
+ * plain object of the global flags, which answered each with a function rather than undefined.
+ * The token was therefore taken for a global flag and dropped from argv, so
+ * `kiriya files grep toString .` searched for `.`, found it, and exited 0: a wrong answer
+ * presented as a right one, which is worse than an error.
+ */
+test("an argument named after one of JavaScript's own members reaches the command", async (t) => {
+  const root = await temporaryFolder(t);
+  await layout(root, { "a.ts": "const shown = value.toString();\n", "b.ts": "const other = 1;\n" });
+
+  const grep = kiriya(root, ["files", "grep", "toString", "."]);
+  assert.equal(grep.code, 0);
+  assert.match(grep.stdout, /a\.ts:1: const shown/);
+  assert.doesNotMatch(grep.stdout, /b\.ts/);
+
+  // As an option's value it left the option with nothing at all.
+  assert.deepEqual(kiriya(root, ["convert", "base64", "constructor"]), {
+    code: 0,
+    stdout: "Y29uc3RydWN0b3I=\n",
+    stderr: "",
+  });
+
+  // And reaching the environment with one now reads as unset, where it used to throw on a function.
+  const unset = kiriya(root, ["env", "path", "constructor"]);
+  assert.equal(unset.code, 1);
+  assert.match(unset.stderr, /The variable constructor is not set/);
 });
 
 test("a usage error inside a command points at that command's help", async (t) => {

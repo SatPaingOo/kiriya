@@ -28,6 +28,36 @@ test("global flags are taken from anywhere before --", () => {
   assert.deepEqual(rest, ["files", "list", "--", "--json"]);
 });
 
+/**
+ * Every name on `Object.prototype`. These were looked up in a plain object of the global
+ * flags, which answered each one with a function rather than undefined, so the token was
+ * taken for a global flag and dropped: `kiriya files grep toString src` searched for `src`
+ * and reported success.
+ */
+test("an argument named after one of JavaScript's own members is kept, not swallowed", () => {
+  const inherited = [
+    "constructor",
+    "toString",
+    "toLocaleString",
+    "valueOf",
+    "hasOwnProperty",
+    "isPrototypeOf",
+    "propertyIsEnumerable",
+    "__proto__",
+  ];
+  for (const name of inherited) {
+    const { flags, rest } = splitGlobalFlags(["files", "grep", name, "src"]);
+    assert.deepEqual(rest, ["files", "grep", name, "src"], name);
+    // And nothing was written under a key made out of whatever that lookup returned.
+    assert.deepEqual(Object.keys(flags).sort(), ["debug", "help", "json", "noColor", "noInput", "version"], name);
+    assert.deepEqual(
+      Object.values(flags).filter((value) => value),
+      [],
+      name,
+    );
+  }
+});
+
 test("arguments are parsed against the schema", () => {
   const raw = parseCommandArguments(schema, ["x", "--all", "--ext", ".ts", "--ext", ".md", "-y", "--name=*.ts"]);
   assert.deepEqual(raw.positionals, ["x"]);

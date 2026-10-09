@@ -9,6 +9,23 @@ output shapes are kiriya's public API.
 
 ### Fixed
 
+- An argument named after one of JavaScript's own members disappeared. `constructor`,
+  `toString`, `toLocaleString`, `valueOf`, `hasOwnProperty`, `isPrototypeOf`,
+  `propertyIsEnumerable` and `__proto__` were looked up in a plain object of the global flags,
+  which answers every one of them with a function rather than with nothing, so each was taken
+  for a global flag and removed from the command line. `kiriya files grep toString .` therefore
+  searched for `.`, found it, printed matches and exited 0 — **a wrong answer presented as a
+  right one**, which is worse than an error. `kiriya convert base64 constructor` encoded
+  nothing, and any option given one of those names as its value reported that the option
+  needed a value. The lookup is now a `Map`, which has no inherited names to confuse with real
+  ones.
+
+  The same mistake is fixed in two more places it had not yet been reached in. `process.env`
+  answers those names with a function too, so `env path constructor` would have thrown on
+  text that was not text as soon as the argument survived; it now reads as unset. A plugin's
+  message catalog and its placeholders are looked up the same way, where `constructor` as a
+  key threw and as a placeholder printed JavaScript source into a message.
+
 - `self-update --apply` could never install anything on Windows. kiriya opens no shell, so it
   starts only real executables, and Windows has no `npm.exe`: npm arrives as `npm.cmd` and
   `npm.ps1`, which are a batch file and a PowerShell script. `--apply` therefore reported that

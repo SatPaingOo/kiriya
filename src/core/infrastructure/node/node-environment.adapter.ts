@@ -12,8 +12,13 @@ export class NodeEnvironmentAdapter implements Environment {
   readonly os: OsFamily = osFamily(process.platform);
   readonly homeDirectory = homedir();
 
+  /**
+   * Own entries only. `process.env` answers `constructor` and the rest of `Object.prototype`
+   * with a function, which is not a variable and is not a string either, so `env path
+   * constructor` would reach code expecting text and throw.
+   */
   variable(name: string): string | undefined {
-    return process.env[name];
+    return Object.hasOwn(process.env, name) ? process.env[name] : undefined;
   }
 
   variables(): Readonly<Record<string, string>> {

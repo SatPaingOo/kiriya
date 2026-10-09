@@ -4,7 +4,7 @@ import { done } from "../../../src/core/domain/command.js";
 import { message } from "../../../src/core/domain/message.js";
 import { resultJson } from "../../../src/core/presentation/cli/json-output.js";
 import { Translator } from "../../../src/core/presentation/i18n/translator.js";
-import { en } from "../../../src/i18n/locales/en.js";
+import { en, type MessageKey } from "../../../src/i18n/locales/en.js";
 
 const translator = new Translator(en);
 
@@ -20,6 +20,24 @@ test("a message inside a parameter is translated in place", () => {
 
 test("a missing parameter stays visible instead of vanishing", () => {
   assert.equal(translator.text(message("core.fs.not-found")), "Not found: {path}");
+});
+
+/**
+ * A plugin names its own keys and writes its own placeholders, and both are looked up in a
+ * plain object. `constructor` and the rest of `Object.prototype` answered with a function:
+ * as a template that threw, because a function has no `replace`, and as a parameter it
+ * printed JavaScript source into a message.
+ */
+test("a key or placeholder named after one of JavaScript's own members reads as absent", () => {
+  // A plugin's keys are real at runtime but are not in kiriya's own union, as here.
+  const key = (name: string): MessageKey => name as MessageKey;
+  const fromPlugin = new Translator({ "plugin.greet": "hello {constructor}" });
+
+  assert.equal(fromPlugin.text(message(key("plugin.greet"), { name: "x" })), "hello {constructor}");
+  assert.equal(fromPlugin.text(message(key("plugin.greet"), { constructor: "world" })), "hello world");
+  // A key the catalog does not hold shows as the key, which is what any missing one must do.
+  assert.equal(fromPlugin.text(message(key("constructor"))), "constructor");
+  assert.equal(fromPlugin.text(message(key("toString"))), "toString");
 });
 
 test("JSON keeps keys and parameters of nested messages and adds their text", () => {
