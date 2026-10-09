@@ -86,7 +86,12 @@ const SNAPSHOT: SystemSnapshot = {
   timeZone: "UTC",
 };
 const system: SystemInfo = { read: () => Promise.resolve(SNAPSHOT) };
-const runtime = { kiriyaVersion: "1.2.3", nodeVersion: "v24.1.0", installDirectory: "/opt/kiriya/" };
+const runtime = {
+  kiriyaVersion: "1.2.3",
+  nodeVersion: "v24.1.0",
+  installDirectory: "/opt/kiriya/",
+  nodeExecutable: "/usr/bin/node",
+};
 
 test("sys info names the host, and sys report leaves the host name and tool paths out", async () => {
   const info = expectDone(await new ShowInfo(system, runtime).execute());

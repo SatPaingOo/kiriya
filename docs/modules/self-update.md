@@ -38,6 +38,21 @@ npm's own output appears as it goes, because an install over a slow network take
 
 When there is nothing newer, `--apply` does nothing at all.
 
+### How npm is started
+
+kiriya opens no shell, which decides how it finds npm:
+
+1. **`npm` on PATH**, when what is there is a program that can be started on its own. That is
+   the usual answer on Linux and macOS, and it comes first so a machine with a particular npm
+   on its PATH gets that one.
+2. **npm's own script, started with the node already running kiriya.** On Windows PATH holds
+   `npm.cmd` and `npm.ps1`, which are a batch file and a PowerShell script: both need a shell,
+   and there is no `npm.exe` at all. npm itself is plain JavaScript, so kiriya looks for
+   `node_modules/npm/bin/npm-cli.js` beside node and then under `lib`, which is where every
+   installer, nvm, nvm-windows and fnm included, puts it.
+
+When neither answers, `--apply` says so instead of running anything.
+
 ## Good to know
 
 - **Nothing checks for updates by itself.** kiriya reaches the network only where a command's
@@ -63,7 +78,7 @@ When there is nothing newer, `--apply` does nothing at all.
 | Code | When |
 |---|---|
 | `0` | It said where you stand, or installed the newer version |
-| `1` | The registry could not be reached or did not say, npm refused, or npm is not on PATH |
+| `1` | The registry could not be reached or did not say, npm refused, or npm could not be found |
 
 <!-- kiriya:reference -->
 <!-- Written by `npm run docs` from the command specs. Change the specs, not this part. -->

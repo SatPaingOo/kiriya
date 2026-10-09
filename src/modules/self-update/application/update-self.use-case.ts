@@ -4,10 +4,12 @@ import { CapabilityUnavailableError } from "../../../core/domain/errors.js";
 import { RawReader } from "../../../core/domain/input-schema.js";
 import { message } from "../../../core/domain/message.js";
 import type { RuntimeInfo } from "../../../core/domain/module.js";
+import type { FileSystem } from "../../../core/domain/ports/file-system.js";
 import type { Network } from "../../../core/domain/ports/network.js";
 import type { ProcessRunner } from "../../../core/domain/ports/process-runner.js";
 import { installSource, type InstallSource } from "../domain/install-source.js";
 import { compareVersions, parseVersion, readLatestVersion } from "../domain/versions.js";
+import { npmScriptCandidates } from "./npm-script.js";
 
 /** The registry entry for the version npm serves as `latest`. */
 export const LATEST_URL = "https://registry.npmjs.org/kiriya/latest";
@@ -20,6 +22,12 @@ export const INSTALL_TIMEOUT_MS = 300_000;
 
 export interface SelfUpdateInput {
   readonly apply: boolean;
+}
+
+/** How to start npm: its own script needs node in front of it, an executable needs nothing. */
+interface NpmCommand {
+  readonly program: string;
+  readonly leading: readonly string[];
 }
 
 export interface SelfUpdateOutput {
@@ -61,8 +69,25 @@ export class UpdateSelf implements Command<SelfUpdateInput, SelfUpdateOutput> {
   constructor(
     private readonly network: Network,
     private readonly processRunner: ProcessRunner,
+    private readonly fileSystem: FileSystem,
     private readonly runtime: RuntimeInfo,
   ) {}
+
+  /**
+   * npm on PATH when it is an executable there, and otherwise npm's own script started with
+   * node. Windows needs the second: it ships npm as `npm.cmd` and `npm.ps1`, and kiriya opens
+   * no shell, so PATH holds nothing it can start. PATH still comes first, because a machine
+   * with a particular npm on it meant to use that one.
+   */
+  private async findNpm(): Promise<NpmCommand | null> {
+    const onPath = await this.processRunner.find("npm");
+    if (onPath !== null) return { program: onPath, leading: [] };
+    for (const script of npmScriptCandidates(this.runtime.nodeExecutable)) {
+      const found = await this.fileSystem.stat(script);
+      if (found?.kind === "file") return { program: this.runtime.nodeExecutable, leading: [script] };
+    }
+    return null;
+  }
 
   async execute(input: SelfUpdateInput, context: CommandContext): Promise<CommandResult<SelfUpdateOutput>> {
     const installed = this.runtime.kiriyaVersion;
@@ -90,15 +115,19 @@ export class UpdateSelf implements Command<SelfUpdateInput, SelfUpdateOutput> {
     if (source !== "npm") {
       return done({ ...base, applied: false }, { failures: [message("self-update.not-npm", { latest })] });
     }
-    const npm = await this.processRunner.find("npm");
+    const npm = await this.findNpm();
     if (npm === null) throw new CapabilityUnavailableError("self-update.no-npm");
-    const result = await this.processRunner.run(npm, ["install", "--global", `kiriya@${latest}`], {
-      signal: context.signal,
-      // An install over a slow network outlasts the default minute.
-      timeoutMs: INSTALL_TIMEOUT_MS,
-      // Shown as it arrives, because this is the one command that can take a while.
-      onOutput: (text, stream) => context.passthrough.write(text, stream),
-    });
+    const result = await this.processRunner.run(
+      npm.program,
+      [...npm.leading, "install", "--global", `kiriya@${latest}`],
+      {
+        signal: context.signal,
+        // An install over a slow network outlasts the default minute.
+        timeoutMs: INSTALL_TIMEOUT_MS,
+        // Shown as it arrives, because this is the one command that can take a while.
+        onOutput: (text, stream) => context.passthrough.write(text, stream),
+      },
+    );
     if (result.code !== 0) {
       return done(
         { ...base, applied: false },

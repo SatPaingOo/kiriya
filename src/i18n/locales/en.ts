@@ -785,7 +785,7 @@ export const en = {
   "self-update.unreachable": "The registry could not be reached ({failure}), so the newest version is unknown",
   "self-update.unreadable": "The registry answered {status}, which does not say which version is latest",
   "self-update.not-npm": "kiriya {latest} is out, but npm did not install this one, so npm will not replace it",
-  "self-update.no-npm": "npm is not on PATH, so the newer version cannot be installed",
+  "self-update.no-npm": "npm was found neither on PATH nor beside node, so the newer version cannot be installed",
   "self-update.failed": "npm could not install the newer version (exit code {code}): {detail}",
 
   "core.processes.failed": "{program} could not list processes (exit code {code}): {detail}",

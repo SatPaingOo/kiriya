@@ -146,6 +146,7 @@ const ports: CorePorts = {
     nodeVersion: process.version,
     // dist/src/main.js, so two levels up is the folder holding package.json.
     installDirectory: fileURLToPath(new URL("../../", import.meta.url)),
+    nodeExecutable: process.execPath,
   },
 };
 

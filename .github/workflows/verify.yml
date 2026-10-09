@@ -11,6 +11,10 @@ on:
         description: The version to verify, such as 0.1.1. The latest when left out.
         type: string
         default: ""
+      from:
+        description: A version to run `self-update --apply` from, such as 0.2.1. Skipped when left out.
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -83,6 +87,24 @@ jobs:
           printf 'bin me' > trash-me.txt
           kiriya files delete trash-me.txt --yes
           test ! -f trash-me.txt
+
+      # Last, because it replaces the install this job has been checking. `from` has to be a
+      # version whose self-update can find npm at all: 0.2.0 and earlier cannot on Windows,
+      # where npm is `npm.cmd` and needs the shell kiriya never opens.
+      - name: self-update --apply really replaces the install
+        if: inputs.from != ''
+        env:
+          FROM: ${{ inputs.from }}
+        run: |
+          npm install --global "kiriya@$FROM"
+          test "$(kiriya --version)" = "$FROM"
+          kiriya self-update --apply
+          after=$(kiriya --version)
+          echo "$FROM -> $after"
+          if [ "$after" = "$FROM" ]; then
+            echo "--apply left the old version in place"
+            exit 1
+          fi
 
   registry:
     name: the MCP Registry lists it

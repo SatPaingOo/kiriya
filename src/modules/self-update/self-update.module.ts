@@ -9,6 +9,6 @@ export const selfUpdateModule: KiriyaModule = {
   // A module that is one command shows that command's examples, as doctor does.
   guide: "https://github.com/SatPaingOo/kiriya/blob/main/docs/modules/self-update.md",
   register(registrar, ports) {
-    registrar.add(new UpdateSelf(ports.network, ports.processRunner, ports.runtime), selfUpdateView);
+    registrar.add(new UpdateSelf(ports.network, ports.processRunner, ports.fileSystem, ports.runtime), selfUpdateView);
   },
 };

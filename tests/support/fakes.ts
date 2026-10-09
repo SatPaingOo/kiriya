@@ -10,7 +10,7 @@ import type { Clock } from "../../src/core/domain/ports/clock.js";
 import type { ConfigStore, ConfigValues } from "../../src/core/domain/ports/config-store.js";
 import type { Confirmation } from "../../src/core/domain/ports/confirmation.js";
 import type { Environment, OsFamily } from "../../src/core/domain/ports/environment.js";
-import type { FileSystem } from "../../src/core/domain/ports/file-system.js";
+import type { FileStat, FileSystem } from "../../src/core/domain/ports/file-system.js";
 import type { OutputStream, Passthrough } from "../../src/core/domain/ports/passthrough.js";
 import type { Listener, PortTable } from "../../src/core/domain/ports/port-table.js";
 import type { ProcessOptions, ProcessResult, ProcessRunner } from "../../src/core/domain/ports/process-runner.js";
@@ -196,6 +196,75 @@ export class FakeProcessRunner implements ProcessRunner {
     if (stdout !== "") options.onOutput(stdout, "stdout");
     if (stderr !== "") options.onOutput(stderr, "stderr");
     return Promise.resolve({ code, stdout: "", stderr: "" });
+  }
+}
+
+const FAKE_STAT: FileStat = {
+  kind: "file",
+  size: 0,
+  modifiedMs: 0,
+  createdMs: 0,
+  accessedMs: 0,
+  mode: 0o644,
+  device: 0,
+};
+
+/**
+ * Only the paths it was given exist, each as a file. For a test that asks nothing but whether
+ * something is there; anything that reads or writes belongs in a temporary folder instead.
+ */
+export class FakeFileSystem implements FileSystem {
+  readonly asked: string[] = [];
+  private readonly files: ReadonlySet<string>;
+
+  constructor(files: readonly string[] = []) {
+    this.files = new Set(files);
+  }
+
+  stat(target: string): Promise<FileStat | null> {
+    this.asked.push(target);
+    return Promise.resolve(this.files.has(target) ? FAKE_STAT : null);
+  }
+
+  lstat(target: string): Promise<FileStat | null> {
+    return this.stat(target);
+  }
+
+  readDirectory(): never {
+    throw new Error("not used");
+  }
+  readLink(): never {
+    throw new Error("not used");
+  }
+  realPath(): never {
+    throw new Error("not used");
+  }
+  createDirectory(): never {
+    throw new Error("not used");
+  }
+  createFile(): never {
+    throw new Error("not used");
+  }
+  remove(): never {
+    throw new Error("not used");
+  }
+  copy(): never {
+    throw new Error("not used");
+  }
+  move(): never {
+    throw new Error("not used");
+  }
+  setTimes(): never {
+    throw new Error("not used");
+  }
+  setMode(): never {
+    throw new Error("not used");
+  }
+  sameEntry(): never {
+    throw new Error("not used");
+  }
+  removeEmptyDirectory(): never {
+    throw new Error("not used");
   }
 }
 
