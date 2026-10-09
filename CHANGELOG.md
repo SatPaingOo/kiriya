@@ -7,6 +7,21 @@ output shapes are kiriya's public API.
 
 ## [Unreleased]
 
+### Fixed
+
+- `self-update --apply` could never install anything on Windows. kiriya opens no shell, so it
+  starts only real executables, and Windows has no `npm.exe`: npm arrives as `npm.cmd` and
+  `npm.ps1`, which are a batch file and a PowerShell script. `--apply` therefore reported that
+  npm was not on PATH on every Windows machine, while `self-update` without it worked and said
+  an upgrade was available. npm itself is plain JavaScript, so kiriya now looks for
+  `node_modules/npm/bin/npm-cli.js` beside node and then under `lib`, and starts it with the
+  node already running kiriya. An `npm` that is a real executable on PATH still comes first, so
+  Linux and macOS behave exactly as before.
+
+  **Upgrading to this from 0.2.0 on Windows has to be done by hand**, with
+  `npm install --global kiriya`, because the broken `--apply` is the one in 0.2.0. From this
+  version on it works.
+
 ## [0.2.0] - 2026-10-04
 
 ### Added

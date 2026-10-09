@@ -30,6 +30,11 @@ export interface RuntimeInfo {
    * to run a package manager that did not put it there.
    */
   readonly installDirectory: string;
+  /**
+   * The node binary this kiriya is running on. Windows ships npm as `npm.cmd`, which needs
+   * the shell kiriya never opens, so `self-update` starts npm's own script with this instead.
+   */
+  readonly nodeExecutable: string;
 }
 
 /** The ports every module may use. A command's constructor takes only the ones it calls. */
