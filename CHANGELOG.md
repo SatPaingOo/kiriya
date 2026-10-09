@@ -7,6 +7,8 @@ output shapes are kiriya's public API.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-10
+
 ### Added
 
 - Every MCP tool now declares the shape of the `data` it returns, instead of all 76 sharing
