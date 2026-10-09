@@ -57,10 +57,16 @@ worth stating as what each would take rather than as a list that looks forgotten
 | The Windows trash under a real AppLocker or WDAC policy | A machine with such a policy installed. `__PSLockdownPolicy=4` does not do it — PowerShell still reports `FullLanguage` and `Add-Type` still works, so that shortcut proves nothing. **The handling is tested** by `tests/unit/core/windows-trash-result.test.ts`, which feeds `readTrashResult` the output such a policy produces; only the trigger is unverified. |
 | Trash on a Mac without Full Disk Access, and Finder's Put Back | A real Mac with that permission withheld. GitHub's macOS image pre-grants it, so a runner cannot show the refusal. |
 | The `.mcpb` bundle opening in Claude's desktop app | A desktop with that app. The bundle is built and attached to every release and its manifest is tested, but nobody has yet opened one. |
-| `self-update --apply` replacing a real install | A published version newer than one whose `--apply` works. 0.2.0 and earlier could not find npm on Windows at all, so the earliest upgrade that can be watched end to end is away from 0.2.1. **The parts are tested**: which npm is chosen and what it is given, by `tests/unit/self-update/self-update.test.ts`; that both layouts reach a real file, by `tests/integration/self-update/npm-script.test.ts`; and that `node node_modules/npm/bin/npm-cli.js install --global` really installs on Windows, by hand on 2026-10-09. `verify.yml` takes a `from` version and watches the whole upgrade on all three operating systems as soon as one exists. |
 
 A claim nothing has exercised is worth less than the sentence describing it, so each of these
 says plainly which part is tested and which part is not.
+
+One has left this list. **`self-update --apply` replacing a real install was watched end to
+end on 2026-10-09**, on Windows, macOS and Linux runners, by the `from` input `verify.yml`
+gained for exactly that: it installs the named version, upgrades with `--apply`, and fails
+unless the version really changed. Verifying it needed a published version newer than one
+whose `--apply` worked at all, which 0.3.0 was the first to be — 0.2.0 and earlier could not
+find npm on Windows. Every release from now on can check it the same way.
 
 ## Product rules
 
